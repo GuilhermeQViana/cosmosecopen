@@ -38,6 +38,7 @@ import {
   LogOut,
   ChevronUp,
   Building2,
+  Activity,
 } from 'lucide-react';
 
 const mainNavItems = [
@@ -52,6 +53,7 @@ const mainNavItems = [
 const configNavItems = [
   { title: 'Mapeamento', url: '/mapeamento', icon: Map },
   { title: 'Equipe', url: '/equipe', icon: Users },
+  { title: 'Auditoria', url: '/auditoria', icon: Activity },
   { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
 

@@ -14,6 +14,9 @@ import Riscos from "@/pages/Riscos";
 import Evidencias from "@/pages/Evidencias";
 import PlanoAcao from "@/pages/PlanoAcao";
 import Mapeamento from "@/pages/Mapeamento";
+import Relatorios from "@/pages/Relatorios";
+import Equipe from "@/pages/Equipe";
+import Auditoria from "@/pages/Auditoria";
 import Configuracoes from "@/pages/Configuracoes";
 import NotFound from "@/pages/NotFound";
 
@@ -37,9 +40,10 @@ const App = () => (
                 <Route path="/riscos" element={<Riscos />} />
                 <Route path="/evidencias" element={<Evidencias />} />
                 <Route path="/plano-acao" element={<PlanoAcao />} />
-                <Route path="/relatorios" element={<Dashboard />} />
+                <Route path="/relatorios" element={<Relatorios />} />
                 <Route path="/mapeamento" element={<Mapeamento />} />
-                <Route path="/equipe" element={<Dashboard />} />
+                <Route path="/equipe" element={<Equipe />} />
+                <Route path="/auditoria" element={<Auditoria />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>
               <Route path="*" element={<NotFound />} />
