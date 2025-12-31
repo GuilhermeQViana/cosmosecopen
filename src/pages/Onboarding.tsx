@@ -44,36 +44,14 @@ export default function Onboarding() {
     setLoading(true);
 
     try {
-      // Create organization
-      const { data: org, error: orgError } = await supabase
-        .from('organizations')
-        .insert({
-          name: orgName.trim(),
-          description: orgDescription.trim() || null,
-        })
-        .select()
-        .single();
-
-      if (orgError) throw orgError;
-
-      // Update user profile with organization
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ organization_id: org.id })
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
-
-      // Create admin role for user
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: user.id,
-          organization_id: org.id,
-          role: 'admin',
+      // Use atomic RPC function to create organization with admin role
+      const { data: org, error } = await supabase
+        .rpc('create_organization_with_admin', {
+          org_name: orgName.trim(),
+          org_description: orgDescription.trim() || null,
         });
 
-      if (roleError) throw roleError;
+      if (error) throw error;
 
       await refreshOrganization();
 
