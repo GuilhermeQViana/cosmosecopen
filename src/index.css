@@ -2,95 +2,142 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Cora GovSec Design System - Professional GRC Platform */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core brand colors - Professional blue-slate palette */
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Deep professional blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: Slate gray */
+    --secondary: 215 20% 93%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 215 20% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 221 83% 95%;
+    --accent-foreground: 221 83% 40%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Status colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Risk levels */
+    --risk-critical: 0 84% 60%;
+    --risk-high: 25 95% 53%;
+    --risk-medium: 38 92% 50%;
+    --risk-low: 142 76% 36%;
+    --risk-very-low: 199 89% 48%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Maturity levels */
+    --maturity-0: 0 0% 60%;
+    --maturity-1: 0 84% 60%;
+    --maturity-2: 25 95% 53%;
+    --maturity-3: 38 92% 50%;
+    --maturity-4: 142 76% 50%;
+    --maturity-5: 142 76% 36%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Conformity status */
+    --conforme: 142 76% 36%;
+    --parcial: 38 92% 50%;
+    --nao-conforme: 0 84% 60%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Sidebar */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 18%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 222 47% 20%;
+    --sidebar-ring: 221 83% 53%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Charts */
+    --chart-1: 221 83% 53%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 280 87% 60%;
+    --chart-6: 199 89% 48%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222 47% 8%;
+    --foreground: 210 20% 96%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 20% 96%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 20% 96%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 221 83% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 210 20% 96%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 222 47% 15%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 221 83% 20%;
+    --accent-foreground: 221 83% 70%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 222 47% 20%;
+    --input: 222 47% 20%;
+    --ring: 221 83% 60%;
+
+    /* Status colors dark */
+    --success: 142 76% 42%;
+    --warning: 38 92% 55%;
+    --info: 199 89% 55%;
+
+    /* Sidebar dark */
+    --sidebar-background: 222 47% 6%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-primary: 221 83% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 222 47% 12%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 222 47% 15%;
+    --sidebar-ring: 221 83% 60%;
+
+    /* Charts dark */
+    --chart-1: 221 83% 60%;
+    --chart-2: 142 76% 50%;
+    --chart-3: 38 92% 60%;
+    --chart-4: 0 84% 65%;
+    --chart-5: 280 87% 65%;
+    --chart-6: 199 89% 55%;
   }
 }
 
@@ -99,7 +146,146 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  /* Status badges */
+  .badge-conforme {
+    @apply bg-[hsl(var(--conforme))] text-white;
+  }
+
+  .badge-parcial {
+    @apply bg-[hsl(var(--parcial))] text-black;
+  }
+
+  .badge-nao-conforme {
+    @apply bg-[hsl(var(--nao-conforme))] text-white;
+  }
+
+  /* Risk badges */
+  .badge-risk-critical {
+    @apply bg-[hsl(var(--risk-critical))] text-white;
+  }
+
+  .badge-risk-high {
+    @apply bg-[hsl(var(--risk-high))] text-white;
+  }
+
+  .badge-risk-medium {
+    @apply bg-[hsl(var(--risk-medium))] text-black;
+  }
+
+  .badge-risk-low {
+    @apply bg-[hsl(var(--risk-low))] text-white;
+  }
+
+  /* Maturity progress */
+  .maturity-bar {
+    @apply h-2 rounded-full bg-muted overflow-hidden;
+  }
+
+  .maturity-fill {
+    @apply h-full transition-all duration-500 ease-out;
+  }
+
+  /* Card variants */
+  .card-metric {
+    @apply bg-card rounded-xl border shadow-sm p-6 transition-all duration-200 hover:shadow-md;
+  }
+
+  .card-interactive {
+    @apply bg-card rounded-xl border shadow-sm p-4 transition-all duration-200 hover:border-primary/50 hover:shadow-md cursor-pointer;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 dark:bg-card/80 backdrop-blur-sm;
+  }
+
+  /* Gradient backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary to-primary/80;
+  }
+
+  .gradient-success {
+    @apply bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(var(--success))]/80;
+  }
+
+  /* Animation classes */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+@layer utilities {
+  /* Text utilities */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent;
+  }
+
+  /* Mono font for codes */
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
