@@ -13,6 +13,7 @@ import Diagnostico from "@/pages/Diagnostico";
 import Riscos from "@/pages/Riscos";
 import Evidencias from "@/pages/Evidencias";
 import PlanoAcao from "@/pages/PlanoAcao";
+import Mapeamento from "@/pages/Mapeamento";
 import Configuracoes from "@/pages/Configuracoes";
 import NotFound from "@/pages/NotFound";
 
@@ -37,7 +38,7 @@ const App = () => (
                 <Route path="/evidencias" element={<Evidencias />} />
                 <Route path="/plano-acao" element={<PlanoAcao />} />
                 <Route path="/relatorios" element={<Dashboard />} />
-                <Route path="/mapeamento" element={<Dashboard />} />
+                <Route path="/mapeamento" element={<Mapeamento />} />
                 <Route path="/equipe" element={<Dashboard />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>
