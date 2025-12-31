@@ -10,6 +10,8 @@ import Auth from "@/pages/Auth";
 import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import Diagnostico from "@/pages/Diagnostico";
+import Riscos from "@/pages/Riscos";
+import Evidencias from "@/pages/Evidencias";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,8 +31,8 @@ const App = () => (
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/diagnostico" element={<Diagnostico />} />
-                <Route path="/riscos" element={<Dashboard />} />
-                <Route path="/evidencias" element={<Dashboard />} />
+                <Route path="/riscos" element={<Riscos />} />
+                <Route path="/evidencias" element={<Evidencias />} />
                 <Route path="/plano-acao" element={<Dashboard />} />
                 <Route path="/relatorios" element={<Dashboard />} />
                 <Route path="/mapeamento" element={<Dashboard />} />
