@@ -13,6 +13,7 @@ import Diagnostico from "@/pages/Diagnostico";
 import Riscos from "@/pages/Riscos";
 import Evidencias from "@/pages/Evidencias";
 import PlanoAcao from "@/pages/PlanoAcao";
+import Configuracoes from "@/pages/Configuracoes";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,7 +39,7 @@ const App = () => (
                 <Route path="/relatorios" element={<Dashboard />} />
                 <Route path="/mapeamento" element={<Dashboard />} />
                 <Route path="/equipe" element={<Dashboard />} />
-                <Route path="/configuracoes" element={<Dashboard />} />
+                <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
