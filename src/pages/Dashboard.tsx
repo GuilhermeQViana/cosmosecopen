@@ -13,8 +13,6 @@ import {
   AlertTriangle,
   FileCheck,
   ListTodo,
-  TrendingUp,
-  TrendingDown,
   XCircle,
   Clock,
   Target,
@@ -54,9 +52,7 @@ export default function Dashboard() {
       {
         title: 'Score de Conformidade',
         value: `${conformanceScore}%`,
-        change: '+5%',
-        trend: 'up',
-        description: 'vs. mês anterior',
+        description: `${conformeCount} de ${assessedControls} controles conformes`,
         icon: Shield,
         color: 'text-primary',
         bgColor: 'bg-primary/10',
@@ -64,9 +60,7 @@ export default function Dashboard() {
       {
         title: 'Riscos Críticos',
         value: criticalRisks.toString(),
-        change: '-2',
-        trend: 'down',
-        description: 'redução este mês',
+        description: `de ${risks.length} riscos totais`,
         icon: AlertTriangle,
         color: 'text-[hsl(var(--risk-critical))]',
         bgColor: 'bg-[hsl(var(--risk-critical))]/10',
@@ -74,9 +68,7 @@ export default function Dashboard() {
       {
         title: 'Evidências',
         value: evidences.length.toString(),
-        change: '+12',
-        trend: 'up',
-        description: 'novas este mês',
+        description: 'evidências cadastradas',
         icon: FileCheck,
         color: 'text-[hsl(var(--success))]',
         bgColor: 'bg-[hsl(var(--success))]/10',
@@ -84,9 +76,7 @@ export default function Dashboard() {
       {
         title: 'Ações Pendentes',
         value: pendingActions.toString(),
-        change: '-3',
-        trend: 'down',
-        description: 'fechadas esta semana',
+        description: `de ${actionPlans.length} planos totais`,
         icon: ListTodo,
         color: 'text-[hsl(var(--warning))]',
         bgColor: 'bg-[hsl(var(--warning))]/10',
@@ -186,24 +176,6 @@ export default function Dashboard() {
             <CardContent>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold">{metric.value}</span>
-                <span
-                  className={`text-sm flex items-center gap-1 ${
-                    metric.trend === 'up' && metric.title !== 'Riscos Críticos'
-                      ? 'text-[hsl(var(--success))]'
-                      : metric.trend === 'down' && metric.title === 'Riscos Críticos'
-                      ? 'text-[hsl(var(--success))]'
-                      : metric.trend === 'down'
-                      ? 'text-[hsl(var(--success))]'
-                      : 'text-destructive'
-                  }`}
-                >
-                  {metric.trend === 'up' ? (
-                    <TrendingUp className="w-3 h-3" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3" />
-                  )}
-                  {metric.change}
-                </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
             </CardContent>
@@ -229,21 +201,21 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Row 1 */}
-      <MaturityTrendChart />
+      <MaturityTrendChart assessments={assessments} frameworkName={currentFramework?.name} />
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <ComplianceRadarChart />
-        <RiskDistributionChart />
-        <ActionPlanStatusChart />
+        <ComplianceRadarChart controls={controls} assessments={assessments} />
+        <RiskDistributionChart risks={risks} />
+        <ActionPlanStatusChart actionPlans={actionPlans} />
       </div>
 
       {/* Charts Row 3 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ControlsMaturityChart />
+        <ControlsMaturityChart assessments={assessments} />
         <div className="grid grid-rows-2 gap-4">
           <RecentActivity />
-          <UpcomingDeadlines />
+          <UpcomingDeadlines actionPlans={actionPlans} />
         </div>
       </div>
 

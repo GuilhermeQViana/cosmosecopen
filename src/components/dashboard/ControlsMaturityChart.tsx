@@ -6,25 +6,67 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
+  Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useMemo } from 'react';
+import type { Assessment } from '@/hooks/useAssessments';
 
-const data = [
-  { level: 'Nível 0', count: 25, fill: 'hsl(var(--maturity-0))' },
-  { level: 'Nível 1', count: 35, fill: 'hsl(var(--maturity-1))' },
-  { level: 'Nível 2', count: 48, fill: 'hsl(var(--maturity-2))' },
-  { level: 'Nível 3', count: 62, fill: 'hsl(var(--maturity-3))' },
-  { level: 'Nível 4', count: 28, fill: 'hsl(var(--maturity-4))' },
-  { level: 'Nível 5', count: 19, fill: 'hsl(var(--maturity-5))' },
+interface ControlsMaturityChartProps {
+  assessments: Assessment[];
+}
+
+const MATURITY_COLORS = [
+  'hsl(var(--maturity-0))',
+  'hsl(var(--maturity-1))',
+  'hsl(var(--maturity-2))',
+  'hsl(var(--maturity-3))',
+  'hsl(var(--maturity-4))',
+  'hsl(var(--maturity-5))',
 ];
 
-export function ControlsMaturityChart() {
+export function ControlsMaturityChart({ assessments }: ControlsMaturityChartProps) {
+  const data = useMemo(() => {
+    const levelCounts = [0, 0, 0, 0, 0, 0];
+    
+    assessments.forEach(a => {
+      const level = parseInt(a.maturity_level, 10);
+      if (level >= 0 && level <= 5) {
+        levelCounts[level]++;
+      }
+    });
+
+    return levelCounts.map((count, index) => ({
+      level: `Nível ${index}`,
+      count,
+      fill: MATURITY_COLORS[index],
+    }));
+  }, [assessments]);
+
+  const totalAssessed = assessments.length;
+
+  if (totalAssessed === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Controles por Nível de Maturidade</CardTitle>
+          <CardDescription>Nenhum controle avaliado</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center h-[250px]">
+          <p className="text-sm text-muted-foreground text-center">
+            Nenhum controle foi avaliado ainda.<br />
+            Acesse o Diagnóstico para começar.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Controles por Nível de Maturidade</CardTitle>
-        <CardDescription>Distribuição dos 217 controles avaliados</CardDescription>
+        <CardDescription>Distribuição dos {totalAssessed} controles avaliados</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={250}>
@@ -49,7 +91,7 @@ export function ControlsMaturityChart() {
             />
             <Bar dataKey="count" radius={[4, 4, 0, 0]}>
               {data.map((entry, index) => (
-                <Bar key={index} dataKey="count" fill={entry.fill} />
+                <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Bar>
           </BarChart>
