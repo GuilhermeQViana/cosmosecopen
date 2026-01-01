@@ -245,6 +245,9 @@
   .animate-scale-in {
     animation: scaleIn 0.2s ease-out;
   }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
 }
 
 @layer utilities {
@@ -256,6 +259,31 @@
   /* Mono font for codes */
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Status colors utilities */
+  .text-status-success {
+    color: hsl(var(--success));
+  }
+  
+  .bg-status-success {
+    background-color: hsl(var(--success));
+  }
+  
+  .text-status-warning {
+    color: hsl(var(--warning));
+  }
+  
+  .bg-status-warning {
+    background-color: hsl(var(--warning));
+  }
+  
+  .text-status-info {
+    color: hsl(var(--info));
+  }
+  
+  .bg-status-info {
+    background-color: hsl(var(--info));
   }
 }
 
@@ -287,5 +315,14 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
