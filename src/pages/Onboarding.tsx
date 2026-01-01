@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ import { Building2, ArrowRight, Loader2, Shield } from 'lucide-react';
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { refreshOrganization } = useOrganization();
+  const { createOrganization } = useOrganization();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [orgName, setOrgName] = useState('');
@@ -44,28 +43,22 @@ export default function Onboarding() {
     setLoading(true);
 
     try {
-      // Use atomic RPC function to create organization with admin role
-      const { data: org, error } = await supabase
-        .rpc('create_organization_with_admin', {
-          org_name: orgName.trim(),
-          org_description: orgDescription.trim() || null,
+      const org = await createOrganization(orgName.trim(), orgDescription.trim() || undefined);
+
+      if (org) {
+        toast({
+          title: 'Organização criada!',
+          description: 'Sua organização foi configurada com sucesso.',
         });
-
-      if (error) throw error;
-
-      await refreshOrganization();
-
-      toast({
-        title: 'Organização criada!',
-        description: 'Sua organização foi configurada com sucesso.',
-      });
-
-      navigate('/dashboard');
+        navigate('/dashboard');
+      } else {
+        throw new Error('Falha ao criar organização');
+      }
     } catch (error: any) {
       console.error('Error creating organization:', error);
       toast({
         title: 'Erro ao criar organização',
-        description: error.message,
+        description: error.message || 'Tente novamente.',
         variant: 'destructive',
       });
     } finally {
@@ -81,9 +74,9 @@ export default function Onboarding() {
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
             <Shield className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Configurar Organização</h1>
+          <h1 className="text-2xl font-bold text-foreground">Bem-vindo ao Cora GovSec</h1>
           <p className="text-muted-foreground text-sm text-center mt-2">
-            Configure sua organização para começar a usar o Cora GovSec
+            Configure sua primeira organização para começar
           </p>
         </div>
 

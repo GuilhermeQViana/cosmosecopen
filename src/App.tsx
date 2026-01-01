@@ -8,6 +8,7 @@ import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Auth from "@/pages/Auth";
 import Onboarding from "@/pages/Onboarding";
+import SelecionarOrganizacao from "@/pages/SelecionarOrganizacao";
 import Dashboard from "@/pages/Dashboard";
 import Diagnostico from "@/pages/Diagnostico";
 import Riscos from "@/pages/Riscos";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/diagnostico" element={<Diagnostico />} />

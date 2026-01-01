@@ -719,6 +719,18 @@ export type Database = {
         }
       }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
+      get_user_organizations: {
+        Args: never
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -726,6 +738,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      set_active_organization: { Args: { _org_id: string }; Returns: boolean }
       user_belongs_to_org: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
