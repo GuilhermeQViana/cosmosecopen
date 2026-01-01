@@ -23,12 +23,13 @@ const routeTitles: Record<string, string> = {
   '/relatorios': 'Relatórios',
   '/mapeamento': 'Mapeamento de Frameworks',
   '/equipe': 'Gestão de Equipe',
+  '/auditoria': 'Auditoria',
   '/configuracoes': 'Configurações',
 };
 
 export function AppLayout() {
   const { user, loading: authLoading } = useAuth();
-  const { organization, loading: orgLoading } = useOrganization();
+  const { organization, organizations, loading: orgLoading } = useOrganization();
   const location = useLocation();
 
   if (authLoading || orgLoading) {
@@ -46,8 +47,14 @@ export function AppLayout() {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!organization && location.pathname !== '/onboarding') {
+  // Usuário não tem nenhuma organização -> onboarding
+  if (organizations.length === 0 && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  // Usuário tem organizações mas não selecionou nenhuma ativa
+  if (!organization && organizations.length > 0 && location.pathname !== '/selecionar-organizacao') {
+    return <Navigate to="/selecionar-organizacao" replace />;
   }
 
   const currentTitle = routeTitles[location.pathname] || 'Página';

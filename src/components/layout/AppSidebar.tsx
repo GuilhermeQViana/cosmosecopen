@@ -1,4 +1,4 @@
-import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
+import { useLocation, NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import {
   Shield,
@@ -39,6 +40,9 @@ import {
   ChevronUp,
   Building2,
   Activity,
+  ChevronDown,
+  Plus,
+  Check,
 } from 'lucide-react';
 
 const mainNavItems = [
@@ -59,8 +63,9 @@ const configNavItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { organization } = useOrganization();
+  const { organization, organizations, setActiveOrganization } = useOrganization();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
 
@@ -74,6 +79,15 @@ export function AppSidebar() {
       .slice(0, 2);
   };
 
+  const handleSwitchOrganization = async (orgId: string) => {
+    if (orgId === organization?.id) return;
+    
+    const success = await setActiveOrganization(orgId);
+    if (success) {
+      navigate('/dashboard');
+    }
+  };
+
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
@@ -82,11 +96,52 @@ export function AppSidebar() {
             <Shield className="w-5 h-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
-            <div className="flex flex-col min-w-0">
+            <div className="flex flex-col min-w-0 flex-1">
               <span className="font-semibold text-sidebar-foreground truncate">Cora GovSec</span>
-              <span className="text-xs text-sidebar-foreground/60 truncate">
-                {organization?.name || 'GRC Platform'}
-              </span>
+              {/* Organization Selector */}
+              {organizations.length > 1 ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors truncate">
+                      <Building2 className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{organization?.name || 'Selecionar'}</span>
+                      <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64">
+                    <DropdownMenuLabel>Trocar organização</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {organizations.map((org) => (
+                      <DropdownMenuItem
+                        key={org.id}
+                        onClick={() => handleSwitchOrganization(org.id)}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-6 h-6 bg-primary/10 rounded flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-medium text-primary">
+                              {getInitials(org.name)}
+                            </span>
+                          </div>
+                          <span className="truncate">{org.name}</span>
+                        </div>
+                        {org.id === organization?.id && (
+                          <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/selecionar-organizacao')}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Gerenciar organizações
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <span className="text-xs text-sidebar-foreground/60 truncate">
+                  {organization?.name || 'GRC Platform'}
+                </span>
+              )}
             </div>
           )}
         </div>
