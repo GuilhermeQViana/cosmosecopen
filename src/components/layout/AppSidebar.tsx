@@ -1,6 +1,7 @@
 import { useLocation, NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useFrameworkContext, FrameworkCode } from '@/contexts/FrameworkContext';
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
@@ -16,7 +17,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +44,8 @@ import {
   ChevronDown,
   Plus,
   Check,
+  Landmark,
+  Layers,
 } from 'lucide-react';
 
 const mainNavItems = [
@@ -61,11 +64,24 @@ const configNavItems = [
   { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
 
+const frameworkIcons: Record<FrameworkCode, React.ReactNode> = {
+  nist_csf: <Shield className="w-4 h-4" />,
+  iso_27001: <Building2 className="w-4 h-4" />,
+  bcb_cmn: <Landmark className="w-4 h-4" />,
+};
+
+const frameworkColors: Record<FrameworkCode, string> = {
+  nist_csf: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  iso_27001: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  bcb_cmn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+};
+
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { organization, organizations, setActiveOrganization } = useOrganization();
+  const { currentFramework, frameworks, setFramework } = useFrameworkContext();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
 
@@ -86,6 +102,10 @@ export function AppSidebar() {
     if (success) {
       navigate('/dashboard');
     }
+  };
+
+  const handleSwitchFramework = (code: FrameworkCode) => {
+    setFramework(code);
   };
 
   return (
@@ -145,6 +165,54 @@ export function AppSidebar() {
             </div>
           )}
         </div>
+
+        {/* Framework Selector */}
+        {!collapsed && currentFramework && (
+          <div className="mt-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={cn(
+                  "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
+                  frameworkColors[currentFramework.code as FrameworkCode],
+                  "hover:opacity-80"
+                )}>
+                  {frameworkIcons[currentFramework.code as FrameworkCode]}
+                  <span className="font-medium truncate flex-1 text-left">{currentFramework.name}</span>
+                  <ChevronDown className="w-4 h-4 flex-shrink-0 opacity-60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                <DropdownMenuLabel>Trocar framework</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {frameworks.map((framework) => {
+                  const code = framework.code as FrameworkCode;
+                  return (
+                    <DropdownMenuItem
+                      key={framework.id}
+                      onClick={() => handleSwitchFramework(code)}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={cn("w-6 h-6 rounded flex items-center justify-center flex-shrink-0", frameworkColors[code])}>
+                          {frameworkIcons[code]}
+                        </div>
+                        <span className="truncate">{framework.name}</span>
+                      </div>
+                      {framework.id === currentFramework.id && (
+                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      )}
+                    </DropdownMenuItem>
+                  );
+                })}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/selecionar-framework')}>
+                  <Layers className="w-4 h-4 mr-2" />
+                  Ver todos os frameworks
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </SidebarHeader>
 
       <SidebarContent className="px-2">

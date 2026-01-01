@@ -1,6 +1,7 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { Separator } from '@/components/ui/separator';
@@ -30,9 +31,10 @@ const routeTitles: Record<string, string> = {
 export function AppLayout() {
   const { user, loading: authLoading } = useAuth();
   const { organization, organizations, loading: orgLoading } = useOrganization();
+  const { currentFramework, isLoading: frameworkLoading } = useFrameworkContext();
   const location = useLocation();
 
-  if (authLoading || orgLoading) {
+  if (authLoading || orgLoading || frameworkLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -55,6 +57,11 @@ export function AppLayout() {
   // Usuário tem organizações mas não selecionou nenhuma ativa
   if (!organization && organizations.length > 0 && location.pathname !== '/selecionar-organizacao') {
     return <Navigate to="/selecionar-organizacao" replace />;
+  }
+
+  // Usuário não selecionou framework -> redirecionar para seleção
+  if (!currentFramework && location.pathname !== '/selecionar-framework') {
+    return <Navigate to="/selecionar-framework" replace />;
   }
 
   const currentTitle = routeTitles[location.pathname] || 'Página';
