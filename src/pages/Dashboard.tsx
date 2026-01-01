@@ -1,4 +1,10 @@
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
+import { useAssessments } from '@/hooks/useAssessments';
+import { useControls } from '@/hooks/useControls';
+import { useRisks } from '@/hooks/useRisks';
+import { useEvidences } from '@/hooks/useEvidences';
+import { useActionPlans } from '@/hooks/useActionPlans';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +15,6 @@ import {
   ListTodo,
   TrendingUp,
   TrendingDown,
-  CheckCircle2,
   XCircle,
   Clock,
   Target,
@@ -22,67 +27,126 @@ import { ActionPlanStatusChart } from '@/components/dashboard/ActionPlanStatusCh
 import { ControlsMaturityChart } from '@/components/dashboard/ControlsMaturityChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines';
+import { useMemo } from 'react';
 
 export default function Dashboard() {
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
+  
+  // Fetch real data from database
+  const { data: controls = [] } = useControls();
+  const { data: assessments = [] } = useAssessments();
+  const { data: risks = [] } = useRisks();
+  const { data: evidences = [] } = useEvidences();
+  const { data: actionPlans = [] } = useActionPlans();
 
-  const metrics = [
-    {
-      title: 'Score de Conformidade',
-      value: '72%',
-      change: '+5%',
-      trend: 'up',
-      description: 'vs. mês anterior',
-      icon: Shield,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-    },
-    {
-      title: 'Riscos Críticos',
-      value: '3',
-      change: '-2',
-      trend: 'down',
-      description: 'redução este mês',
-      icon: AlertTriangle,
-      color: 'text-[hsl(var(--risk-critical))]',
-      bgColor: 'bg-[hsl(var(--risk-critical))]/10',
-    },
-    {
-      title: 'Evidências',
-      value: '48',
-      change: '+12',
-      trend: 'up',
-      description: 'novas este mês',
-      icon: FileCheck,
-      color: 'text-[hsl(var(--success))]',
-      bgColor: 'bg-[hsl(var(--success))]/10',
-    },
-    {
-      title: 'Ações Pendentes',
-      value: '15',
-      change: '-3',
-      trend: 'down',
-      description: 'fechadas esta semana',
-      icon: ListTodo,
-      color: 'text-[hsl(var(--warning))]',
-      bgColor: 'bg-[hsl(var(--warning))]/10',
-    },
-  ];
+  // Calculate real metrics
+  const metrics = useMemo(() => {
+    const totalControls = controls.length;
+    const assessedControls = assessments.length;
+    const conformeCount = assessments.filter(a => a.status === 'conforme').length;
+    const conformanceScore = assessedControls > 0 ? Math.round((conformeCount / assessedControls) * 100) : 0;
+    
+    const criticalRisks = risks.filter(r => (r.inherent_probability * r.inherent_impact) >= 20).length;
+    const pendingActions = actionPlans.filter(a => a.status !== 'done').length;
 
-  const kpis = [
-    { label: 'Controles Avaliados', value: '217', total: '217', percent: 100 },
-    { label: 'Controles Conformes', value: '142', total: '217', percent: 65 },
-    { label: 'Gaps Identificados', value: '75', total: '217', percent: 35 },
-    { label: 'Planos em Andamento', value: '23', total: '50', percent: 46 },
-  ];
+    return [
+      {
+        title: 'Score de Conformidade',
+        value: `${conformanceScore}%`,
+        change: '+5%',
+        trend: 'up',
+        description: 'vs. mês anterior',
+        icon: Shield,
+        color: 'text-primary',
+        bgColor: 'bg-primary/10',
+      },
+      {
+        title: 'Riscos Críticos',
+        value: criticalRisks.toString(),
+        change: '-2',
+        trend: 'down',
+        description: 'redução este mês',
+        icon: AlertTriangle,
+        color: 'text-[hsl(var(--risk-critical))]',
+        bgColor: 'bg-[hsl(var(--risk-critical))]/10',
+      },
+      {
+        title: 'Evidências',
+        value: evidences.length.toString(),
+        change: '+12',
+        trend: 'up',
+        description: 'novas este mês',
+        icon: FileCheck,
+        color: 'text-[hsl(var(--success))]',
+        bgColor: 'bg-[hsl(var(--success))]/10',
+      },
+      {
+        title: 'Ações Pendentes',
+        value: pendingActions.toString(),
+        change: '-3',
+        trend: 'down',
+        description: 'fechadas esta semana',
+        icon: ListTodo,
+        color: 'text-[hsl(var(--warning))]',
+        bgColor: 'bg-[hsl(var(--warning))]/10',
+      },
+    ];
+  }, [controls, assessments, risks, evidences, actionPlans]);
 
-  const recentGaps = [
-    { control: 'GV.OC-01', name: 'Contexto organizacional documentado', status: 'nao_conforme', framework: 'NIST' },
-    { control: 'A.5.1', name: 'Políticas de segurança da informação', status: 'parcial', framework: 'ISO' },
-    { control: 'Art. 3º', name: 'Política de segurança cibernética', status: 'parcial', framework: 'BCB' },
-    { control: 'GV.RM-02', name: 'Estratégia de gestão de riscos', status: 'nao_conforme', framework: 'NIST' },
-    { control: 'A.8.3', name: 'Restrição de acesso à informação', status: 'parcial', framework: 'ISO' },
-  ];
+  // Calculate real KPIs
+  const kpis = useMemo(() => {
+    const totalControls = controls.length;
+    const assessedControls = assessments.length;
+    const conformeCount = assessments.filter(a => a.status === 'conforme').length;
+    const gapsCount = assessments.filter(a => a.status === 'nao_conforme' || a.status === 'parcial').length;
+    const inProgressPlans = actionPlans.filter(a => a.status === 'in_progress').length;
+    const totalPlans = actionPlans.length;
+
+    return [
+      { 
+        label: 'Controles Avaliados', 
+        value: assessedControls.toString(), 
+        total: totalControls.toString(), 
+        percent: totalControls > 0 ? Math.round((assessedControls / totalControls) * 100) : 0 
+      },
+      { 
+        label: 'Controles Conformes', 
+        value: conformeCount.toString(), 
+        total: assessedControls.toString(), 
+        percent: assessedControls > 0 ? Math.round((conformeCount / assessedControls) * 100) : 0 
+      },
+      { 
+        label: 'Gaps Identificados', 
+        value: gapsCount.toString(), 
+        total: assessedControls.toString(), 
+        percent: assessedControls > 0 ? Math.round((gapsCount / assessedControls) * 100) : 0 
+      },
+      { 
+        label: 'Planos em Andamento', 
+        value: inProgressPlans.toString(), 
+        total: totalPlans.toString(), 
+        percent: totalPlans > 0 ? Math.round((inProgressPlans / totalPlans) * 100) : 0 
+      },
+    ];
+  }, [controls, assessments, actionPlans]);
+
+  // Get top gaps from assessments
+  const recentGaps = useMemo(() => {
+    const gapAssessments = assessments
+      .filter(a => a.status === 'nao_conforme' || a.status === 'parcial')
+      .slice(0, 5);
+    
+    return gapAssessments.map(a => {
+      const control = controls.find(c => c.id === a.control_id);
+      return {
+        control: control?.code || 'N/A',
+        name: control?.name || 'Controle não encontrado',
+        status: a.status,
+        framework: currentFramework?.name || 'N/A',
+      };
+    });
+  }, [assessments, controls, currentFramework]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -94,9 +158,16 @@ export default function Dashboard() {
             Visão geral de conformidade da {organization?.name || 'organização'}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Activity className="h-4 w-4" />
-          Atualizado há 5 minutos
+        <div className="flex items-center gap-3">
+          {currentFramework && (
+            <Badge variant="outline" className="text-sm px-3 py-1.5">
+              {currentFramework.name}
+            </Badge>
+          )}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Activity className="h-4 w-4" />
+            Atualizado agora
+          </div>
         </div>
       </div>
 
@@ -176,85 +247,51 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Conformity by Framework */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {[
-          { name: 'NIST CSF 2.0', value: 68, controls: 75, color: 'bg-[hsl(var(--chart-1))]' },
-          { name: 'ISO 27001:2022', value: 75, controls: 93, color: 'bg-[hsl(var(--chart-2))]' },
-          { name: 'BCB/CMN 4.893', value: 71, controls: 49, color: 'bg-[hsl(var(--chart-3))]' },
-        ].map((fw) => (
-          <Card key={fw.name}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">{fw.name}</CardTitle>
-                <Badge variant="outline">{fw.controls} controles</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Conformidade</span>
-                  <span className="font-bold text-lg">{fw.value}%</span>
-                </div>
-                <div className="h-3 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={`h-full ${fw.color} transition-all duration-500`}
-                    style={{ width: `${fw.value}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Meta: 85%</span>
-                  <span>Gap: {85 - fw.value}%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       {/* Top Gaps */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top 5 Gaps de Controles</CardTitle>
-          <CardDescription>Controles que precisam de atenção prioritária</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {recentGaps.map((gap, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  {gap.status === 'nao_conforme' ? (
-                    <XCircle className="w-5 h-5 text-destructive" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-[hsl(var(--warning))]" />
-                  )}
-                  <div>
-                    <p className="font-medium text-sm">{gap.name}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{gap.control}</p>
+      {recentGaps.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Gaps de Controles</CardTitle>
+            <CardDescription>Controles que precisam de atenção prioritária</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentGaps.map((gap, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {gap.status === 'nao_conforme' ? (
+                      <XCircle className="w-5 h-5 text-destructive" />
+                    ) : (
+                      <Clock className="w-5 h-5 text-[hsl(var(--warning))]" />
+                    )}
+                    <div>
+                      <p className="font-medium text-sm">{gap.name}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{gap.control}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {gap.framework}
+                    </Badge>
+                    <Badge
+                      className={
+                        gap.status === 'nao_conforme'
+                          ? 'badge-nao-conforme'
+                          : 'badge-parcial'
+                      }
+                    >
+                      {gap.status === 'nao_conforme' ? 'Não Conforme' : 'Parcial'}
+                    </Badge>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {gap.framework}
-                  </Badge>
-                  <Badge
-                    className={
-                      gap.status === 'nao_conforme'
-                        ? 'badge-nao-conforme'
-                        : 'badge-parcial'
-                    }
-                  >
-                    {gap.status === 'nao_conforme' ? 'Não Conforme' : 'Parcial'}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

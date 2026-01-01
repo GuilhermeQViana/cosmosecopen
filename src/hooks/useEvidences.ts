@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import type { Database } from '@/integrations/supabase/types';
 
 type EvidenceClassification = Database['public']['Enums']['evidence_classification'];
@@ -17,23 +18,37 @@ export interface Evidence {
   expires_at: string | null;
   uploaded_by: string | null;
   organization_id: string;
+  framework_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export function useEvidences() {
+/**
+ * Hook to fetch evidences.
+ * Optionally filters by framework if filterByFramework is true (default: true).
+ */
+export function useEvidences(options?: { filterByFramework?: boolean }) {
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
+  const filterByFramework = options?.filterByFramework ?? true;
 
   return useQuery({
-    queryKey: ['evidences', organization?.id],
+    queryKey: ['evidences', organization?.id, filterByFramework ? currentFramework?.id : null],
     queryFn: async () => {
       if (!organization?.id) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('evidences')
         .select('*')
         .eq('organization_id', organization.id)
         .order('created_at', { ascending: false });
+
+      // Filter by framework if enabled and framework is selected
+      if (filterByFramework && currentFramework?.id) {
+        query = query.or(`framework_id.eq.${currentFramework.id},framework_id.is.null`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Evidence[];
@@ -45,6 +60,7 @@ export function useEvidences() {
 export function useUploadEvidence() {
   const queryClient = useQueryClient();
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
 
   return useMutation({
     mutationFn: async ({
@@ -91,6 +107,7 @@ export function useUploadEvidence() {
           expires_at: metadata.expires_at || null,
           uploaded_by: user?.id || null,
           organization_id: organization.id,
+          framework_id: currentFramework?.id || null,
         })
         .select()
         .single();

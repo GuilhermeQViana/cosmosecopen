@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import type { Database } from '@/integrations/supabase/types';
 
 type TaskStatus = Database['public']['Enums']['task_status'];
@@ -19,6 +20,7 @@ export interface ActionPlan {
   assessment_id: string | null;
   created_by: string | null;
   organization_id: string;
+  framework_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,19 +42,32 @@ export interface ActionPlanComment {
   created_at: string;
 }
 
-export function useActionPlans() {
+/**
+ * Hook to fetch action plans.
+ * Optionally filters by framework if filterByFramework is true (default: true).
+ */
+export function useActionPlans(options?: { filterByFramework?: boolean }) {
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
+  const filterByFramework = options?.filterByFramework ?? true;
 
   return useQuery({
-    queryKey: ['action-plans', organization?.id],
+    queryKey: ['action-plans', organization?.id, filterByFramework ? currentFramework?.id : null],
     queryFn: async () => {
       if (!organization?.id) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('action_plans')
         .select('*')
         .eq('organization_id', organization.id)
         .order('created_at', { ascending: false });
+
+      // Filter by framework if enabled and framework is selected
+      if (filterByFramework && currentFramework?.id) {
+        query = query.or(`framework_id.eq.${currentFramework.id},framework_id.is.null`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as ActionPlan[];
@@ -102,9 +117,10 @@ export function useActionPlanTasks(planId: string | null) {
 export function useCreateActionPlan() {
   const queryClient = useQueryClient();
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
 
   return useMutation({
-    mutationFn: async (plan: Omit<ActionPlan, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'created_by' | 'completed_at'>) => {
+    mutationFn: async (plan: Omit<ActionPlan, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'created_by' | 'completed_at' | 'framework_id'>) => {
       if (!organization?.id) throw new Error('No organization');
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -115,6 +131,7 @@ export function useCreateActionPlan() {
           ...plan,
           organization_id: organization.id,
           created_by: user?.id || null,
+          framework_id: currentFramework?.id || null,
         })
         .select()
         .single();
