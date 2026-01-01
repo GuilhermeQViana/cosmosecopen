@@ -16,6 +16,8 @@ export default function Onboarding() {
   const { createOrganization, organizations, loading: orgLoading } = useOrganization();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [orgName, setOrgName] = useState('');
+  const [orgDescription, setOrgDescription] = useState('');
 
   // Redirecionar se usuário já tem organizações
   useEffect(() => {
@@ -35,8 +37,6 @@ export default function Onboarding() {
       </div>
     );
   }
-  const [orgName, setOrgName] = useState('');
-  const [orgDescription, setOrgDescription] = useState('');
 
   const handleCreateOrganization = async (e: React.FormEvent) => {
     e.preventDefault();
