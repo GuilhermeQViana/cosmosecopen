@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,12 +11,77 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { User, Building2, Settings, Bell, Palette, Shield, Loader2, Save } from 'lucide-react';
+import { 
+  User, 
+  Building2, 
+  Settings, 
+  Bell, 
+  Palette, 
+  Shield, 
+  Loader2, 
+  Save,
+  Plus,
+  Mail,
+  Crown,
+  Eye,
+  BarChart3,
+  LogOut,
+  Trash2,
+  UserPlus,
+  Check,
+  X,
+  Clock
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
+  admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+  auditor: { label: 'Auditor', icon: Eye, color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+  analyst: { label: 'Analista', icon: BarChart3, color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+};
+
+interface Invite {
+  id: string;
+  email: string;
+  role: string;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+}
 
 export default function Configuracoes() {
   const { user } = useAuth();
-  const { organization, refreshOrganization } = useOrganization();
+  const { organization, organizations, refreshOrganization, refreshOrganizations, createOrganization } = useOrganization();
+  const navigate = useNavigate();
   
   const [profileLoading, setProfileLoading] = useState(false);
   const [orgLoading, setOrgLoading] = useState(false);
@@ -35,8 +100,25 @@ export default function Configuracoes() {
   const [dueDateReminders, setDueDateReminders] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
+  // Invite state
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<string>('analyst');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [invites, setInvites] = useState<Invite[]>([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
+
+  // New org state
+  const [newOrgDialogOpen, setNewOrgDialogOpen] = useState(false);
+  const [newOrgName, setNewOrgName] = useState('');
+  const [newOrgDescription, setNewOrgDescription] = useState('');
+  const [newOrgLoading, setNewOrgLoading] = useState(false);
+
+  // Leave org state
+  const [leaveLoading, setLeaveLoading] = useState<string | null>(null);
+
   // Load profile data
-  useState(() => {
+  useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
       
@@ -53,7 +135,36 @@ export default function Configuracoes() {
     };
     
     loadProfile();
-  });
+  }, [user]);
+
+  // Update org form when organization changes
+  useEffect(() => {
+    if (organization) {
+      setOrgName(organization.name);
+      setOrgDescription(organization.description || '');
+    }
+  }, [organization]);
+
+  // Load invites
+  useEffect(() => {
+    const loadInvites = async () => {
+      if (!organization) return;
+      
+      setInvitesLoading(true);
+      const { data, error } = await supabase
+        .from('organization_invites')
+        .select('*')
+        .eq('organization_id', organization.id)
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        setInvites(data);
+      }
+      setInvitesLoading(false);
+    };
+    
+    loadInvites();
+  }, [organization]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -93,12 +204,115 @@ export default function Configuracoes() {
       
       if (error) throw error;
       await refreshOrganization();
+      await refreshOrganizations();
       toast.success('Organização atualizada com sucesso!');
     } catch (error) {
       console.error('Error updating organization:', error);
       toast.error('Erro ao atualizar organização');
     } finally {
       setOrgLoading(false);
+    }
+  };
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!organization || !inviteEmail) return;
+    
+    setInviteLoading(true);
+    try {
+      const { error } = await supabase
+        .from('organization_invites')
+        .insert([{
+          organization_id: organization.id,
+          email: inviteEmail.toLowerCase().trim(),
+          role: inviteRole as 'admin' | 'auditor' | 'analyst',
+          invited_by: user?.id,
+        }]);
+      
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error('Este email já foi convidado para esta organização');
+        }
+        throw error;
+      }
+      
+      // Reload invites
+      const { data } = await supabase
+        .from('organization_invites')
+        .select('*')
+        .eq('organization_id', organization.id)
+        .order('created_at', { ascending: false });
+      
+      if (data) setInvites(data);
+      
+      toast.success('Convite enviado com sucesso!');
+      setInviteDialogOpen(false);
+      setInviteEmail('');
+      setInviteRole('analyst');
+    } catch (error: any) {
+      console.error('Error sending invite:', error);
+      toast.error(error.message || 'Erro ao enviar convite');
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const handleDeleteInvite = async (inviteId: string) => {
+    try {
+      const { error } = await supabase
+        .from('organization_invites')
+        .delete()
+        .eq('id', inviteId);
+      
+      if (error) throw error;
+      
+      setInvites(invites.filter(i => i.id !== inviteId));
+      toast.success('Convite cancelado');
+    } catch (error) {
+      console.error('Error deleting invite:', error);
+      toast.error('Erro ao cancelar convite');
+    }
+  };
+
+  const handleCreateNewOrg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOrgName.trim()) return;
+    
+    setNewOrgLoading(true);
+    const org = await createOrganization(newOrgName.trim(), newOrgDescription.trim() || undefined);
+    
+    if (org) {
+      toast.success('Organização criada com sucesso!');
+      setNewOrgDialogOpen(false);
+      setNewOrgName('');
+      setNewOrgDescription('');
+    } else {
+      toast.error('Erro ao criar organização');
+    }
+    setNewOrgLoading(false);
+  };
+
+  const handleLeaveOrganization = async (orgId: string) => {
+    setLeaveLoading(orgId);
+    try {
+      const { error } = await supabase.rpc('leave_organization', { _org_id: orgId });
+      
+      if (error) throw error;
+      
+      await refreshOrganizations();
+      await refreshOrganization();
+      
+      toast.success('Você saiu da organização');
+      
+      // Se saiu da organização ativa, redirecionar
+      if (organization?.id === orgId) {
+        navigate('/selecionar-organizacao');
+      }
+    } catch (error: any) {
+      console.error('Error leaving organization:', error);
+      toast.error(error.message || 'Erro ao sair da organização');
+    } finally {
+      setLeaveLoading(null);
     }
   };
 
@@ -111,6 +325,8 @@ export default function Configuracoes() {
       .slice(0, 2);
   };
 
+  const isAdmin = organization?.role === 'admin';
+
   return (
     <div className="space-y-6">
       <div>
@@ -121,7 +337,7 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+        <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Perfil</span>
@@ -129,6 +345,10 @@ export default function Configuracoes() {
           <TabsTrigger value="organization" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             <span className="hidden sm:inline">Organização</span>
+          </TabsTrigger>
+          <TabsTrigger value="organizations" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Minhas Orgs</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
@@ -252,7 +472,7 @@ export default function Configuracoes() {
                 Dados da Organização
               </CardTitle>
               <CardDescription>
-                Atualize as informações da sua organização
+                {isAdmin ? 'Atualize as informações da sua organização' : 'Visualize as informações da organização'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -264,6 +484,7 @@ export default function Configuracoes() {
                     placeholder="Nome da empresa"
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
+                    disabled={!isAdmin}
                   />
                 </div>
                 <div className="space-y-2">
@@ -274,20 +495,164 @@ export default function Configuracoes() {
                     value={orgDescription}
                     onChange={(e) => setOrgDescription(e.target.value)}
                     rows={4}
+                    disabled={!isAdmin}
                   />
                 </div>
               </div>
 
-              <Button onClick={handleSaveOrganization} disabled={orgLoading}>
-                {orgLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
-                )}
-                Salvar Alterações
-              </Button>
+              {isAdmin && (
+                <Button onClick={handleSaveOrganization} disabled={orgLoading}>
+                  {orgLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Salvar Alterações
+                </Button>
+              )}
             </CardContent>
           </Card>
+
+          {/* Invites Section - Admin Only */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserPlus className="h-5 w-5" />
+                      Convites Pendentes
+                    </CardTitle>
+                    <CardDescription>
+                      Gerencie convites para novos membros
+                    </CardDescription>
+                  </div>
+                  <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Convidar
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <form onSubmit={handleSendInvite}>
+                        <DialogHeader>
+                          <DialogTitle>Convidar Membro</DialogTitle>
+                          <DialogDescription>
+                            Envie um convite para um novo membro da organização
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="invite-email">E-mail</Label>
+                            <Input
+                              id="invite-email"
+                              type="email"
+                              placeholder="email@exemplo.com"
+                              value={inviteEmail}
+                              onChange={(e) => setInviteEmail(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="invite-role">Papel</Label>
+                            <Select value={inviteRole} onValueChange={setInviteRole}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="auditor">Auditor</SelectItem>
+                                <SelectItem value="analyst">Analista</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="button" variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button type="submit" disabled={inviteLoading}>
+                            {inviteLoading ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Mail className="mr-2 h-4 w-4" />
+                            )}
+                            Enviar Convite
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {invitesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : invites.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Mail className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                    <p>Nenhum convite pendente</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {invites.map((invite) => {
+                      const roleInfo = roleLabels[invite.role];
+                      const RoleIcon = roleInfo?.icon || BarChart3;
+                      const isExpired = new Date(invite.expires_at) < new Date();
+                      const isAccepted = !!invite.accepted_at;
+                      
+                      return (
+                        <div key={invite.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                              <Mail className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">{invite.email}</p>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className={`text-xs ${roleInfo?.color}`}>
+                                  <RoleIcon className="w-3 h-3 mr-1" />
+                                  {roleInfo?.label}
+                                </Badge>
+                                {isAccepted ? (
+                                  <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600">
+                                    <Check className="w-3 h-3 mr-1" />
+                                    Aceito
+                                  </Badge>
+                                ) : isExpired ? (
+                                  <Badge variant="outline" className="text-xs bg-red-500/10 text-red-600">
+                                    <X className="w-3 h-3 mr-1" />
+                                    Expirado
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    Pendente
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          {!isAccepted && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleDeleteInvite(invite.id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-muted-foreground" />
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
@@ -307,7 +672,7 @@ export default function Configuracoes() {
                     <p className="text-sm text-muted-foreground">75 controles</p>
                   </div>
                 </div>
-                <Switch defaultChecked />
+                <Switch defaultChecked disabled={!isAdmin} />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -320,7 +685,7 @@ export default function Configuracoes() {
                     <p className="text-sm text-muted-foreground">93 controles</p>
                   </div>
                 </div>
-                <Switch defaultChecked />
+                <Switch defaultChecked disabled={!isAdmin} />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -333,7 +698,148 @@ export default function Configuracoes() {
                     <p className="text-sm text-muted-foreground">49 controles</p>
                   </div>
                 </div>
-                <Switch defaultChecked />
+                <Switch defaultChecked disabled={!isAdmin} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* My Organizations Tab */}
+        <TabsContent value="organizations" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Minhas Organizações</CardTitle>
+                  <CardDescription>
+                    Organizações das quais você faz parte
+                  </CardDescription>
+                </div>
+                <Dialog open={newOrgDialogOpen} onOpenChange={setNewOrgDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Nova Organização
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <form onSubmit={handleCreateNewOrg}>
+                      <DialogHeader>
+                        <DialogTitle>Nova Organização</DialogTitle>
+                        <DialogDescription>
+                          Crie uma nova organização para gerenciar separadamente
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="new-org-name">Nome da organização *</Label>
+                          <Input
+                            id="new-org-name"
+                            placeholder="Ex: Empresa XYZ S.A."
+                            value={newOrgName}
+                            onChange={(e) => setNewOrgName(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-org-desc">Descrição (opcional)</Label>
+                          <Textarea
+                            id="new-org-desc"
+                            placeholder="Breve descrição da organização..."
+                            value={newOrgDescription}
+                            onChange={(e) => setNewOrgDescription(e.target.value)}
+                            rows={3}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setNewOrgDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" disabled={newOrgLoading}>
+                          {newOrgLoading ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Plus className="mr-2 h-4 w-4" />
+                          )}
+                          Criar Organização
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {organizations.map((org) => {
+                  const roleInfo = roleLabels[org.role || 'analyst'];
+                  const RoleIcon = roleInfo?.icon || BarChart3;
+                  const isActive = org.id === organization?.id;
+                  const isOnlyOrg = organizations.length === 1;
+                  
+                  return (
+                    <div 
+                      key={org.id} 
+                      className={`flex items-center justify-between p-4 border rounded-lg ${isActive ? 'border-primary bg-primary/5' : ''}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-bold text-primary">
+                            {getInitials(org.name)}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{org.name}</p>
+                            {isActive && (
+                              <Badge variant="outline" className="text-xs">Ativa</Badge>
+                            )}
+                          </div>
+                          <Badge variant="outline" className={`text-xs mt-1 ${roleInfo?.color}`}>
+                            <RoleIcon className="w-3 h-3 mr-1" />
+                            {roleInfo?.label}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!isOnlyOrg && org.role !== 'admin' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-destructive">
+                                <LogOut className="w-4 h-4 mr-1" />
+                                Sair
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Sair da organização?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Você perderá acesso a todos os dados desta organização. 
+                                  Para entrar novamente, precisará de um novo convite.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleLeaveOrganization(org.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  {leaveLoading === org.id ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                  )}
+                                  Sair
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
