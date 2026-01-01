@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Building2, 
@@ -27,7 +44,10 @@ import {
   Crown,
   Eye,
   BarChart3,
-  LogOut
+  LogOut,
+  MoreVertical,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
@@ -38,7 +58,7 @@ const roleLabels: Record<string, { label: string; icon: any; color: string }> = 
 
 export default function SelecionarOrganizacao() {
   const navigate = useNavigate();
-  const { organizations, setActiveOrganization, createOrganization, loading } = useOrganization();
+  const { organizations, setActiveOrganization, createOrganization, refreshOrganizations, loading } = useOrganization();
   const { signOut } = useAuth();
   const { toast } = useToast();
   
@@ -47,6 +67,16 @@ export default function SelecionarOrganizacao() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [newOrgDescription, setNewOrgDescription] = useState('');
+  
+  // Edit state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingOrg, setEditingOrg] = useState<{ id: string; name: string; description: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  
+  // Delete state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingOrg, setDeletingOrg] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handleSelectOrganization = async (orgId: string) => {
     setSelecting(orgId);
@@ -110,6 +140,99 @@ export default function SelecionarOrganizacao() {
     setCreating(false);
   };
 
+  const handleEditOrganization = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingOrg || !editingOrg.name.trim()) {
+      toast({
+        title: 'Nome obrigatório',
+        description: 'Por favor, informe o nome da organização.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSaving(true);
+
+    const { error } = await supabase
+      .from('organizations')
+      .update({
+        name: editingOrg.name.trim(),
+        description: editingOrg.description.trim() || null,
+      })
+      .eq('id', editingOrg.id);
+
+    if (error) {
+      toast({
+        title: 'Erro ao atualizar',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Organização atualizada',
+        description: 'As alterações foram salvas.',
+      });
+      setEditDialogOpen(false);
+      setEditingOrg(null);
+      await refreshOrganizations();
+    }
+
+    setSaving(false);
+  };
+
+  const handleDeleteOrganization = async () => {
+    if (!deletingOrg) return;
+
+    setDeleting(true);
+
+    // Delete related data first
+    const { error: rolesError } = await supabase
+      .from('user_roles')
+      .delete()
+      .eq('organization_id', deletingOrg.id);
+
+    if (rolesError) {
+      toast({
+        title: 'Erro ao excluir',
+        description: rolesError.message,
+        variant: 'destructive',
+      });
+      setDeleting(false);
+      return;
+    }
+
+    // Update profiles that reference this org
+    await supabase
+      .from('profiles')
+      .update({ organization_id: null })
+      .eq('organization_id', deletingOrg.id);
+
+    // Delete the organization
+    const { error } = await supabase
+      .from('organizations')
+      .delete()
+      .eq('id', deletingOrg.id);
+
+    if (error) {
+      toast({
+        title: 'Erro ao excluir',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Organização excluída',
+        description: 'A organização foi removida.',
+      });
+      setDeleteDialogOpen(false);
+      setDeletingOrg(null);
+      await refreshOrganizations();
+    }
+
+    setDeleting(false);
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -149,12 +272,12 @@ export default function SelecionarOrganizacao() {
           {organizations.map((org) => {
             const roleInfo = roleLabels[org.role || 'analyst'];
             const RoleIcon = roleInfo.icon;
+            const isAdmin = org.role === 'admin';
             
             return (
               <Card 
                 key={org.id} 
-                className="group hover:border-primary/50 transition-all duration-200 cursor-pointer"
-                onClick={() => handleSelectOrganization(org.id)}
+                className="group hover:border-primary/50 transition-all duration-200"
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
@@ -176,6 +299,47 @@ export default function SelecionarOrganizacao() {
                         </Badge>
                       </div>
                     </div>
+                    {isAdmin && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-popover border z-50">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingOrg({
+                                id: org.id,
+                                name: org.name,
+                                description: org.description || '',
+                              });
+                              setEditDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingOrg({ id: org.id, name: org.name });
+                              setDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -186,6 +350,7 @@ export default function SelecionarOrganizacao() {
                     className="w-full group-hover:bg-primary"
                     variant="outline"
                     disabled={selecting === org.id}
+                    onClick={() => handleSelectOrganization(org.id)}
                   >
                     {selecting === org.id ? (
                       <>
@@ -283,6 +448,90 @@ export default function SelecionarOrganizacao() {
           </Button>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <form onSubmit={handleEditOrganization}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Pencil className="w-5 h-5" />
+                Editar Organização
+              </DialogTitle>
+              <DialogDescription>
+                Atualize as informações da organização.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-org-name">Nome da organização *</Label>
+                <Input
+                  id="edit-org-name"
+                  placeholder="Ex: Empresa XYZ S.A."
+                  value={editingOrg?.name || ''}
+                  onChange={(e) => setEditingOrg(prev => prev ? { ...prev, name: e.target.value } : null)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-org-description">Descrição (opcional)</Label>
+                <Textarea
+                  id="edit-org-description"
+                  placeholder="Breve descrição da organização..."
+                  value={editingOrg?.description || ''}
+                  onChange={(e) => setEditingOrg(prev => prev ? { ...prev, description: e.target.value } : null)}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  'Salvar Alterações'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir organização?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir <strong>{deletingOrg?.name}</strong>? 
+              Esta ação não pode ser desfeita e todos os dados associados serão perdidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteOrganization}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Excluindo...
+                </>
+              ) : (
+                'Excluir'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
