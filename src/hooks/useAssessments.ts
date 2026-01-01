@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Database } from '@/integrations/supabase/types';
 
@@ -21,13 +22,21 @@ export interface Assessment {
   updated_at: string;
 }
 
-export function useAssessments(frameworkId: string | null) {
+/**
+ * Hook to fetch assessments for the active framework.
+ * Uses the global FrameworkContext automatically.
+ */
+export function useAssessments(frameworkId?: string | null) {
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
+  
+  // Use provided frameworkId or fall back to global context
+  const activeFrameworkId = frameworkId ?? currentFramework?.id ?? null;
 
   return useQuery({
-    queryKey: ['assessments', organization?.id, frameworkId],
+    queryKey: ['assessments', organization?.id, activeFrameworkId],
     queryFn: async () => {
-      if (!organization?.id || !frameworkId) return [];
+      if (!organization?.id || !activeFrameworkId) return [];
 
       const { data, error } = await supabase
         .from('assessments')
@@ -36,12 +45,12 @@ export function useAssessments(frameworkId: string | null) {
           controls!inner(framework_id)
         `)
         .eq('organization_id', organization.id)
-        .eq('controls.framework_id', frameworkId);
+        .eq('controls.framework_id', activeFrameworkId);
 
       if (error) throw error;
       return data as (Assessment & { controls: { framework_id: string } })[];
     },
-    enabled: !!organization?.id && !!frameworkId,
+    enabled: !!organization?.id && !!activeFrameworkId,
   });
 }
 

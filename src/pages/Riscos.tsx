@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import {
   useRisks,
   useCreateRisk,
@@ -15,6 +16,7 @@ import { RiskStats } from '@/components/riscos/RiskStats';
 import { LinkControlsDialog } from '@/components/riscos/LinkControlsDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,6 +41,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, LayoutGrid, List, AlertTriangle } from 'lucide-react';
 
 export default function Riscos() {
+  const { currentFramework } = useFrameworkContext();
   const [view, setView] = useState<'grid' | 'matrix'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -117,10 +120,17 @@ export default function Riscos() {
             Gerencie os riscos de segurança da organização
           </p>
         </div>
-        <Button onClick={() => handleOpenForm()}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Risco
-        </Button>
+        <div className="flex items-center gap-2">
+          {currentFramework && (
+            <Badge variant="outline" className="text-sm px-3 py-1.5">
+              {currentFramework.name}
+            </Badge>
+          )}
+          <Button onClick={() => handleOpenForm()}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Risco
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

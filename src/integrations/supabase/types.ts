@@ -135,6 +135,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           due_date: string | null
+          framework_id: string | null
           id: string
           organization_id: string
           priority: Database["public"]["Enums"]["task_priority"]
@@ -151,6 +152,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           due_date?: string | null
+          framework_id?: string | null
           id?: string
           organization_id: string
           priority?: Database["public"]["Enums"]["task_priority"]
@@ -167,6 +169,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           due_date?: string | null
+          framework_id?: string | null
           id?: string
           organization_id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
@@ -180,6 +183,13 @@ export type Database = {
             columns: ["assessment_id"]
             isOneToOne: false
             referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plans_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "frameworks"
             referencedColumns: ["id"]
           },
           {
@@ -344,6 +354,7 @@ export type Database = {
           file_path: string
           file_size: number | null
           file_type: string | null
+          framework_id: string | null
           id: string
           name: string
           organization_id: string
@@ -359,6 +370,7 @@ export type Database = {
           file_path: string
           file_size?: number | null
           file_type?: string | null
+          framework_id?: string | null
           id?: string
           name: string
           organization_id: string
@@ -374,6 +386,7 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           file_type?: string | null
+          framework_id?: string | null
           id?: string
           name?: string
           organization_id?: string
@@ -382,6 +395,13 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "evidences_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "frameworks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "evidences_organization_id_fkey"
             columns: ["organization_id"]
@@ -650,6 +670,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          framework_id: string | null
           id: string
           inherent_impact: number
           inherent_probability: number
@@ -668,6 +689,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          framework_id?: string | null
           id?: string
           inherent_impact?: number
           inherent_probability?: number
@@ -686,6 +708,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          framework_id?: string | null
           id?: string
           inherent_impact?: number
           inherent_probability?: number
@@ -699,6 +722,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "risks_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "frameworks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "risks_organization_id_fkey"
             columns: ["organization_id"]

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 
 export interface Control {
   id: string;
@@ -12,22 +13,31 @@ export interface Control {
   order_index: number;
 }
 
-export function useControls(frameworkId: string | null) {
+/**
+ * Hook to fetch controls for a specific framework.
+ * If no frameworkId is provided, uses the global context.
+ */
+export function useControls(frameworkId?: string | null) {
+  const { currentFramework } = useFrameworkContext();
+  
+  // Use provided frameworkId or fall back to global context
+  const activeFrameworkId = frameworkId ?? currentFramework?.id ?? null;
+
   return useQuery({
-    queryKey: ['controls', frameworkId],
+    queryKey: ['controls', activeFrameworkId],
     queryFn: async () => {
-      if (!frameworkId) return [];
+      if (!activeFrameworkId) return [];
       
       const { data, error } = await supabase
         .from('controls')
         .select('*')
-        .eq('framework_id', frameworkId)
+        .eq('framework_id', activeFrameworkId)
         .order('order_index');
 
       if (error) throw error;
       return data as Control[];
     },
-    enabled: !!frameworkId,
+    enabled: !!activeFrameworkId,
   });
 }
 

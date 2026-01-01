@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import type { Database } from '@/integrations/supabase/types';
 
 type RiskTreatment = Database['public']['Enums']['risk_treatment'];
@@ -19,6 +20,7 @@ export interface Risk {
   treatment_plan: string | null;
   owner_id: string | null;
   organization_id: string;
+  framework_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,19 +32,32 @@ export interface RiskControl {
   created_at: string;
 }
 
-export function useRisks() {
+/**
+ * Hook to fetch risks.
+ * Optionally filters by framework if filterByFramework is true (default: true).
+ */
+export function useRisks(options?: { filterByFramework?: boolean }) {
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
+  const filterByFramework = options?.filterByFramework ?? true;
 
   return useQuery({
-    queryKey: ['risks', organization?.id],
+    queryKey: ['risks', organization?.id, filterByFramework ? currentFramework?.id : null],
     queryFn: async () => {
       if (!organization?.id) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('risks')
         .select('*')
         .eq('organization_id', organization.id)
         .order('created_at', { ascending: false });
+
+      // Filter by framework if enabled and framework is selected
+      if (filterByFramework && currentFramework?.id) {
+        query = query.or(`framework_id.eq.${currentFramework.id},framework_id.is.null`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Risk[];
@@ -107,9 +122,10 @@ export function useRiskControls(riskId: string | null) {
 export function useCreateRisk() {
   const queryClient = useQueryClient();
   const { organization } = useOrganization();
+  const { currentFramework } = useFrameworkContext();
 
   return useMutation({
-    mutationFn: async (risk: Omit<Risk, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'owner_id'>) => {
+    mutationFn: async (risk: Omit<Risk, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'owner_id' | 'framework_id'>) => {
       if (!organization?.id) throw new Error('No organization');
 
       const { data, error } = await supabase
@@ -117,6 +133,7 @@ export function useCreateRisk() {
         .insert({
           ...risk,
           organization_id: organization.id,
+          framework_id: currentFramework?.id || null,
         })
         .select()
         .single();

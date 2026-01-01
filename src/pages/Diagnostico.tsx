@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { useFrameworks } from '@/hooks/useFrameworks';
+import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { useControls, useControlsByCategory } from '@/hooks/useControls';
 import { useAssessments, useUpsertAssessment } from '@/hooks/useAssessments';
-import { FrameworkSelector } from '@/components/diagnostico/FrameworkSelector';
 import { ControlCard } from '@/components/diagnostico/ControlCard';
 import { DiagnosticStats } from '@/components/diagnostico/DiagnosticStats';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Search, FolderOpen, ClipboardCheck } from 'lucide-react';
 import {
@@ -22,13 +22,13 @@ type MaturityLevel = Database['public']['Enums']['maturity_level'];
 
 export default function Diagnostico() {
   const { toast } = useToast();
-  const [selectedFramework, setSelectedFramework] = useState<string | null>(null);
+  const { currentFramework } = useFrameworkContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [savingControlId, setSavingControlId] = useState<string | null>(null);
 
-  const { data: frameworks = [], isLoading: loadingFrameworks } = useFrameworks();
-  const { data: controls = [], isLoading: loadingControls } = useControls(selectedFramework);
-  const { data: assessments = [], isLoading: loadingAssessments } = useAssessments(selectedFramework);
+  // Use global framework context - no need for local state
+  const { data: controls = [], isLoading: loadingControls } = useControls();
+  const { data: assessments = [], isLoading: loadingAssessments } = useAssessments();
   const upsertAssessment = useUpsertAssessment();
 
   // Filter controls by search query
@@ -78,6 +78,8 @@ export default function Diagnostico() {
     }
   };
 
+  const isLoading = loadingControls || loadingAssessments;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -91,33 +93,16 @@ export default function Diagnostico() {
             Avalie o nível de maturidade dos controles de segurança
           </p>
         </div>
-        <FrameworkSelector
-          frameworks={frameworks}
-          selectedId={selectedFramework}
-          onSelect={setSelectedFramework}
-          isLoading={loadingFrameworks}
-        />
+        {currentFramework && (
+          <Badge variant="outline" className="text-sm px-3 py-1.5">
+            {currentFramework.name}
+            {currentFramework.version && ` v${currentFramework.version}`}
+          </Badge>
+        )}
       </div>
 
-      {/* Empty state when no framework selected */}
-      {!selectedFramework && (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <FolderOpen className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Selecione um Framework
-            </h3>
-            <p className="text-muted-foreground text-center max-w-md">
-              Escolha um framework de segurança para iniciar o diagnóstico dos controles.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Loading state */}
-      {selectedFramework && (loadingControls || loadingAssessments) && (
+      {isLoading && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
@@ -134,7 +119,7 @@ export default function Diagnostico() {
       )}
 
       {/* Controls list */}
-      {selectedFramework && !loadingControls && !loadingAssessments && (
+      {!isLoading && (
         <>
           {/* Stats */}
           <DiagnosticStats controls={controls} assessments={assessments} />
