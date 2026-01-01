@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CalendarDays, AlertCircle } from 'lucide-react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { useMemo } from 'react';
@@ -7,6 +8,7 @@ import type { ActionPlan } from '@/hooks/useActionPlans';
 
 interface UpcomingDeadlinesProps {
   actionPlans: ActionPlan[];
+  isLoading?: boolean;
 }
 
 const priorityColors: Record<string, string> = {
@@ -23,7 +25,24 @@ const priorityLabels: Record<string, string> = {
   baixa: 'Baixa',
 };
 
-export function UpcomingDeadlines({ actionPlans }: UpcomingDeadlinesProps) {
+export function UpcomingDeadlines({ actionPlans, isLoading }: UpcomingDeadlinesProps) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            Próximos Prazos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
   const deadlines = useMemo(() => {
     const today = new Date();
     

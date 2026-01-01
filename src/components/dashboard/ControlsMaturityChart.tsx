@@ -9,11 +9,13 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ChartSkeleton } from './ChartSkeleton';
 import { useMemo } from 'react';
 import type { Assessment } from '@/hooks/useAssessments';
 
 interface ControlsMaturityChartProps {
   assessments: Assessment[];
+  isLoading?: boolean;
 }
 
 const MATURITY_COLORS = [
@@ -25,7 +27,10 @@ const MATURITY_COLORS = [
   'hsl(var(--maturity-5))',
 ];
 
-export function ControlsMaturityChart({ assessments }: ControlsMaturityChartProps) {
+export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturityChartProps) {
+  if (isLoading) {
+    return <ChartSkeleton type="bar" height={250} description />;
+  }
   const data = useMemo(() => {
     const levelCounts = [0, 0, 0, 0, 0, 0];
     

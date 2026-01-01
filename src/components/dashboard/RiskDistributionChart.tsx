@@ -7,11 +7,13 @@ import {
   Tooltip,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartSkeleton } from './ChartSkeleton';
 import { useMemo } from 'react';
 import type { Risk } from '@/hooks/useRisks';
 
 interface RiskDistributionChartProps {
   risks: Risk[];
+  isLoading?: boolean;
 }
 
 function getRiskLevel(probability: number, impact: number): 'critical' | 'high' | 'medium' | 'low' {
@@ -22,7 +24,10 @@ function getRiskLevel(probability: number, impact: number): 'critical' | 'high' 
   return 'low';
 }
 
-export function RiskDistributionChart({ risks }: RiskDistributionChartProps) {
+export function RiskDistributionChart({ risks, isLoading }: RiskDistributionChartProps) {
+  if (isLoading) {
+    return <ChartSkeleton type="pie" height={250} />;
+  }
   const data = useMemo(() => {
     const counts = { critical: 0, high: 0, medium: 0, low: 0 };
 

@@ -32,11 +32,13 @@ export default function Dashboard() {
   const { currentFramework } = useFrameworkContext();
   
   // Fetch real data from database
-  const { data: controls = [] } = useControls();
-  const { data: assessments = [] } = useAssessments();
-  const { data: risks = [] } = useRisks();
+  const { data: controls = [], isLoading: controlsLoading } = useControls();
+  const { data: assessments = [], isLoading: assessmentsLoading } = useAssessments();
+  const { data: risks = [], isLoading: risksLoading } = useRisks();
   const { data: evidences = [] } = useEvidences();
-  const { data: actionPlans = [] } = useActionPlans();
+  const { data: actionPlans = [], isLoading: actionPlansLoading } = useActionPlans();
+
+  const isChartsLoading = controlsLoading || assessmentsLoading || risksLoading || actionPlansLoading;
 
   // Calculate real metrics
   const metrics = useMemo(() => {
@@ -201,21 +203,25 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Row 1 */}
-      <MaturityTrendChart assessments={assessments} frameworkName={currentFramework?.name} />
+      <MaturityTrendChart 
+        assessments={assessments} 
+        frameworkName={currentFramework?.name} 
+        isLoading={assessmentsLoading}
+      />
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <ComplianceRadarChart controls={controls} assessments={assessments} />
-        <RiskDistributionChart risks={risks} />
-        <ActionPlanStatusChart actionPlans={actionPlans} />
+        <ComplianceRadarChart controls={controls} assessments={assessments} isLoading={isChartsLoading} />
+        <RiskDistributionChart risks={risks} isLoading={risksLoading} />
+        <ActionPlanStatusChart actionPlans={actionPlans} isLoading={actionPlansLoading} />
       </div>
 
       {/* Charts Row 3 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ControlsMaturityChart assessments={assessments} />
+        <ControlsMaturityChart assessments={assessments} isLoading={assessmentsLoading} />
         <div className="grid grid-rows-2 gap-4">
           <RecentActivity />
-          <UpcomingDeadlines actionPlans={actionPlans} />
+          <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />
         </div>
       </div>
 

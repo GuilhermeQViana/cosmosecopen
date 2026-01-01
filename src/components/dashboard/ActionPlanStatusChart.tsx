@@ -9,11 +9,13 @@ import {
   Cell,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartSkeleton } from './ChartSkeleton';
 import { useMemo } from 'react';
 import type { ActionPlan } from '@/hooks/useActionPlans';
 
 interface ActionPlanStatusChartProps {
   actionPlans: ActionPlan[];
+  isLoading?: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -24,7 +26,10 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   done: { label: 'Concluído', color: 'hsl(var(--chart-2))' },
 };
 
-export function ActionPlanStatusChart({ actionPlans }: ActionPlanStatusChartProps) {
+export function ActionPlanStatusChart({ actionPlans, isLoading }: ActionPlanStatusChartProps) {
+  if (isLoading) {
+    return <ChartSkeleton type="bar" height={250} />;
+  }
   const data = useMemo(() => {
     const counts: Record<string, number> = {
       backlog: 0,
