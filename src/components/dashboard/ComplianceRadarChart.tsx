@@ -8,6 +8,7 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartSkeleton } from './ChartSkeleton';
 import { useMemo } from 'react';
 import type { Assessment } from '@/hooks/useAssessments';
 
@@ -19,6 +20,7 @@ interface Control {
 interface ComplianceRadarChartProps {
   controls: Control[];
   assessments: Assessment[];
+  isLoading?: boolean;
 }
 
 // Convert maturity level to percentage
@@ -27,7 +29,10 @@ function maturityToPercent(level: string): number {
   return (numLevel / 5) * 100;
 }
 
-export function ComplianceRadarChart({ controls, assessments }: ComplianceRadarChartProps) {
+export function ComplianceRadarChart({ controls, assessments, isLoading }: ComplianceRadarChartProps) {
+  if (isLoading) {
+    return <ChartSkeleton type="radar" height={300} />;
+  }
   const data = useMemo(() => {
     // Group controls by category
     const categoryMap = new Map<string, { controlIds: Set<string> }>();

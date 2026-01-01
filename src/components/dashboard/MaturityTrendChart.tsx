@@ -9,12 +9,14 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ChartSkeleton } from './ChartSkeleton';
 import { useMemo } from 'react';
 import type { Assessment } from '@/hooks/useAssessments';
 
 interface MaturityTrendChartProps {
   assessments: Assessment[];
   frameworkName?: string;
+  isLoading?: boolean;
 }
 
 // Convert maturity level to percentage
@@ -23,7 +25,14 @@ function maturityToPercent(level: string): number {
   return (numLevel / 5) * 100;
 }
 
-export function MaturityTrendChart({ assessments, frameworkName }: MaturityTrendChartProps) {
+export function MaturityTrendChart({ assessments, frameworkName, isLoading }: MaturityTrendChartProps) {
+  if (isLoading) {
+    return (
+      <div className="col-span-full">
+        <ChartSkeleton type="area" height={200} description />
+      </div>
+    );
+  }
   const data = useMemo(() => {
     if (assessments.length === 0) return [];
 
