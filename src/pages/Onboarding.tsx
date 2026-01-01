@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
@@ -13,9 +13,28 @@ import { Building2, ArrowRight, Loader2, Shield } from 'lucide-react';
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { createOrganization } = useOrganization();
+  const { createOrganization, organizations, loading: orgLoading } = useOrganization();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+
+  // Redirecionar se usuário já tem organizações
+  useEffect(() => {
+    if (!orgLoading && organizations.length > 0) {
+      navigate('/selecionar-organizacao', { replace: true });
+    }
+  }, [organizations, orgLoading, navigate]);
+
+  // Mostrar loading enquanto verifica organizações
+  if (orgLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Verificando...</p>
+        </div>
+      </div>
+    );
+  }
   const [orgName, setOrgName] = useState('');
   const [orgDescription, setOrgDescription] = useState('');
 

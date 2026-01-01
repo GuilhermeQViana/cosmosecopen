@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -241,6 +241,13 @@ export default function SelecionarOrganizacao() {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // Redirecionar para onboarding se não tiver organizações
+  useEffect(() => {
+    if (!loading && organizations.length === 0) {
+      navigate('/onboarding', { replace: true });
+    }
+  }, [organizations, loading, navigate]);
 
   if (loading) {
     return (
