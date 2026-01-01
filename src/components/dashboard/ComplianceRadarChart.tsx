@@ -8,21 +8,78 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMemo } from 'react';
+import type { Assessment } from '@/hooks/useAssessments';
 
-const data = [
-  { category: 'Governança', current: 75, target: 90 },
-  { category: 'Identificar', current: 68, target: 85 },
-  { category: 'Proteger', current: 72, target: 88 },
-  { category: 'Detectar', current: 55, target: 80 },
-  { category: 'Responder', current: 48, target: 75 },
-  { category: 'Recuperar', current: 62, target: 82 },
-];
+interface Control {
+  id: string;
+  category: string | null;
+}
 
-export function ComplianceRadarChart() {
+interface ComplianceRadarChartProps {
+  controls: Control[];
+  assessments: Assessment[];
+}
+
+// Convert maturity level to percentage
+function maturityToPercent(level: string): number {
+  const numLevel = parseInt(level, 10);
+  return (numLevel / 5) * 100;
+}
+
+export function ComplianceRadarChart({ controls, assessments }: ComplianceRadarChartProps) {
+  const data = useMemo(() => {
+    // Group controls by category
+    const categoryMap = new Map<string, { controlIds: Set<string> }>();
+    
+    controls.forEach(control => {
+      const category = control.category || 'Outros';
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, { controlIds: new Set() });
+      }
+      categoryMap.get(category)!.controlIds.add(control.id);
+    });
+
+    // Calculate average maturity per category
+    const chartData: { category: string; current: number; target: number }[] = [];
+
+    categoryMap.forEach((value, category) => {
+      const categoryAssessments = assessments.filter(a => value.controlIds.has(a.control_id));
+      
+      if (categoryAssessments.length > 0) {
+        const avgCurrent = categoryAssessments.reduce((sum, a) => sum + maturityToPercent(a.maturity_level), 0) / categoryAssessments.length;
+        const avgTarget = categoryAssessments.reduce((sum, a) => sum + maturityToPercent(a.target_maturity), 0) / categoryAssessments.length;
+        
+        chartData.push({
+          category: category.length > 15 ? category.substring(0, 15) + '...' : category,
+          current: Math.round(avgCurrent),
+          target: Math.round(avgTarget),
+        });
+      }
+    });
+
+    return chartData;
+  }, [controls, assessments]);
+
+  if (data.length === 0) {
+    return (
+      <Card className="col-span-full lg:col-span-1">
+        <CardHeader>
+          <CardTitle className="text-base">Maturidade por Categoria</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center h-[300px]">
+          <p className="text-sm text-muted-foreground text-center">
+            Avalie controles no Diagnóstico para visualizar a maturidade por categoria.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="col-span-full lg:col-span-1">
       <CardHeader>
-        <CardTitle className="text-base">Maturidade por Função NIST</CardTitle>
+        <CardTitle className="text-base">Maturidade por Categoria</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
