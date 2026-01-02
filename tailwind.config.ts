@@ -183,6 +183,40 @@ export default {
             boxShadow: "0 0 20px hsl(var(--secondary) / 0.3)" 
           },
         },
+        "stagger-fade-up": {
+          "0%": { 
+            opacity: "0", 
+            transform: "translateY(20px)" 
+          },
+          "100%": { 
+            opacity: "1", 
+            transform: "translateY(0)" 
+          },
+        },
+        "stagger-fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "stagger-scale-in": {
+          "0%": { 
+            opacity: "0", 
+            transform: "scale(0.9)" 
+          },
+          "100%": { 
+            opacity: "1", 
+            transform: "scale(1)" 
+          },
+        },
+        "stagger-slide-right": {
+          "0%": { 
+            opacity: "0", 
+            transform: "translateX(-20px)" 
+          },
+          "100%": { 
+            opacity: "1", 
+            transform: "translateX(0)" 
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -196,6 +230,10 @@ export default {
         "shooting-star": "shooting-star 2s ease-out infinite",
         "shimmer": "shimmer 2s ease-in-out infinite",
         "cosmic-pulse": "cosmic-pulse 2s ease-in-out infinite",
+        "stagger-fade-up": "stagger-fade-up 0.5s ease-out",
+        "stagger-fade-in": "stagger-fade-in 0.4s ease-out",
+        "stagger-scale-in": "stagger-scale-in 0.4s ease-out",
+        "stagger-slide-right": "stagger-slide-right 0.5s ease-out",
       },
       boxShadow: {
         "glow-sm": "0 0 10px hsl(var(--primary) / 0.3)",
