@@ -3,16 +3,17 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Edit, Trash2, Link2, TrendingDown } from 'lucide-react';
+import { Edit, Trash2, Link2, TrendingDown, Eye } from 'lucide-react';
 
 interface RiskCardProps {
   risk: Risk;
   onEdit: (risk: Risk) => void;
   onDelete: (risk: Risk) => void;
   onLinkControls: (risk: Risk) => void;
+  onViewDetails?: (risk: Risk) => void;
 }
 
-export function RiskCard({ risk, onEdit, onDelete, onLinkControls }: RiskCardProps) {
+export function RiskCard({ risk, onEdit, onDelete, onLinkControls, onViewDetails }: RiskCardProps) {
   const inherentLevel = calculateRiskLevel(risk.inherent_probability, risk.inherent_impact);
   const residualLevel = risk.residual_probability && risk.residual_impact
     ? calculateRiskLevel(risk.residual_probability, risk.residual_impact)
@@ -21,7 +22,7 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls }: RiskCardPro
   const treatmentLabel = TREATMENT_OPTIONS.find(t => t.value === risk.treatment)?.label || risk.treatment;
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewDetails?.(risk)}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -38,11 +39,22 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls }: RiskCardPro
             <h3 className="font-semibold text-sm leading-tight">{risk.title}</h3>
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onViewDetails && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => { e.stopPropagation(); onViewDetails(risk); }}
+                title="Ver detalhes"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => onLinkControls(risk)}
+              onClick={(e) => { e.stopPropagation(); onLinkControls(risk); }}
               title="Vincular controles"
             >
               <Link2 className="h-4 w-4" />
@@ -51,7 +63,7 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls }: RiskCardPro
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => onEdit(risk)}
+              onClick={(e) => { e.stopPropagation(); onEdit(risk); }}
               title="Editar"
             >
               <Edit className="h-4 w-4" />
@@ -60,7 +72,7 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls }: RiskCardPro
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-destructive hover:text-destructive"
-              onClick={() => onDelete(risk)}
+              onClick={(e) => { e.stopPropagation(); onDelete(risk); }}
               title="Excluir"
             >
               <Trash2 className="h-4 w-4" />
