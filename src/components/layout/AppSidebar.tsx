@@ -47,6 +47,7 @@ import {
   Landmark,
   Layers,
 } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 const mainNavItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
@@ -299,7 +300,7 @@ export function AppSidebar() {
                   </RouterNavLink>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
+              <DropdownMenuItem
                   onClick={() => signOut()}
                   className="text-destructive focus:text-destructive cursor-pointer"
                 >
@@ -308,6 +309,9 @@ export function AppSidebar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          </SidebarMenuItem>
+          <SidebarMenuItem className="flex justify-center py-2">
+            <ThemeToggle />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

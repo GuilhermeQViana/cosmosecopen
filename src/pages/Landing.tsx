@@ -4,6 +4,7 @@ import { FrameworksSection } from '@/components/landing/FrameworksSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { BenefitsSection } from '@/components/landing/BenefitsSection';
+import { PricingSection } from '@/components/landing/PricingSection';
 import { Footer } from '@/components/landing/Footer';
 
 export default function Landing() {
@@ -16,6 +17,7 @@ export default function Landing() {
         <FeaturesSection />
         <HowItWorksSection />
         <BenefitsSection />
+        <PricingSection />
       </main>
       <Footer />
     </div>
