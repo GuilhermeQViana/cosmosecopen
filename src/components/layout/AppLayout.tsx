@@ -5,7 +5,9 @@ import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
+import { CommandPalette } from '@/components/CommandPalette';
+import { Button } from '@/components/ui/button';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -68,13 +70,14 @@ export function AppLayout() {
 
   return (
     <SidebarProvider>
+      <CommandPalette />
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
           <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4 mx-2" />
-            <Breadcrumb>
+            <Breadcrumb className="flex-1">
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
@@ -85,6 +88,25 @@ export function AppLayout() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden md:flex items-center gap-2 text-muted-foreground"
+              onClick={() => {
+                const event = new KeyboardEvent('keydown', {
+                  key: 'k',
+                  metaKey: true,
+                  bubbles: true,
+                });
+                document.dispatchEvent(event);
+              }}
+            >
+              <Search className="h-4 w-4" />
+              <span>Buscar...</span>
+              <kbd className="pointer-events-none ml-2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </Button>
           </header>
           <main className="flex-1 p-6 overflow-auto">
             <Outlet />

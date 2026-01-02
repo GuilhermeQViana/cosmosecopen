@@ -2,6 +2,7 @@ import { useLocation, NavLink as RouterNavLink, useNavigate } from 'react-router
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useFrameworkContext, FrameworkCode } from '@/contexts/FrameworkContext';
+import { useMenuBadges } from '@/hooks/useMenuBadges';
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
@@ -49,16 +50,23 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
-const mainNavItems = [
+type NavItem = {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badgeKey?: 'diagnostico' | 'riscos' | 'planoAcao';
+};
+
+const mainNavItems: NavItem[] = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Diagnóstico', url: '/diagnostico', icon: ClipboardCheck },
-  { title: 'Riscos', url: '/riscos', icon: AlertTriangle },
+  { title: 'Diagnóstico', url: '/diagnostico', icon: ClipboardCheck, badgeKey: 'diagnostico' },
+  { title: 'Riscos', url: '/riscos', icon: AlertTriangle, badgeKey: 'riscos' },
   { title: 'Evidências', url: '/evidencias', icon: FileCheck },
-  { title: 'Plano de Ação', url: '/plano-acao', icon: ListTodo },
+  { title: 'Plano de Ação', url: '/plano-acao', icon: ListTodo, badgeKey: 'planoAcao' },
   { title: 'Relatórios', url: '/relatorios', icon: FileBarChart },
 ];
 
-const configNavItems = [
+const configNavItems: NavItem[] = [
   { title: 'Mapeamento', url: '/mapeamento', icon: Map },
   { title: 'Equipe', url: '/equipe', icon: Users },
   { title: 'Auditoria', url: '/auditoria', icon: Activity },
@@ -83,6 +91,7 @@ export function AppSidebar() {
   const { user, signOut } = useAuth();
   const { organization, organizations, setActiveOrganization } = useOrganization();
   const { currentFramework, frameworks, setFramework } = useFrameworkContext();
+  const { badges } = useMenuBadges();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
 
@@ -221,20 +230,35 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/50">Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname === item.url}
-                    tooltip={item.title}
-                  >
-                    <RouterNavLink to={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </RouterNavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainNavItems.map((item) => {
+                const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
+                const isCritical = item.badgeKey === 'riscos' || item.badgeKey === 'planoAcao';
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location.pathname === item.url}
+                      tooltip={item.title}
+                    >
+                      <RouterNavLink to={item.url} className="relative">
+                        <item.icon className="w-4 h-4" />
+                        <span className="flex-1">{item.title}</span>
+                        {badgeCount > 0 && (
+                          <Badge
+                            variant={isCritical ? "destructive" : "secondary"}
+                            className={cn(
+                              "ml-auto h-5 min-w-5 px-1.5 text-[10px] font-medium",
+                              !isCritical && "bg-primary/20 text-primary hover:bg-primary/30"
+                            )}
+                          >
+                            {badgeCount > 99 ? '99+' : badgeCount}
+                          </Badge>
+                        )}
+                      </RouterNavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

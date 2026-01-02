@@ -25,6 +25,8 @@ import { ActionPlanStatusChart } from '@/components/dashboard/ActionPlanStatusCh
 import { ControlsMaturityChart } from '@/components/dashboard/ControlsMaturityChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines';
+import { AttentionSection } from '@/components/dashboard/AttentionSection';
+import { NextStepsWidget } from '@/components/dashboard/NextStepsWidget';
 import { useMemo } from 'react';
 
 export default function Dashboard() {
@@ -163,6 +165,15 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Attention Section */}
+      <AttentionSection
+        controls={controls}
+        assessments={assessments}
+        risks={risks}
+        actionPlans={actionPlans}
+        isLoading={isChartsLoading}
+      />
+
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((metric) => (
@@ -217,9 +228,17 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Row 3 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <ControlsMaturityChart assessments={assessments} isLoading={assessmentsLoading} />
-        <div className="grid grid-rows-2 gap-4">
+        <NextStepsWidget
+          controls={controls}
+          assessments={assessments}
+          risks={risks}
+          actionPlans={actionPlans}
+          evidences={evidences}
+          isLoading={isChartsLoading}
+        />
+        <div className="space-y-4">
           <RecentActivity />
           <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />
         </div>
