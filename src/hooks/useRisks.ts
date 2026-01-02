@@ -6,6 +6,12 @@ import type { Database } from '@/integrations/supabase/types';
 
 type RiskTreatment = Database['public']['Enums']['risk_treatment'];
 
+export interface RiskOwner {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 export interface Risk {
   id: string;
   code: string;
@@ -23,6 +29,8 @@ export interface Risk {
   framework_id: string | null;
   created_at: string;
   updated_at: string;
+  owner?: RiskOwner | null;
+  controls_count?: number;
 }
 
 export interface RiskControl {
@@ -60,7 +68,41 @@ export function useRisks(options?: { filterByFramework?: boolean }) {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data as Risk[];
+      
+      if (!data || data.length === 0) return [];
+      
+      const riskIds = data.map(r => r.id);
+      const ownerIds = data.map(r => r.owner_id).filter(Boolean) as string[];
+      
+      // Fetch controls count for each risk
+      const { data: controlsData } = await supabase
+        .from('risk_controls')
+        .select('risk_id')
+        .in('risk_id', riskIds);
+      
+      const countsMap = new Map<string, number>();
+      controlsData?.forEach(rc => {
+        countsMap.set(rc.risk_id, (countsMap.get(rc.risk_id) || 0) + 1);
+      });
+      
+      // Fetch owner profiles
+      const ownersMap = new Map<string, RiskOwner>();
+      if (ownerIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .in('id', ownerIds);
+        
+        profilesData?.forEach(p => {
+          ownersMap.set(p.id, p);
+        });
+      }
+      
+      return data.map(risk => ({
+        ...risk,
+        controls_count: countsMap.get(risk.id) || 0,
+        owner: risk.owner_id ? ownersMap.get(risk.owner_id) || null : null,
+      })) as Risk[];
     },
     enabled: !!organization?.id,
   });
