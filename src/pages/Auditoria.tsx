@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useAccessLogs } from '@/hooks/useAccessLogs';
+import { useAccessLogs, useAccessLogsStats, type AccessLogFilters } from '@/hooks/useAccessLogs';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,26 +21,46 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Search,
   Activity,
-  Shield,
-  FileText,
-  AlertTriangle,
-  CheckCircle2,
-  LogIn,
-  LogOut,
+  Clock,
+  Plus,
   Edit,
   Trash2,
   Eye,
-  Plus,
   Download,
   Loader2,
-  Clock,
-  Filter,
+  CalendarIcon,
+  ChevronDown,
+  ChevronRight,
+  LogIn,
+  LogOut,
+  CheckCircle2,
+  X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const actionIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   login: LogIn,
@@ -87,40 +107,87 @@ const entityLabels: Record<string, string> = {
 
 export default function Auditoria() {
   const { organization } = useOrganization();
-  const { data: logs, isLoading } = useAccessLogs();
   
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
   const [entityFilter, setEntityFilter] = useState('all');
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  const stats = useMemo(() => {
-    if (!logs) return { total: 0, today: 0, creates: 0, updates: 0, deletes: 0 };
-    
-    const today = new Date().toDateString();
-    return {
-      total: logs.length,
-      today: logs.filter(l => new Date(l.created_at).toDateString() === today).length,
-      creates: logs.filter(l => l.action === 'create').length,
-      updates: logs.filter(l => l.action === 'update').length,
-      deletes: logs.filter(l => l.action === 'delete').length,
-    };
-  }, [logs]);
+  const filters: AccessLogFilters = useMemo(() => ({
+    action: actionFilter,
+    entityType: entityFilter,
+    search: searchTerm,
+    startDate,
+    endDate,
+  }), [actionFilter, entityFilter, searchTerm, startDate, endDate]);
 
-  const filteredLogs = useMemo(() => {
-    if (!logs) return [];
-    
-    return logs.filter(log => {
-      const matchesSearch = searchTerm === '' ||
-        log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.entity_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
+  const { data: logsResponse, isLoading } = useAccessLogs({ page, pageSize: 15, filters });
+  const { data: stats } = useAccessLogsStats();
 
-      const matchesAction = actionFilter === 'all' || log.action === actionFilter;
-      const matchesEntity = entityFilter === 'all' || log.entity_type === entityFilter;
+  const logs = logsResponse?.data || [];
+  const totalPages = logsResponse?.totalPages || 1;
+  const totalCount = logsResponse?.totalCount || 0;
 
-      return matchesSearch && matchesAction && matchesEntity;
+  const toggleRow = (id: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
     });
-  }, [logs, searchTerm, actionFilter, entityFilter]);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setActionFilter('all');
+    setEntityFilter('all');
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setPage(1);
+  };
+
+  const hasActiveFilters = actionFilter !== 'all' || entityFilter !== 'all' || startDate || endDate;
+
+  const handleExport = () => {
+    if (logs.length === 0) {
+      toast.error('Nenhum log para exportar');
+      return;
+    }
+
+    const headers = ['Data/Hora', 'Ação', 'Entidade', 'ID Entidade', 'Usuário', 'IP', 'Detalhes'];
+    const rows = logs.map(log => [
+      format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
+      actionLabels[log.action] || log.action,
+      log.entity_type ? (entityLabels[log.entity_type] || log.entity_type) : '-',
+      log.entity_id || '-',
+      log.profile?.full_name || 'Sistema',
+      log.ip_address || '-',
+      log.details ? JSON.stringify(log.details) : '-',
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `logs-auditoria-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success('Logs exportados com sucesso!');
+  };
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'S';
@@ -151,7 +218,7 @@ export default function Auditoria() {
                 <Activity className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-2xl font-bold">{stats?.total || 0}</p>
                 <p className="text-xs text-muted-foreground">Total de Logs</p>
               </div>
             </div>
@@ -164,7 +231,7 @@ export default function Auditoria() {
                 <Clock className="h-5 w-5 text-[hsl(var(--chart-6))]" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.today}</p>
+                <p className="text-2xl font-bold">{stats?.today || 0}</p>
                 <p className="text-xs text-muted-foreground">Hoje</p>
               </div>
             </div>
@@ -177,7 +244,7 @@ export default function Auditoria() {
                 <Plus className="h-5 w-5 text-[hsl(var(--chart-1))]" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.creates}</p>
+                <p className="text-2xl font-bold">{stats?.creates || 0}</p>
                 <p className="text-xs text-muted-foreground">Criações</p>
               </div>
             </div>
@@ -190,7 +257,7 @@ export default function Auditoria() {
                 <Edit className="h-5 w-5 text-[hsl(var(--warning))]" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.updates}</p>
+                <p className="text-2xl font-bold">{stats?.updates || 0}</p>
                 <p className="text-xs text-muted-foreground">Atualizações</p>
               </div>
             </div>
@@ -203,7 +270,7 @@ export default function Auditoria() {
                 <Trash2 className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.deletes}</p>
+                <p className="text-2xl font-bold">{stats?.deletes || 0}</p>
                 <p className="text-xs text-muted-foreground">Exclusões</p>
               </div>
             </div>
@@ -220,11 +287,14 @@ export default function Auditoria() {
               <Input
                 placeholder="Buscar por ação, entidade ou usuário..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setPage(1);
+                }}
                 className="pl-9"
               />
             </div>
-            <Select value={actionFilter} onValueChange={setActionFilter}>
+            <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(1); }}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Ação" />
               </SelectTrigger>
@@ -238,7 +308,7 @@ export default function Auditoria() {
                 <SelectItem value="logout">Logout</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={entityFilter} onValueChange={setEntityFilter}>
+            <Select value={entityFilter} onValueChange={(v) => { setEntityFilter(v); setPage(1); }}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Entidade" />
               </SelectTrigger>
@@ -251,7 +321,52 @@ export default function Auditoria() {
                 <SelectItem value="user">Usuário</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="icon">
+            
+            {/* Date Range Filters */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-36 justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, 'dd/MM/yyyy') : 'Data início'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={(date) => { setStartDate(date); setPage(1); }}
+                  initialFocus
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-36 justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, 'dd/MM/yyyy') : 'Data fim'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={(date) => { setEndDate(date); setPage(1); }}
+                  initialFocus
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="mr-1 h-4 w-4" />
+                Limpar
+              </Button>
+            )}
+
+            <Button variant="outline" size="icon" onClick={handleExport} title="Exportar CSV">
               <Download className="h-4 w-4" />
             </Button>
           </div>
@@ -263,7 +378,8 @@ export default function Auditoria() {
         <CardHeader>
           <CardTitle>Registro de Atividades</CardTitle>
           <CardDescription>
-            {filteredLogs.length} registro{filteredLogs.length !== 1 ? 's' : ''} encontrado{filteredLogs.length !== 1 ? 's' : ''}
+            {totalCount} registro{totalCount !== 1 ? 's' : ''} encontrado{totalCount !== 1 ? 's' : ''}
+            {totalPages > 1 && ` • Página ${page} de ${totalPages}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -271,7 +387,7 @@ export default function Auditoria() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : filteredLogs.length === 0 ? (
+          ) : logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Activity className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium">Nenhum registro encontrado</p>
@@ -280,77 +396,163 @@ export default function Auditoria() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ação</TableHead>
-                  <TableHead>Entidade</TableHead>
-                  <TableHead>Usuário</TableHead>
-                  <TableHead>IP</TableHead>
-                  <TableHead>Data/Hora</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredLogs.map((log) => {
-                  const ActionIcon = actionIcons[log.action] || Activity;
-                  return (
-                    <TableRow key={log.id}>
-                      <TableCell>
-                        <Badge variant="outline" className={actionColors[log.action] || ''}>
-                          <ActionIcon className="mr-1 h-3 w-3" />
-                          {actionLabels[log.action] || log.action}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {log.entity_type ? (
-                          <div>
-                            <p className="font-medium text-sm">
-                              {entityLabels[log.entity_type] || log.entity_type}
-                            </p>
-                            {log.entity_id && (
-                              <p className="text-xs text-muted-foreground font-mono">
-                                {log.entity_id.slice(0, 8)}...
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarImage src={log.profile?.avatar_url || undefined} />
-                            <AvatarFallback className="text-xs">
-                              {getInitials(log.profile?.full_name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">
-                            {log.profile?.full_name || 'Sistema'}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {log.ip_address || '-'}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="text-sm">
-                            {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm')}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(log.created_at), {
-                              addSuffix: true,
-                              locale: ptBR,
-                            })}
-                          </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-8"></TableHead>
+                    <TableHead>Ação</TableHead>
+                    <TableHead>Entidade</TableHead>
+                    <TableHead>Usuário</TableHead>
+                    <TableHead>IP</TableHead>
+                    <TableHead>Data/Hora</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {logs.map((log) => {
+                    const ActionIcon = actionIcons[log.action] || Activity;
+                    const isExpanded = expandedRows.has(log.id);
+                    const hasDetails = log.details && Object.keys(log.details).length > 0;
+
+                    return (
+                      <Collapsible key={log.id} asChild open={isExpanded}>
+                        <>
+                          <TableRow 
+                            className={hasDetails ? 'cursor-pointer hover:bg-muted/50' : ''}
+                            onClick={() => hasDetails && toggleRow(log.id)}
+                          >
+                            <TableCell className="w-8">
+                              {hasDetails && (
+                                <CollapsibleTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                    {isExpanded ? (
+                                      <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </CollapsibleTrigger>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={actionColors[log.action] || ''}>
+                                <ActionIcon className="mr-1 h-3 w-3" />
+                                {actionLabels[log.action] || log.action}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {log.entity_type ? (
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {entityLabels[log.entity_type] || log.entity_type}
+                                  </p>
+                                  {log.entity_id && (
+                                    <p className="text-xs text-muted-foreground font-mono">
+                                      {log.entity_id.slice(0, 8)}...
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={log.profile?.avatar_url || undefined} />
+                                  <AvatarFallback className="text-xs">
+                                    {getInitials(log.profile?.full_name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm">
+                                  {log.profile?.full_name || 'Sistema'}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-muted-foreground">
+                              {log.ip_address || '-'}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="text-sm">
+                                  {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm')}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatDistanceToNow(new Date(log.created_at), {
+                                    addSuffix: true,
+                                    locale: ptBR,
+                                  })}
+                                </p>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          <CollapsibleContent asChild>
+                            <TableRow className="bg-muted/30">
+                              <TableCell colSpan={6} className="py-3">
+                                <div className="px-4">
+                                  <p className="text-xs font-medium text-muted-foreground mb-2">Detalhes da ação:</p>
+                                  <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono">
+                                    {JSON.stringify(log.details, null, 2)}
+                                  </pre>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          </CollapsibleContent>
+                        </>
+                      </Collapsible>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-4 flex justify-center">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setPage(p => Math.max(1, p - 1))}
+                          className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                      
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (page <= 3) {
+                          pageNum = i + 1;
+                        } else if (page >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = page - 2 + i;
+                        }
+                        
+                        return (
+                          <PaginationItem key={pageNum}>
+                            <PaginationLink
+                              onClick={() => setPage(pageNum)}
+                              isActive={page === pageNum}
+                              className="cursor-pointer"
+                            >
+                              {pageNum}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                          className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
