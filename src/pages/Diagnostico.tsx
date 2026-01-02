@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { useControls, useControlsByCategory } from '@/hooks/useControls';
-import { useAssessments, useUpsertAssessment } from '@/hooks/useAssessments';
+import { useAssessments, useUpsertAssessment, useResetAssessments, useBulkUpsertAssessments } from '@/hooks/useAssessments';
 import { ControlCard } from '@/components/diagnostico/ControlCard';
 import { ControlsTable } from '@/components/diagnostico/ControlsTable';
 import { DiagnosticStats } from '@/components/diagnostico/DiagnosticStats';
+import { DiagnosticActionBar } from '@/components/diagnostico/DiagnosticActionBar';
 import { StatusFilter, StatusFilterValue } from '@/components/diagnostico/StatusFilter';
 import { CategoryProgress } from '@/components/diagnostico/CategoryProgress';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Search, FolderOpen, ClipboardCheck, LayoutGrid, Table2 } from 'lucide-react';
 import {
   Accordion,
@@ -27,17 +28,27 @@ type MaturityLevel = Database['public']['Enums']['maturity_level'];
 
 type ViewMode = 'cards' | 'table';
 
+// Pending change type for tracking unsaved edits
+interface PendingChange {
+  controlId: string;
+  maturityLevel: MaturityLevel;
+  observations?: string;
+}
+
 export default function Diagnostico() {
-  const { toast } = useToast();
   const { currentFramework } = useFrameworkContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [savingControlId, setSavingControlId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('all');
+  const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map());
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
 
   const { data: controls = [], isLoading: loadingControls } = useControls();
   const { data: assessments = [], isLoading: loadingAssessments } = useAssessments();
   const upsertAssessment = useUpsertAssessment();
+  const resetAssessments = useResetAssessments();
+  const bulkUpsert = useBulkUpsertAssessments();
 
   // Map assessments by control ID for quick lookup
   const assessmentMap = new Map(
@@ -92,29 +103,101 @@ export default function Diagnostico() {
         maturityLevel,
         observations,
       });
-      toast({
-        title: 'Avaliação salva',
-        description: 'A avaliação do controle foi atualizada com sucesso.',
-      });
+      toast.success('Avaliação salva com sucesso');
     } catch (error: any) {
-      toast({
-        title: 'Erro ao salvar',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Erro ao salvar avaliação');
     } finally {
       setSavingControlId(null);
     }
   };
 
   const handleEditControl = (control: any, assessment: any) => {
-    // Find the accordion item and expand it, or show a modal
-    // For now, we'll scroll to the control
     const element = document.getElementById(`control-${control.id}`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
+
+  // Bulk save all pending changes
+  const handleBulkSave = useCallback(async () => {
+    if (pendingChanges.size === 0) return;
+
+    setIsBulkSaving(true);
+    try {
+      const changes = Array.from(pendingChanges.values()).map((c) => ({
+        control_id: c.controlId,
+        maturity_level: c.maturityLevel,
+        observations: c.observations,
+      }));
+
+      await bulkUpsert.mutateAsync(changes);
+      setPendingChanges(new Map());
+      toast.success(`${changes.length} avaliações salvas com sucesso`);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao salvar avaliações');
+    } finally {
+      setIsBulkSaving(false);
+    }
+  }, [pendingChanges, bulkUpsert]);
+
+  // Reset all assessments
+  const handleReset = useCallback(async () => {
+    try {
+      await resetAssessments.mutateAsync();
+      setPendingChanges(new Map());
+      toast.success('Todas as avaliações foram resetadas');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao resetar avaliações');
+    }
+  }, [resetAssessments]);
+
+  // Generate random assessments
+  const handleGenerateRandom = useCallback(async () => {
+    if (controls.length === 0) return;
+
+    const maturityLevels: MaturityLevel[] = ['0', '1', '2', '3', '4', '5'];
+    const randomData = controls.map((control) => ({
+      control_id: control.id,
+      maturity_level: maturityLevels[Math.floor(Math.random() * maturityLevels.length)],
+    }));
+
+    setIsBulkSaving(true);
+    try {
+      await bulkUpsert.mutateAsync(randomData);
+      setPendingChanges(new Map());
+      toast.success(`${controls.length} avaliações geradas aleatoriamente`);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao gerar dados aleatórios');
+    } finally {
+      setIsBulkSaving(false);
+    }
+  }, [controls, bulkUpsert]);
+
+  // Restore from snapshot
+  const handleRestoreSnapshot = useCallback(async (snapshotData: unknown[]) => {
+    if (!Array.isArray(snapshotData)) return;
+
+    type ConformityStatus = Database['public']['Enums']['conformity_status'];
+
+    const validData = snapshotData.map((item: any) => ({
+      control_id: item.control_id as string,
+      maturity_level: item.maturity_level as MaturityLevel,
+      target_maturity: item.target_maturity as MaturityLevel | undefined,
+      status: item.status as ConformityStatus | undefined,
+      observations: item.observations as string | null | undefined,
+    }));
+
+    setIsBulkSaving(true);
+    try {
+      await bulkUpsert.mutateAsync(validData);
+      setPendingChanges(new Map());
+      toast.success('Versão restaurada com sucesso');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao restaurar versão');
+    } finally {
+      setIsBulkSaving(false);
+    }
+  }, [bulkUpsert]);
 
   const isLoading = loadingControls || loadingAssessments;
 
@@ -186,6 +269,16 @@ export default function Diagnostico() {
       {/* Controls list */}
       {!isLoading && (
         <>
+          {/* Action Bar */}
+          <DiagnosticActionBar
+            onSave={handleBulkSave}
+            onReset={handleReset}
+            onGenerateRandom={handleGenerateRandom}
+            onRestoreSnapshot={handleRestoreSnapshot}
+            isSaving={isBulkSaving}
+            hasChanges={pendingChanges.size > 0}
+          />
+
           {/* Stats */}
           <DiagnosticStats controls={controls} assessments={assessments} />
 
