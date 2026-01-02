@@ -345,6 +345,48 @@ export type Database = {
           },
         ]
       }
+      evidence_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_folders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidences: {
         Row: {
           classification: Database["public"]["Enums"]["evidence_classification"]
@@ -354,6 +396,7 @@ export type Database = {
           file_path: string
           file_size: number | null
           file_type: string | null
+          folder_id: string | null
           framework_id: string | null
           id: string
           name: string
@@ -370,6 +413,7 @@ export type Database = {
           file_path: string
           file_size?: number | null
           file_type?: string | null
+          folder_id?: string | null
           framework_id?: string | null
           id?: string
           name: string
@@ -386,6 +430,7 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           file_type?: string | null
+          folder_id?: string | null
           framework_id?: string | null
           id?: string
           name?: string
@@ -395,6 +440,13 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "evidences_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "evidences_framework_id_fkey"
             columns: ["framework_id"]

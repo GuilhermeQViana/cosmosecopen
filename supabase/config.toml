@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.generate-report]
 verify_jwt = true
+
+[functions.export-data]
+verify_jwt = true
