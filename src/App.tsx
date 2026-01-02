@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { FrameworkProvider } from "@/contexts/FrameworkContext";
@@ -28,38 +29,40 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <OrganizationProvider>
-            <FrameworkProvider>
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
-                <Route path="/selecionar-framework" element={<SelecionarFramework />} />
-                <Route element={<AppLayout />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/diagnostico" element={<Diagnostico />} />
-                  <Route path="/riscos" element={<Riscos />} />
-                  <Route path="/evidencias" element={<Evidencias />} />
-                  <Route path="/plano-acao" element={<PlanoAcao />} />
-                  <Route path="/relatorios" element={<Relatorios />} />
-                  <Route path="/mapeamento" element={<Mapeamento />} />
-                  <Route path="/equipe" element={<Equipe />} />
-                  <Route path="/auditoria" element={<Auditoria />} />
-                  <Route path="/configuracoes" element={<Configuracoes />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </FrameworkProvider>
-          </OrganizationProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <OrganizationProvider>
+              <FrameworkProvider>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
+                  <Route path="/selecionar-framework" element={<SelecionarFramework />} />
+                  <Route element={<AppLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/diagnostico" element={<Diagnostico />} />
+                    <Route path="/riscos" element={<Riscos />} />
+                    <Route path="/evidencias" element={<Evidencias />} />
+                    <Route path="/plano-acao" element={<PlanoAcao />} />
+                    <Route path="/relatorios" element={<Relatorios />} />
+                    <Route path="/mapeamento" element={<Mapeamento />} />
+                    <Route path="/equipe" element={<Equipe />} />
+                    <Route path="/auditoria" element={<Auditoria />} />
+                    <Route path="/configuracoes" element={<Configuracoes />} />
+                  </Route>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </FrameworkProvider>
+            </OrganizationProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
