@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.export-data]
 verify_jwt = true
+
+[functions.generate-bulk-action-plans]
+verify_jwt = true
