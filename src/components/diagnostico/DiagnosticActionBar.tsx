@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { History, Download, Trash2, Shuffle, Save } from 'lucide-react';
+import { History, Download, Trash2, Shuffle, Save, Sparkles } from 'lucide-react';
 import { DiagnosticHistoryDialog } from './DiagnosticHistoryDialog';
 import { SaveVersionDialog } from './SaveVersionDialog';
 import {
@@ -13,14 +13,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface DiagnosticActionBarProps {
   onSave: () => void;
   onReset: () => void;
   onGenerateRandom: () => void;
   onRestoreSnapshot: (snapshotData: unknown[]) => void;
+  onGenerateAIPlans?: () => void;
   isSaving: boolean;
   hasChanges: boolean;
+  hasNonConforming?: boolean;
 }
 
 export function DiagnosticActionBar({
@@ -28,8 +36,10 @@ export function DiagnosticActionBar({
   onReset,
   onGenerateRandom,
   onRestoreSnapshot,
+  onGenerateAIPlans,
   isSaving,
   hasChanges,
+  hasNonConforming = false,
 }: DiagnosticActionBarProps) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [saveVersionOpen, setSaveVersionOpen] = useState(false);
@@ -38,59 +48,80 @@ export function DiagnosticActionBar({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 p-4 bg-card border border-border rounded-lg">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setHistoryOpen(true)}
-          className="gap-2"
-        >
-          <History className="h-4 w-4" />
-          Histórico
-        </Button>
+      <TooltipProvider>
+        <div className="flex flex-wrap items-center gap-2 p-4 bg-card border border-border rounded-lg">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setHistoryOpen(true)}
+            className="gap-2"
+          >
+            <History className="h-4 w-4" />
+            Histórico
+          </Button>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSaveVersionOpen(true)}
-          className="gap-2"
-        >
-          <Download className="h-4 w-4" />
-          Salvar Versão
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSaveVersionOpen(true)}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Salvar Versão
+          </Button>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setResetConfirmOpen(true)}
-          className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-        >
-          <Trash2 className="h-4 w-4" />
-          Resetar
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setResetConfirmOpen(true)}
+            className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" />
+            Resetar
+          </Button>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setRandomConfirmOpen(true)}
-          className="gap-2"
-        >
-          <Shuffle className="h-4 w-4" />
-          Dados Aleatórios
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setRandomConfirmOpen(true)}
+            className="gap-2"
+          >
+            <Shuffle className="h-4 w-4" />
+            Dados Aleatórios
+          </Button>
 
-        <div className="flex-1" />
+          {hasNonConforming && onGenerateAIPlans && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onGenerateAIPlans}
+                  className="gap-2 border-primary/50 hover:bg-primary/10"
+                >
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Gerar Planos com IA
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Gerar planos de ação automaticamente para controles não conformes</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
 
-        <Button
-          size="sm"
-          onClick={onSave}
-          disabled={!hasChanges || isSaving}
-          className="gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isSaving ? 'Salvando...' : 'Salvar'}
-        </Button>
-      </div>
+          <div className="flex-1" />
+
+          <Button
+            size="sm"
+            onClick={onSave}
+            disabled={!hasChanges || isSaving}
+            className="gap-2"
+          >
+            <Save className="h-4 w-4" />
+            {isSaving ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
+      </TooltipProvider>
 
       <DiagnosticHistoryDialog
         open={historyOpen}

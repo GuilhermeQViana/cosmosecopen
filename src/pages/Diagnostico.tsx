@@ -10,6 +10,8 @@ import { StatusFilter, StatusFilterValue } from '@/components/diagnostico/Status
 import { CategoryProgress } from '@/components/diagnostico/CategoryProgress';
 import { RiskMethodologyInfo } from '@/components/shared/RiskMethodologyInfo';
 import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
+import { GenerateAIPlansDialog } from '@/components/diagnostico/GenerateAIPlansDialog';
+import { useNonConformingControls } from '@/hooks/useGenerateActionPlans';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -46,6 +48,18 @@ export default function Diagnostico() {
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('all');
   const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map());
   const [isBulkSaving, setIsBulkSaving] = useState(false);
+  const [aiPlansDialogOpen, setAiPlansDialogOpen] = useState(false);
+  const [controlsForAIGeneration, setControlsForAIGeneration] = useState<Array<{
+    controlId: string;
+    assessmentId: string;
+    controlCode: string;
+    controlName: string;
+    controlDescription: string | null;
+    currentMaturity: number;
+    targetMaturity: number;
+  }>>([]);
+
+  const { findNonConformingWithoutPlans } = useNonConformingControls();
 
   const { data: controls = [], isLoading: loadingControls } = useControls();
   const { data: assessments = [], isLoading: loadingAssessments } = useAssessments();
@@ -121,6 +135,15 @@ export default function Diagnostico() {
     }
   };
 
+  // Check for non-conforming controls and trigger AI dialog
+  const checkForAIGeneration = useCallback(async () => {
+    const eligibleControls = await findNonConformingWithoutPlans(controls, assessments);
+    if (eligibleControls.length > 0) {
+      setControlsForAIGeneration(eligibleControls);
+      setAiPlansDialogOpen(true);
+    }
+  }, [controls, assessments, findNonConformingWithoutPlans]);
+
   // Bulk save all pending changes
   const handleBulkSave = useCallback(async () => {
     if (pendingChanges.size === 0) return;
@@ -136,12 +159,18 @@ export default function Diagnostico() {
       await bulkUpsert.mutateAsync(changes);
       setPendingChanges(new Map());
       toast.success(`${changes.length} avaliações salvas com sucesso`);
+      
+      // After saving, check for non-conforming controls
+      // Use setTimeout to allow the query to refresh
+      setTimeout(() => {
+        checkForAIGeneration();
+      }, 500);
     } catch (error: any) {
       toast.error(error.message || 'Erro ao salvar avaliações');
     } finally {
       setIsBulkSaving(false);
     }
-  }, [pendingChanges, bulkUpsert]);
+  }, [pendingChanges, bulkUpsert, checkForAIGeneration]);
 
   // Reset all assessments
   const handleReset = useCallback(async () => {
@@ -317,8 +346,10 @@ export default function Diagnostico() {
               onReset={handleReset}
               onGenerateRandom={handleGenerateRandom}
               onRestoreSnapshot={handleRestoreSnapshot}
+              onGenerateAIPlans={checkForAIGeneration}
               isSaving={isBulkSaving}
               hasChanges={pendingChanges.size > 0}
+              hasNonConforming={assessments.some(a => a.status === 'nao_conforme' || a.status === 'parcial')}
             />
           </AnimatedItem>
 
@@ -452,6 +483,13 @@ export default function Diagnostico() {
           )}
         </>
       )}
+
+      {/* AI Plans Generation Dialog */}
+      <GenerateAIPlansDialog
+        open={aiPlansDialogOpen}
+        onOpenChange={setAiPlansDialogOpen}
+        controls={controlsForAIGeneration}
+      />
     </div>
   );
 }
