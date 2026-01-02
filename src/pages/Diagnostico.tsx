@@ -8,13 +8,14 @@ import { DiagnosticStats } from '@/components/diagnostico/DiagnosticStats';
 import { DiagnosticActionBar } from '@/components/diagnostico/DiagnosticActionBar';
 import { StatusFilter, StatusFilterValue } from '@/components/diagnostico/StatusFilter';
 import { CategoryProgress } from '@/components/diagnostico/CategoryProgress';
+import { RiskMethodologyInfo } from '@/components/shared/RiskMethodologyInfo';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, FolderOpen, ClipboardCheck, LayoutGrid, Table2 } from 'lucide-react';
+import { Search, FolderOpen, ClipboardCheck, LayoutGrid, Table2, Calculator } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -221,6 +222,15 @@ export default function Diagnostico() {
               {currentFramework.version && ` v${currentFramework.version}`}
             </Badge>
           )}
+          {/* Risk Methodology Info */}
+          <RiskMethodologyInfo
+            trigger={
+              <Button variant="outline" size="sm" className="gap-2">
+                <Calculator className="h-4 w-4" />
+                <span className="hidden sm:inline">Metodologia</span>
+              </Button>
+            }
+          />
           {/* View Mode Toggle */}
           <div className="flex items-center border rounded-md">
             <Button
