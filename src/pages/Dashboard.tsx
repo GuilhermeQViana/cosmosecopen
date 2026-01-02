@@ -24,6 +24,7 @@ import { MaturityTrendChart } from '@/components/dashboard/MaturityTrendChart';
 import { RiskDistributionChart } from '@/components/dashboard/RiskDistributionChart';
 import { ActionPlanStatusChart } from '@/components/dashboard/ActionPlanStatusChart';
 import { ControlsMaturityChart } from '@/components/dashboard/ControlsMaturityChart';
+import { RiskScoreMetrics } from '@/components/dashboard/RiskScoreMetrics';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines';
 import { AttentionSection } from '@/components/dashboard/AttentionSection';
@@ -314,8 +315,13 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Row 3 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <RiskScoreMetrics controls={controls} assessments={assessments} isLoading={isChartsLoading} />
         <ControlsMaturityChart assessments={assessments} isLoading={assessmentsLoading} />
+      </div>
+
+      {/* Charts Row 4 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <NextStepsWidget
           controls={controls}
           assessments={assessments}
@@ -324,7 +330,7 @@ export default function Dashboard() {
           evidences={evidences}
           isLoading={isChartsLoading}
         />
-        <div className="space-y-4">
+        <div className="lg:col-span-2 space-y-4">
           <RecentActivity />
           <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />
         </div>
