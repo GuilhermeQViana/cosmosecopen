@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Lock, User, Loader2, CheckCircle2, ArrowLeft, Sparkles } from 'lucide-react';
-import { StarField } from '@/components/ui/star-field';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 
 const loginSchema = z.object({
@@ -130,44 +129,79 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 relative">
-      <StarField starCount={80} dustCount={25} shootingStarCount={2} />
-      
       {/* Left Side - Cosmic Visual Hero */}
       <div className="hidden lg:flex flex-col justify-between p-12 text-white relative overflow-hidden">
-        {/* Cosmic Background with gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(225,85%,25%)] via-[hsl(225,90%,35%)] to-[hsl(200,85%,30%)]" />
+        {/* Deep Space Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(222,47%,8%)] via-[hsl(222,50%,12%)] to-[hsl(210,60%,15%)]" />
         
-        {/* Animated nebula overlay */}
-        <div className="absolute inset-0 opacity-30">
+        {/* Cosmic Grid Pattern */}
+        <div 
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(59, 130, 246, 0.15) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+          }}
+        />
+        
+        {/* Cross/Plus Pattern */}
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%233b82f6' stroke-width='0.5'%3E%3Cpath d='M25 20v10M20 25h10'/%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '50px 50px',
+          }}
+        />
+        
+        {/* Animated nebula blobs */}
+        <div className="absolute inset-0 overflow-hidden">
           <div 
-            className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl animate-pulse"
+            className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full blur-[120px] animate-pulse"
             style={{ 
-              background: 'radial-gradient(circle, hsl(190 100% 50% / 0.4), transparent 70%)',
-              animationDuration: '4s'
+              background: 'radial-gradient(circle, hsl(217 91% 60% / 0.25), transparent 60%)',
+              animationDuration: '6s'
             }}
           />
           <div 
-            className="absolute bottom-0 left-0 w-80 h-80 rounded-full blur-3xl animate-pulse"
+            className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] rounded-full blur-[100px] animate-pulse"
             style={{ 
-              background: 'radial-gradient(circle, hsl(225 100% 60% / 0.4), transparent 70%)',
-              animationDuration: '5s',
-              animationDelay: '1s'
+              background: 'radial-gradient(circle, hsl(199 89% 48% / 0.2), transparent 60%)',
+              animationDuration: '8s',
+              animationDelay: '2s'
+            }}
+          />
+          <div 
+            className="absolute top-2/3 left-1/3 w-[300px] h-[300px] rounded-full blur-[80px] animate-pulse"
+            style={{ 
+              background: 'radial-gradient(circle, hsl(280 70% 50% / 0.1), transparent 60%)',
+              animationDuration: '10s',
+              animationDelay: '4s'
             }}
           />
         </div>
-        
-        {/* Constellation Pattern */}
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-blue-400/60 rounded-full animate-float"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${3 + Math.random() * 4}s`,
+              }}
+            />
+          ))}
+        </div>
 
         {/* Logo */}
         <div className="relative z-10">
           <Link to="/" className="inline-block group">
-            <div className="flex items-center gap-3 p-3 -m-3 rounded-xl transition-all duration-300 hover:bg-white/10">
+            <div className="flex items-center gap-3 p-3 -m-3 rounded-xl transition-all duration-300 hover:bg-white/5">
               <CosmoSecLogo size="lg" showText={true} />
             </div>
           </Link>
@@ -176,17 +210,17 @@ export default function Auth() {
         {/* Content */}
         <div className="relative z-10 space-y-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm mb-6">
-              <Sparkles className="w-4 h-4 text-cyan-300" />
-              <span className="text-cyan-100">Plataforma GRC completa</span>
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 text-sm mb-8">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-200 font-medium">Plataforma GRC completa</span>
             </div>
-            <h1 className="text-5xl font-bold mb-6 font-space leading-tight">
-              Simplifique a<br />
-              <span className="bg-gradient-to-r from-cyan-300 to-blue-200 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold mb-6 font-space leading-tight tracking-tight">
+              <span className="text-white">Simplifique a</span><br />
+              <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-300 bg-clip-text text-transparent">
                 Governança de Segurança
               </span>
             </h1>
-            <p className="text-xl text-white/70 max-w-lg leading-relaxed">
+            <p className="text-xl text-blue-100/60 max-w-lg leading-relaxed">
               A plataforma completa de GRC para organizações que levam 
               cibersegurança a sério.
             </p>
@@ -199,36 +233,36 @@ export default function Auth() {
                 className="flex items-center gap-4 opacity-0 animate-stagger-fade-up" 
                 style={{ animationDelay: `${300 + index * 100}ms`, animationFillMode: 'forwards' }}
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-cyan-400/30 to-blue-500/30 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0 border border-white/20 shadow-lg shadow-cyan-500/20">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-300" />
+                <div className="w-7 h-7 bg-gradient-to-br from-blue-500/40 to-cyan-500/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0 border border-blue-400/40">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50" />
                 </div>
-                <span className="text-white/90 text-lg">{feature}</span>
+                <span className="text-blue-100/80 text-lg">{feature}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Footer Quote with glass effect */}
+        {/* Footer Quote */}
         <div className="relative z-10">
-          <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <blockquote className="border-l-2 border-cyan-400/50 pl-4">
-              <p className="text-white/80 italic text-lg">
+          <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/5 backdrop-blur-md rounded-xl p-6 border border-blue-400/20">
+            <blockquote className="border-l-2 border-cyan-400/60 pl-5">
+              <p className="text-blue-100/70 italic text-lg leading-relaxed">
                 "A segurança não é um produto, mas um processo."
               </p>
-              <cite className="text-sm text-white/50 mt-3 block font-medium">— Bruce Schneier</cite>
+              <cite className="text-sm text-blue-300/50 mt-3 block font-medium">— Bruce Schneier</cite>
             </blockquote>
           </div>
         </div>
       </div>
 
       {/* Right Side - Form */}
-      <div className="flex flex-col min-h-screen bg-background relative">
-        {/* Subtle gradient overlay for light mode */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+      <div className="flex flex-col min-h-screen bg-[hsl(222,47%,6%)] relative">
+        {/* Subtle radial gradient */}
+        <div className="absolute inset-0 bg-gradient-radial from-blue-500/5 via-transparent to-transparent pointer-events-none" />
         
         {/* Mobile Header */}
-        <div className="lg:hidden p-4 border-b border-border relative z-10">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <div className="lg:hidden p-4 border-b border-white/10 relative z-10">
+          <Link to="/" className="flex items-center gap-2 text-blue-300/70 hover:text-blue-200 transition-colors">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">Voltar</span>
           </Link>
@@ -239,59 +273,74 @@ export default function Auth() {
             {/* Mobile Logo */}
             <div className="flex flex-col items-center mb-8 lg:hidden opacity-0 animate-stagger-fade-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
               <CosmoSecLogo size="xl" />
-              <p className="text-muted-foreground text-sm mt-2">Plataforma de Governança, Riscos e Conformidade</p>
+              <p className="text-blue-300/60 text-sm mt-2">Plataforma de Governança, Riscos e Conformidade</p>
             </div>
 
-            <Card className="border-0 shadow-2xl lg:shadow-xl bg-card/80 backdrop-blur-sm lg:border lg:border-border/50 opacity-0 animate-stagger-scale-in" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+            <Card className="border border-white/10 shadow-2xl bg-[hsl(222,47%,9%)]/80 backdrop-blur-xl opacity-0 animate-stagger-scale-in" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
               <CardHeader className="pb-4 text-center">
-                <CardTitle className="text-2xl font-space">Bem-vindo</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-2xl font-space text-white">Bem-vindo</CardTitle>
+                <CardDescription className="text-blue-300/60">
                   Entre ou crie sua conta para continuar
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Entrar</TabsTrigger>
-                    <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cadastrar</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/5 p-1">
+                    <TabsTrigger 
+                      value="login" 
+                      className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-blue-300/70 transition-all"
+                    >
+                      Entrar
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="signup" 
+                      className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-blue-300/70 transition-all"
+                    >
+                      Cadastrar
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="login">
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-5">
                       <div className="space-y-2">
-                        <Label htmlFor="login-email">E-mail</Label>
+                        <Label htmlFor="login-email" className="text-blue-100/80 text-sm">E-mail</Label>
                         <div className="relative group">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400/50 group-focus-within:text-blue-400 transition-colors" />
                           <Input
                             id="login-email"
                             type="email"
                             placeholder="seu@email.com"
                             value={loginEmail}
                             onChange={(e) => setLoginEmail(e.target.value)}
-                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
+                            className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-blue-300/40 focus:border-blue-500/50 focus:bg-white/10 focus:ring-blue-500/20 transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="login-password">Senha</Label>
+                        <Label htmlFor="login-password" className="text-blue-100/80 text-sm">Senha</Label>
                         <div className="relative group">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400/50 group-focus-within:text-blue-400 transition-colors" />
                           <Input
                             id="login-password"
                             type="password"
                             placeholder="••••••••"
                             value={loginPassword}
                             onChange={(e) => setLoginPassword(e.target.value)}
-                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
+                            className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-blue-300/40 focus:border-blue-500/50 focus:bg-white/10 focus:ring-blue-500/20 transition-all"
                             required
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="w-full h-12 text-base font-medium" size="lg" disabled={loading}>
+                      <Button 
+                        type="submit" 
+                        className="w-full h-12 text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all" 
+                        size="lg" 
+                        disabled={loading}
+                      >
                         {loading ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Loader2 className="w-5 h-5 animate-spin" />
                             Entrando...
                           </>
                         ) : (
@@ -304,69 +353,74 @@ export default function Auth() {
                   <TabsContent value="signup">
                     <form onSubmit={handleSignup} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="signup-name">Nome completo</Label>
+                        <Label htmlFor="signup-name" className="text-blue-100/80 text-sm">Nome completo</Label>
                         <div className="relative group">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400/50 group-focus-within:text-blue-400 transition-colors" />
                           <Input
                             id="signup-name"
                             type="text"
                             placeholder="Seu nome"
                             value={signupName}
                             onChange={(e) => setSignupName(e.target.value)}
-                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
+                            className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-blue-300/40 focus:border-blue-500/50 focus:bg-white/10 focus:ring-blue-500/20 transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-email">E-mail</Label>
+                        <Label htmlFor="signup-email" className="text-blue-100/80 text-sm">E-mail</Label>
                         <div className="relative group">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400/50 group-focus-within:text-blue-400 transition-colors" />
                           <Input
                             id="signup-email"
                             type="email"
                             placeholder="seu@email.com"
                             value={signupEmail}
                             onChange={(e) => setSignupEmail(e.target.value)}
-                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
+                            className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-blue-300/40 focus:border-blue-500/50 focus:bg-white/10 focus:ring-blue-500/20 transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-password">Senha</Label>
+                        <Label htmlFor="signup-password" className="text-blue-100/80 text-sm">Senha</Label>
                         <div className="relative group">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400/50 group-focus-within:text-blue-400 transition-colors" />
                           <Input
                             id="signup-password"
                             type="password"
                             placeholder="••••••••"
                             value={signupPassword}
                             onChange={(e) => setSignupPassword(e.target.value)}
-                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
+                            className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-blue-300/40 focus:border-blue-500/50 focus:bg-white/10 focus:ring-blue-500/20 transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-confirm">Confirmar senha</Label>
+                        <Label htmlFor="signup-confirm" className="text-blue-100/80 text-sm">Confirmar senha</Label>
                         <div className="relative group">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400/50 group-focus-within:text-blue-400 transition-colors" />
                           <Input
                             id="signup-confirm"
                             type="password"
                             placeholder="••••••••"
                             value={signupConfirmPassword}
                             onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
+                            className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-blue-300/40 focus:border-blue-500/50 focus:bg-white/10 focus:ring-blue-500/20 transition-all"
                             required
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="w-full h-12 text-base font-medium" size="lg" disabled={loading}>
+                      <Button 
+                        type="submit" 
+                        className="w-full h-12 text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all" 
+                        size="lg" 
+                        disabled={loading}
+                      >
                         {loading ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Loader2 className="w-5 h-5 animate-spin" />
                             Criando conta...
                           </>
                         ) : (
@@ -379,11 +433,11 @@ export default function Auth() {
               </CardContent>
             </Card>
 
-            <p className="text-center text-sm text-muted-foreground mt-6 opacity-0 animate-stagger-fade-in" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
+            <p className="text-center text-sm text-blue-300/50 mt-6 opacity-0 animate-stagger-fade-in" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
               Ao continuar, você concorda com os{' '}
-              <a href="#" className="text-primary hover:underline font-medium">Termos de Uso</a>
+              <a href="#" className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors">Termos de Uso</a>
               {' '}e{' '}
-              <a href="#" className="text-primary hover:underline font-medium">Política de Privacidade</a>.
+              <a href="#" className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors">Política de Privacidade</a>.
             </p>
           </div>
         </div>
