@@ -1,9 +1,11 @@
 import { Risk, calculateRiskLevel, getRiskLevelColor, getRiskLevelLabel, TREATMENT_OPTIONS } from '@/hooks/useRisks';
+import { useRiskHistory, getRiskTrend } from '@/hooks/useRiskHistory';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { Edit, Trash2, Link2, TrendingDown, Eye } from 'lucide-react';
+import { Edit, Trash2, Link2, TrendingDown, TrendingUp, Minus, Eye, User } from 'lucide-react';
 
 interface RiskCardProps {
   risk: Risk;
@@ -14,6 +16,9 @@ interface RiskCardProps {
 }
 
 export function RiskCard({ risk, onEdit, onDelete, onLinkControls, onViewDetails }: RiskCardProps) {
+  const { data: history } = useRiskHistory(risk.id);
+  const trend = history ? getRiskTrend(history) : null;
+  
   const inherentLevel = calculateRiskLevel(risk.inherent_probability, risk.inherent_impact);
   const residualLevel = risk.residual_probability && risk.residual_impact
     ? calculateRiskLevel(risk.residual_probability, risk.residual_impact)
@@ -21,18 +26,44 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls, onViewDetails
 
   const treatmentLabel = TREATMENT_OPTIONS.find(t => t.value === risk.treatment)?.label || risk.treatment;
 
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
   return (
     <Card className="group hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewDetails?.(risk)}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="outline" className="font-mono text-xs">
                 {risk.code}
               </Badge>
               {risk.category && (
                 <Badge variant="secondary" className="text-xs">
                   {risk.category}
+                </Badge>
+              )}
+              {/* Controls count badge */}
+              {(risk.controls_count ?? 0) > 0 && (
+                <Badge variant="outline" className="gap-1 text-xs border-primary/30 text-primary">
+                  <Link2 className="h-3 w-3" />
+                  {risk.controls_count}
+                </Badge>
+              )}
+              {/* Trend indicator */}
+              {trend && trend !== 'stable' && (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'gap-1 text-xs',
+                    trend === 'improving' && 'border-green-500/50 text-green-600',
+                    trend === 'worsening' && 'border-red-500/50 text-red-600'
+                  )}
+                >
+                  {trend === 'improving' && <TrendingDown className="h-3 w-3" />}
+                  {trend === 'worsening' && <TrendingUp className="h-3 w-3" />}
                 </Badge>
               )}
             </div>
@@ -155,6 +186,21 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls, onViewDetails
           >
             {treatmentLabel}
           </Badge>
+          
+          {/* Owner display */}
+          {risk.owner && (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={risk.owner.avatar_url || undefined} />
+                <AvatarFallback className="text-xs">
+                  {getInitials(risk.owner.full_name)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground truncate max-w-[100px]">
+                {risk.owner.full_name || 'Sem nome'}
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

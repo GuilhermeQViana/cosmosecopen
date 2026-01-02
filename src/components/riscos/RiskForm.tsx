@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Risk, RISK_CATEGORIES, TREATMENT_OPTIONS, calculateRiskLevel, getRiskLevelColor, getRiskLevelLabel } from '@/hooks/useRisks';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -20,7 +22,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type RiskTreatment = Database['public']['Enums']['risk_treatment'];
@@ -50,12 +52,15 @@ export interface RiskFormData {
   residual_impact: number | null;
   treatment: RiskTreatment;
   treatment_plan: string;
+  owner_id: string | null;
 }
 
 const PROBABILITY_LABELS = ['', 'Muito Baixa', 'Baixa', 'Média', 'Alta', 'Muito Alta'];
 const IMPACT_LABELS = ['', 'Muito Baixo', 'Baixo', 'Médio', 'Alto', 'Muito Alto'];
 
 export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLoading }: RiskFormProps) {
+  const { data: teamMembers } = useTeamMembers();
+  
   const [formData, setFormData] = useState<RiskFormData>({
     code: '',
     title: '',
@@ -67,6 +72,7 @@ export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLo
     residual_impact: null,
     treatment: 'mitigar',
     treatment_plan: '',
+    owner_id: null,
   });
 
   useEffect(() => {
@@ -82,6 +88,7 @@ export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLo
         residual_impact: risk.residual_impact,
         treatment: risk.treatment,
         treatment_plan: risk.treatment_plan || '',
+        owner_id: risk.owner_id,
       });
     } else if (prefillData) {
       // Pre-fill from control data
@@ -99,6 +106,7 @@ export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLo
         residual_impact: null,
         treatment: 'mitigar',
         treatment_plan: '',
+        owner_id: null,
       });
     } else {
       setFormData({
@@ -112,6 +120,7 @@ export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLo
         residual_impact: null,
         treatment: 'mitigar',
         treatment_plan: '',
+        owner_id: null,
       });
     }
   }, [risk, prefillData, open]);
@@ -125,6 +134,11 @@ export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLo
   const residualLevel = formData.residual_probability && formData.residual_impact
     ? calculateRiskLevel(formData.residual_probability, formData.residual_impact)
     : null;
+
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,6 +202,40 @@ export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLo
               placeholder="Detalhes sobre o risco..."
               rows={3}
             />
+          </div>
+
+          {/* Owner Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="owner">Responsável</Label>
+            <Select
+              value={formData.owner_id || 'none'}
+              onValueChange={(value) => setFormData({ ...formData, owner_id: value === 'none' ? null : value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um responsável..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span>Sem responsável</span>
+                  </div>
+                </SelectItem>
+                {teamMembers?.map((member) => (
+                  <SelectItem key={member.user_id} value={member.user_id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={member.profile?.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs">
+                          {getInitials(member.profile?.full_name || null)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{member.profile?.full_name || 'Usuário'}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Inherent Risk */}
