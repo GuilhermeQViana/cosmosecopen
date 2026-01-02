@@ -139,6 +139,7 @@ export type Database = {
           id: string
           organization_id: string
           priority: Database["public"]["Enums"]["task_priority"]
+          risk_id: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
@@ -156,6 +157,7 @@ export type Database = {
           id?: string
           organization_id: string
           priority?: Database["public"]["Enums"]["task_priority"]
+          risk_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
@@ -173,6 +175,7 @@ export type Database = {
           id?: string
           organization_id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
+          risk_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
           updated_at?: string
@@ -197,6 +200,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plans_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
             referencedColumns: ["id"]
           },
         ]

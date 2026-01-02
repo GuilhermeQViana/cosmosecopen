@@ -47,11 +47,14 @@ export default function PlanoAcao() {
   const [detailPlan, setDetailPlan] = useState<ActionPlan | null>(null);
   const [deletePlan, setDeletePlan] = useState<ActionPlan | null>(null);
 
-  // Pre-fill data from URL params (coming from ControlCard)
+  // Pre-fill data from URL params (coming from ControlCard or RiskCard)
   const [prefillData, setPrefillData] = useState<{
     assessmentId?: string;
     controlCode?: string;
     controlName?: string;
+    riskId?: string;
+    riskCode?: string;
+    riskTitle?: string;
   } | null>(null);
 
   const { toast } = useToast();
@@ -65,12 +68,18 @@ export default function PlanoAcao() {
     const fromAssessment = searchParams.get('fromAssessment');
     const controlCode = searchParams.get('controlCode');
     const controlName = searchParams.get('controlName');
+    const fromRisk = searchParams.get('fromRisk');
+    const riskCode = searchParams.get('riskCode');
+    const riskTitle = searchParams.get('riskTitle');
 
-    if (fromAssessment || controlCode) {
+    if (fromRisk || fromAssessment || controlCode) {
       setPrefillData({
         assessmentId: fromAssessment || undefined,
         controlCode: controlCode || undefined,
         controlName: controlName || undefined,
+        riskId: fromRisk || undefined,
+        riskCode: riskCode || undefined,
+        riskTitle: riskTitle || undefined,
       });
       setFormOpen(true);
       // Clear URL params after processing

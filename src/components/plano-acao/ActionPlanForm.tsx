@@ -37,6 +37,9 @@ interface PrefillData {
   assessmentId?: string;
   controlCode?: string;
   controlName?: string;
+  riskId?: string;
+  riskCode?: string;
+  riskTitle?: string;
 }
 
 interface ActionPlanFormProps {
@@ -55,6 +58,7 @@ export interface ActionPlanFormData {
   priority: TaskPriority;
   due_date: string | null;
   assessment_id: string | null;
+  risk_id: string | null;
   ai_generated: boolean | null;
   assigned_to: string | null;
 }
@@ -67,6 +71,7 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, onSubmit
     priority: 'media',
     due_date: null,
     assessment_id: null,
+    risk_id: null,
     ai_generated: false,
     assigned_to: null,
   });
@@ -80,26 +85,46 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, onSubmit
         priority: plan.priority,
         due_date: plan.due_date,
         assessment_id: plan.assessment_id,
+        risk_id: plan.risk_id,
         ai_generated: plan.ai_generated,
         assigned_to: plan.assigned_to,
       });
     } else if (prefillData) {
-      // Pre-fill from assessment/control data
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 30); // Default 30 days from now
       
-      setFormData({
-        title: `Remediar controle ${prefillData.controlCode || 'não conforme'}`,
-        description: prefillData.controlName 
-          ? `Plano de ação para remediar o controle não conforme: ${prefillData.controlCode} - ${prefillData.controlName}`
-          : '',
-        status: 'todo',
-        priority: 'alta',
-        due_date: dueDate.toISOString().split('T')[0],
-        assessment_id: prefillData.assessmentId || null,
-        ai_generated: false,
-        assigned_to: null,
-      });
+      // Check if prefilling from risk or control
+      if (prefillData.riskId) {
+        // Pre-fill from risk data
+        setFormData({
+          title: `Tratar risco ${prefillData.riskCode || ''}`,
+          description: prefillData.riskTitle 
+            ? `Plano de ação para tratamento do risco: ${prefillData.riskCode} - ${prefillData.riskTitle}`
+            : '',
+          status: 'todo',
+          priority: 'alta',
+          due_date: dueDate.toISOString().split('T')[0],
+          assessment_id: null,
+          risk_id: prefillData.riskId,
+          ai_generated: false,
+          assigned_to: null,
+        });
+      } else {
+        // Pre-fill from assessment/control data
+        setFormData({
+          title: `Remediar controle ${prefillData.controlCode || 'não conforme'}`,
+          description: prefillData.controlName 
+            ? `Plano de ação para remediar o controle não conforme: ${prefillData.controlCode} - ${prefillData.controlName}`
+            : '',
+          status: 'todo',
+          priority: 'alta',
+          due_date: dueDate.toISOString().split('T')[0],
+          assessment_id: prefillData.assessmentId || null,
+          risk_id: null,
+          ai_generated: false,
+          assigned_to: null,
+        });
+      }
     } else {
       setFormData({
         title: '',
@@ -108,6 +133,7 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, onSubmit
         priority: 'media',
         due_date: null,
         assessment_id: null,
+        risk_id: null,
         ai_generated: false,
         assigned_to: null,
       });

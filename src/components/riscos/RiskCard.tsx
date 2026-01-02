@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Risk, calculateRiskLevel, getRiskLevelColor, getRiskLevelLabel, TREATMENT_OPTIONS } from '@/hooks/useRisks';
 import { useRiskHistory, getRiskTrend } from '@/hooks/useRiskHistory';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { Edit, Trash2, Link2, TrendingDown, TrendingUp, Minus, Eye, User } from 'lucide-react';
+import { Edit, Trash2, Link2, TrendingDown, TrendingUp, Eye, ClipboardList } from 'lucide-react';
 
 interface RiskCardProps {
   risk: Risk;
@@ -16,6 +17,7 @@ interface RiskCardProps {
 }
 
 export function RiskCard({ risk, onEdit, onDelete, onLinkControls, onViewDetails }: RiskCardProps) {
+  const navigate = useNavigate();
   const { data: history } = useRiskHistory(risk.id);
   const trend = history ? getRiskTrend(history) : null;
   
@@ -29,6 +31,16 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls, onViewDetails
   const getInitials = (name: string | null) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  const handleCreateActionPlan = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const params = new URLSearchParams({
+      fromRisk: risk.id,
+      riskCode: risk.code,
+      riskTitle: risk.title,
+    });
+    navigate(`/plano-acao?${params.toString()}`);
   };
 
   return (
@@ -81,6 +93,15 @@ export function RiskCard({ risk, onEdit, onDelete, onLinkControls, onViewDetails
                 <Eye className="h-4 w-4" />
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleCreateActionPlan}
+              title="Criar plano de ação"
+            >
+              <ClipboardList className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
