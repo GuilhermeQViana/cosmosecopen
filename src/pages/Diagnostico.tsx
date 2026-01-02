@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/accordion';
 import { Database } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
+import { AnimatedItem, StaggeredList } from '@/components/ui/staggered-list';
 
 type MaturityLevel = Database['public']['Enums']['maturity_level'];
 
@@ -204,61 +205,69 @@ export default function Diagnostico() {
   const isLoading = loadingControls || loadingAssessments;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in relative">
+      {/* Cosmic background effects */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-chart-2/5 rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <ClipboardCheck className="w-7 h-7 text-primary" />
-            Diagnóstico de Controles
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Avalie o nível de maturidade dos controles de segurança
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {currentFramework && (
-            <Badge variant="outline" className="text-sm px-3 py-1.5">
-              {currentFramework.name}
-              {currentFramework.version && ` v${currentFramework.version}`}
-            </Badge>
-          )}
-          {/* Risk Methodology Info */}
-          <RiskMethodologyInfo
-            trigger={
-              <Button variant="outline" size="sm" className="gap-2">
-                <Calculator className="h-4 w-4" />
-                <span className="hidden sm:inline">Metodologia</span>
+      <AnimatedItem animation="fade-up" delay={0}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <ClipboardCheck className="w-7 h-7 text-primary" />
+              Diagnóstico de Controles
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Avalie o nível de maturidade dos controles de segurança
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {currentFramework && (
+              <Badge variant="outline" className="text-sm px-3 py-1.5">
+                {currentFramework.name}
+                {currentFramework.version && ` v${currentFramework.version}`}
+              </Badge>
+            )}
+            {/* Risk Methodology Info */}
+            <RiskMethodologyInfo
+              trigger={
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Calculator className="h-4 w-4" />
+                  <span className="hidden sm:inline">Metodologia</span>
+                </Button>
+              }
+            />
+            {/* View Mode Toggle */}
+            <div className="flex items-center border rounded-md">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode('cards')}
+                className={cn(
+                  'rounded-r-none h-8',
+                  viewMode === 'cards' && 'bg-muted'
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
               </Button>
-            }
-          />
-          {/* View Mode Toggle */}
-          <div className="flex items-center border rounded-md">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode('cards')}
-              className={cn(
-                'rounded-r-none h-8',
-                viewMode === 'cards' && 'bg-muted'
-              )}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode('table')}
-              className={cn(
-                'rounded-l-none h-8',
-                viewMode === 'table' && 'bg-muted'
-              )}
-            >
-              <Table2 className="h-4 w-4" />
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode('table')}
+                className={cn(
+                  'rounded-l-none h-8',
+                  viewMode === 'table' && 'bg-muted'
+                )}
+              >
+                <Table2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </AnimatedItem>
 
       {/* Loading state */}
       {isLoading && (
@@ -281,45 +290,53 @@ export default function Diagnostico() {
       {!isLoading && (
         <>
           {/* Action Bar */}
-          <DiagnosticActionBar
-            onSave={handleBulkSave}
-            onReset={handleReset}
-            onGenerateRandom={handleGenerateRandom}
-            onRestoreSnapshot={handleRestoreSnapshot}
-            isSaving={isBulkSaving}
-            hasChanges={pendingChanges.size > 0}
-          />
+          <AnimatedItem animation="fade-up" delay={50}>
+            <DiagnosticActionBar
+              onSave={handleBulkSave}
+              onReset={handleReset}
+              onGenerateRandom={handleGenerateRandom}
+              onRestoreSnapshot={handleRestoreSnapshot}
+              isSaving={isBulkSaving}
+              hasChanges={pendingChanges.size > 0}
+            />
+          </AnimatedItem>
 
           {/* Critical Risk Alert */}
-          <CriticalRiskAlert 
-            controls={controls} 
-            assessments={assessments}
-            onFilterCritical={() => setStatusFilter('nao_conforme')}
-          />
+          <AnimatedItem animation="fade-up" delay={100}>
+            <CriticalRiskAlert 
+              controls={controls} 
+              assessments={assessments}
+              onFilterCritical={() => setStatusFilter('nao_conforme')}
+            />
+          </AnimatedItem>
 
           {/* Stats */}
-          <DiagnosticStats controls={controls} assessments={assessments} />
+          <AnimatedItem animation="fade-up" delay={150}>
+            <DiagnosticStats controls={controls} assessments={assessments} />
+          </AnimatedItem>
 
           {/* Filters Row */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            {/* Status Filter */}
-            <StatusFilter
-              value={statusFilter}
-              onChange={setStatusFilter}
-              counts={filterCounts}
-            />
-
-            {/* Search */}
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar controles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+          <AnimatedItem animation="fade-up" delay={200}>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              {/* Status Filter */}
+              <StatusFilter
+                value={statusFilter}
+                onChange={setStatusFilter}
+                counts={filterCounts}
               />
+
+              {/* Search */}
+              <div className="relative w-full md:w-80">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar controles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
-          </div>
+          </AnimatedItem>
 
           {/* Empty state for no controls */}
           {controls.length === 0 && (
@@ -360,53 +377,57 @@ export default function Diagnostico() {
 
           {/* Table View */}
           {viewMode === 'table' && filteredControls.length > 0 && (
-            <ControlsTable
-              controls={filteredControls}
-              assessments={assessments}
-              onEditControl={handleEditControl}
-            />
+            <AnimatedItem animation="fade-up" delay={250}>
+              <ControlsTable
+                controls={filteredControls}
+                assessments={assessments}
+                onEditControl={handleEditControl}
+              />
+            </AnimatedItem>
           )}
 
           {/* Cards View - Controls by category */}
           {viewMode === 'cards' && categories.length > 0 && (
-            <Accordion type="multiple" defaultValue={categories.map((c) => c.name)} className="space-y-4">
-              {categories.map((category) => (
-                <AccordionItem
-                  key={category.name}
-                  value={category.name}
-                  className="border rounded-lg bg-card"
-                >
-                  <AccordionTrigger className="px-4 hover:no-underline">
-                    <div className="flex items-center gap-3 flex-1">
-                      <FolderOpen className="w-4 h-4 text-primary" />
-                      <span className="font-semibold">{category.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        ({category.controls.length} controles)
-                      </span>
-                      <CategoryProgress
-                        category={category.name}
-                        controls={controls}
-                        assessments={assessments}
-                      />
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {category.controls.map((control) => (
-                        <div key={control.id} id={`control-${control.id}`}>
-                          <ControlCardExpanded
-                            control={control}
-                            assessment={assessmentMap.get(control.id)}
-                            onSave={handleSaveAssessment}
-                            isSaving={savingControlId === control.id}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            <StaggeredList staggerDelay={75} initialDelay={250} animation="fade-up" className="space-y-4">
+              <Accordion type="multiple" defaultValue={categories.map((c) => c.name)} className="space-y-4">
+                {categories.map((category, categoryIndex) => (
+                  <AccordionItem
+                    key={category.name}
+                    value={category.name}
+                    className="border rounded-lg bg-card/80 backdrop-blur-sm"
+                  >
+                    <AccordionTrigger className="px-4 hover:no-underline">
+                      <div className="flex items-center gap-3 flex-1">
+                        <FolderOpen className="w-4 h-4 text-primary" />
+                        <span className="font-semibold">{category.name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({category.controls.length} controles)
+                        </span>
+                        <CategoryProgress
+                          category={category.name}
+                          controls={controls}
+                          assessments={assessments}
+                        />
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <StaggeredList staggerDelay={50} animation="scale-in" className="grid gap-4 md:grid-cols-2">
+                        {category.controls.map((control) => (
+                          <div key={control.id} id={`control-${control.id}`}>
+                            <ControlCardExpanded
+                              control={control}
+                              assessment={assessmentMap.get(control.id)}
+                              onSave={handleSaveAssessment}
+                              isSaving={savingControlId === control.id}
+                            />
+                          </div>
+                        ))}
+                      </StaggeredList>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </StaggeredList>
           )}
         </>
       )}
