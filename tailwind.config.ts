@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        space: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
@@ -104,11 +105,17 @@ export default {
           5: "hsl(var(--chart-5))",
           6: "hsl(var(--chart-6))",
         },
+        // Cosmic glow colors
+        glow: {
+          primary: "hsl(var(--glow-primary))",
+          nebula: "hsl(var(--glow-nebula))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
       },
       keyframes: {
         "accordion-down": {
@@ -131,6 +138,10 @@ export default {
           from: { opacity: "0", transform: "scale(0.95)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 15px hsl(var(--primary) / 0.3)" },
+          "50%": { boxShadow: "0 0 30px hsl(var(--primary) / 0.6)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -138,6 +149,13 @@ export default {
         "fade-in": "fade-in 0.3s ease-out",
         "slide-up": "slide-up 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+      },
+      boxShadow: {
+        "glow-sm": "0 0 10px hsl(var(--primary) / 0.3)",
+        "glow-md": "0 0 20px hsl(var(--primary) / 0.4)",
+        "glow-lg": "0 0 30px hsl(var(--primary) / 0.5)",
+        "glow-nebula": "0 0 20px hsl(var(--secondary) / 0.4)",
       },
     },
   },

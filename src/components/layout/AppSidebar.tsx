@@ -127,7 +127,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-semibold text-sidebar-foreground truncate">Cora GovSec</span>
+              <span className="font-semibold text-sidebar-foreground truncate font-space">CosmoSec</span>
               {/* Organization Selector */}
               {organizations.length > 1 ? (
                 <DropdownMenu>

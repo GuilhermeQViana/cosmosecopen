@@ -39,8 +39,8 @@ export function Navbar() {
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-shadow">
               <Shield className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">
-              Cora <span className="text-primary">GovSec</span>
+            <span className="text-xl font-bold text-foreground font-space tracking-wide">
+              <span className="text-gradient-cosmic">CosmoSec</span>
             </span>
           </Link>
 
