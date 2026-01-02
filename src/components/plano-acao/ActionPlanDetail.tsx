@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
   SheetContent,
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Calendar,
@@ -31,12 +32,17 @@ import {
   Loader2,
   CheckCircle2,
   Circle,
+  Edit,
+  Trash2,
+  Clock,
 } from 'lucide-react';
 
 interface ActionPlanDetailProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan: ActionPlan | null;
+  onEdit?: (plan: ActionPlan) => void;
+  onDelete?: (plan: ActionPlan) => void;
 }
 
 interface EditableTaskItemProps {
@@ -69,7 +75,7 @@ function EditableTaskItem({ task, planId, onToggle, onDelete }: EditableTaskItem
         className="flex-shrink-0"
       >
         {task.completed ? (
-          <CheckCircle2 className="h-5 w-5 text-green-500" />
+          <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
         ) : (
           <Circle className="h-5 w-5 text-muted-foreground" />
         )}
@@ -110,7 +116,7 @@ function EditableTaskItem({ task, planId, onToggle, onDelete }: EditableTaskItem
   );
 }
 
-export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailProps) {
+export function ActionPlanDetail({ open, onOpenChange, plan, onEdit, onDelete }: ActionPlanDetailProps) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const { toast } = useToast();
 
@@ -125,6 +131,18 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
   const completedTasks = tasks?.filter((t) => t.completed).length || 0;
   const totalTasks = tasks?.length || 0;
   const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  // Calculate days until due date
+  const getDueDateInfo = () => {
+    if (!plan?.due_date || plan.status === 'done') return null;
+    const daysUntil = differenceInDays(new Date(plan.due_date), new Date());
+    if (daysUntil < 0) return { text: `${Math.abs(daysUntil)} dias atrasado`, isOverdue: true };
+    if (daysUntil === 0) return { text: 'Vence hoje', isWarning: true };
+    if (daysUntil <= 7) return { text: `${daysUntil} dias restantes`, isWarning: true };
+    return { text: `${daysUntil} dias restantes`, isNormal: true };
+  };
+
+  const dueDateInfo = getDueDateInfo();
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,28 +190,60 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg">
+      <SheetContent className="w-full sm:max-w-lg border-border/50 bg-card/95 backdrop-blur-xl">
         <SheetHeader className="pb-4">
-          <div className="flex items-center gap-2 mb-2">
-            {plan.ai_generated && (
-              <Badge variant="secondary" className="gap-1">
-                <Sparkles className="h-3 w-3" />
-                IA
-              </Badge>
-            )}
-            <Badge className={cn(priorityConfig?.color)}>
-              {priorityConfig?.label}
-            </Badge>
-            <Badge
-              variant="outline"
-              className={cn(
-                statusConfig?.value === 'done' && 'border-green-500 text-green-600'
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 flex-wrap">
+              {plan.ai_generated && (
+                <Badge variant="secondary" className="gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  IA
+                </Badge>
               )}
-            >
-              {statusConfig?.label}
-            </Badge>
+              <Badge className={cn(priorityConfig?.color)}>
+                {priorityConfig?.label}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={cn(
+                  statusConfig?.value === 'done' && 'border-[hsl(var(--success))] text-[hsl(var(--success))]'
+                )}
+              >
+                {statusConfig?.label}
+              </Badge>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onEdit(plan);
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onDelete(plan);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
-          <SheetTitle className="text-left">{plan.title}</SheetTitle>
+          <SheetTitle className="text-left font-space">{plan.title}</SheetTitle>
         </SheetHeader>
 
         <ScrollArea className="h-[calc(100vh-150px)] pr-4">
@@ -209,6 +259,20 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span>Prazo: {format(new Date(plan.due_date), 'PPP', { locale: ptBR })}</span>
+                {dueDateInfo && (
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      'ml-2',
+                      dueDateInfo.isOverdue && 'border-destructive text-destructive',
+                      dueDateInfo.isWarning && 'border-[hsl(var(--warning))] text-[hsl(var(--warning))]',
+                      dueDateInfo.isNormal && 'border-muted-foreground text-muted-foreground'
+                    )}
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    {dueDateInfo.text}
+                  </Badge>
+                )}
               </div>
             )}
 
@@ -228,6 +292,8 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
                 </div>
               </div>
             )}
+
+            <Separator />
 
             <div>
               <h4 className="text-sm font-medium mb-3">Subtarefas</h4>

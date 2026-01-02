@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   useActionPlans,
@@ -7,6 +7,7 @@ import {
   useDeleteActionPlan,
   ActionPlan,
   PRIORITY_OPTIONS,
+  STATUS_COLUMNS,
 } from '@/hooks/useActionPlans';
 import { KanbanBoard } from '@/components/plano-acao/KanbanBoard';
 import { CalendarView } from '@/components/plano-acao/CalendarView';
@@ -14,6 +15,7 @@ import { ActionPlanForm, ActionPlanFormData } from '@/components/plano-acao/Acti
 import { ActionPlanDetail } from '@/components/plano-acao/ActionPlanDetail';
 import { ActionPlanStats } from '@/components/plano-acao/ActionPlanStats';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -36,17 +38,22 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Kanban, Calendar, ListTodo, Sparkles } from 'lucide-react';
+import { Plus, Kanban, Calendar, ListTodo, Sparkles, Search, X } from 'lucide-react';
+import { format } from 'date-fns';
 
 export default function PlanoAcao() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState<'kanban' | 'calendar'>('kanban');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statsFilter, setStatsFilter] = useState<'all' | 'in_progress' | 'overdue' | 'done'>('all');
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<ActionPlan | null>(null);
   const [detailPlan, setDetailPlan] = useState<ActionPlan | null>(null);
   const [deletePlan, setDeletePlan] = useState<ActionPlan | null>(null);
+  const [prefillDate, setPrefillDate] = useState<Date | null>(null);
 
   // Pre-fill data from URL params (coming from ControlCard or RiskCard)
   const [prefillData, setPrefillData] = useState<{
@@ -88,9 +95,36 @@ export default function PlanoAcao() {
     }
   }, [searchParams, setSearchParams]);
 
-  const filteredPlans = plans?.filter((plan) => {
-    return priorityFilter === 'all' || plan.priority === priorityFilter;
-  }) || [];
+  // Filter plans based on all criteria
+  const filteredPlans = useMemo(() => {
+    if (!plans) return [];
+    
+    return plans.filter((plan) => {
+      // Priority filter
+      if (priorityFilter !== 'all' && plan.priority !== priorityFilter) return false;
+      
+      // Status filter
+      if (statusFilter !== 'all' && plan.status !== statusFilter) return false;
+      
+      // Stats filter (quick filter from stats cards)
+      if (statsFilter === 'in_progress' && plan.status !== 'in_progress') return false;
+      if (statsFilter === 'done' && plan.status !== 'done') return false;
+      if (statsFilter === 'overdue') {
+        if (!plan.due_date || plan.status === 'done') return false;
+        if (new Date(plan.due_date) >= new Date()) return false;
+      }
+      
+      // Search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchTitle = plan.title.toLowerCase().includes(query);
+        const matchDescription = plan.description?.toLowerCase().includes(query);
+        if (!matchTitle && !matchDescription) return false;
+      }
+      
+      return true;
+    });
+  }, [plans, priorityFilter, statusFilter, statsFilter, searchQuery]);
 
   const handleOpenForm = (plan?: ActionPlan) => {
     setSelectedPlan(plan || null);
@@ -104,8 +138,14 @@ export default function PlanoAcao() {
     if (!open) {
       setPrefillData(null);
       setSelectedPlan(null);
+      setPrefillDate(null);
     }
     setFormOpen(open);
+  };
+
+  const handleCreateWithDate = (date: Date) => {
+    setPrefillDate(date);
+    setFormOpen(true);
   };
 
   const handleSubmit = async (data: ActionPlanFormData) => {
@@ -118,6 +158,7 @@ export default function PlanoAcao() {
         toast({ title: 'Plano de ação criado' });
       }
       setFormOpen(false);
+      setPrefillDate(null);
     } catch (error) {
       toast({
         title: 'Erro',
@@ -141,6 +182,23 @@ export default function PlanoAcao() {
       });
     }
   };
+
+  const handleStatsFilterClick = (filter: 'all' | 'in_progress' | 'overdue' | 'done') => {
+    setStatsFilter(statsFilter === filter ? 'all' : filter);
+    // Reset other filters when using stats filter
+    if (statsFilter !== filter) {
+      setStatusFilter('all');
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setPriorityFilter('all');
+    setStatusFilter('all');
+    setStatsFilter('all');
+  };
+
+  const hasActiveFilters = searchQuery || priorityFilter !== 'all' || statusFilter !== 'all' || statsFilter !== 'all';
 
   return (
     <div className="space-y-6 relative">
@@ -172,40 +230,96 @@ export default function PlanoAcao() {
       </AnimatedItem>
 
       {/* Stats */}
-      {plans && (
-        <AnimatedItem animation="fade-up" delay={100}>
-          <ActionPlanStats plans={plans} />
-        </AnimatedItem>
-      )}
+      <AnimatedItem animation="fade-up" delay={100}>
+        <ActionPlanStats 
+          plans={plans || []} 
+          isLoading={isLoading}
+          onFilterClick={handleStatsFilterClick}
+          activeFilter={statsFilter !== 'all' ? statsFilter : undefined}
+        />
+      </AnimatedItem>
 
       {/* View Tabs */}
       <AnimatedItem animation="fade-up" delay={150}>
         <Tabs value={view} onValueChange={(v) => setView(v as 'kanban' | 'calendar')}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <TabsList className="bg-muted/50 backdrop-blur-sm">
-              <TabsTrigger value="kanban" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Kanban className="h-4 w-4" />
-                Kanban
-              </TabsTrigger>
-              <TabsTrigger value="calendar" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Calendar className="h-4 w-4" />
-                Calendário
-              </TabsTrigger>
-            </TabsList>
+          <div className="flex flex-col gap-4">
+            {/* Top row: Tabs and filters */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <TabsList className="bg-muted/50 backdrop-blur-sm">
+                <TabsTrigger value="kanban" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Kanban className="h-4 w-4" />
+                  Kanban
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Calendar className="h-4 w-4" />
+                  Calendário
+                </TabsTrigger>
+              </TabsList>
 
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-[150px] bg-background/50">
-                <SelectValue placeholder="Prioridade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                {PRIORITY_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Search */}
+                <div className="relative flex-1 min-w-[200px] max-w-xs">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por título..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 bg-background/50"
+                  />
+                </div>
+
+                {/* Priority Filter */}
+                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                  <SelectTrigger className="w-[130px] bg-background/50">
+                    <SelectValue placeholder="Prioridade" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border">
+                    <SelectItem value="all">Todas</SelectItem>
+                    {PRIORITY_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Status Filter */}
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[140px] bg-background/50">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border">
+                    <SelectItem value="all">Todos</SelectItem>
+                    {STATUS_COLUMNS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Clear Filters */}
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Limpar
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Results count */}
+            {hasActiveFilters && (
+              <p className="text-sm text-muted-foreground">
+                {filteredPlans.length} {filteredPlans.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}
+              </p>
+            )}
           </div>
 
           {/* Kanban View */}
@@ -217,19 +331,31 @@ export default function PlanoAcao() {
                 ))}
               </div>
             ) : filteredPlans.length === 0 ? (
-              <Card className="border-dashed">
+              <Card className="border-dashed border-border/50">
                 <CardContent className="py-12 text-center">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
                     <ListTodo className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-medium mb-2 font-space">Nenhuma ação cadastrada</h3>
+                  <h3 className="text-lg font-medium mb-2 font-space">
+                    {hasActiveFilters ? 'Nenhum resultado encontrado' : 'Nenhuma ação cadastrada'}
+                  </h3>
                   <p className="text-muted-foreground mb-4">
-                    Comece criando seu primeiro plano de ação
+                    {hasActiveFilters 
+                      ? 'Tente ajustar os filtros para ver mais resultados'
+                      : 'Comece criando seu primeiro plano de ação'
+                    }
                   </p>
-                  <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nova Ação
-                  </Button>
+                  {hasActiveFilters ? (
+                    <Button variant="outline" onClick={clearFilters}>
+                      <X className="h-4 w-4 mr-2" />
+                      Limpar Filtros
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nova Ação
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -247,7 +373,11 @@ export default function PlanoAcao() {
             {isLoading ? (
               <Skeleton className="h-[600px]" />
             ) : (
-              <CalendarView plans={filteredPlans} onOpen={setDetailPlan} />
+              <CalendarView 
+                plans={filteredPlans} 
+                onOpen={setDetailPlan}
+                onCreateWithDate={handleCreateWithDate}
+              />
             )}
           </TabsContent>
         </Tabs>
@@ -259,6 +389,7 @@ export default function PlanoAcao() {
         onOpenChange={handleCloseForm}
         plan={selectedPlan}
         prefillData={prefillData}
+        prefillDate={prefillDate}
         onSubmit={handleSubmit}
         isLoading={createPlan.isPending || updatePlan.isPending}
       />
@@ -268,6 +399,14 @@ export default function PlanoAcao() {
         open={!!detailPlan}
         onOpenChange={(open) => !open && setDetailPlan(null)}
         plan={detailPlan}
+        onEdit={(plan) => {
+          setDetailPlan(null);
+          handleOpenForm(plan);
+        }}
+        onDelete={(plan) => {
+          setDetailPlan(null);
+          setDeletePlan(plan);
+        }}
       />
 
       {/* Delete Confirmation */}

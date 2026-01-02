@@ -47,6 +47,7 @@ interface ActionPlanFormProps {
   onOpenChange: (open: boolean) => void;
   plan?: ActionPlan | null;
   prefillData?: PrefillData | null;
+  prefillDate?: Date | null;
   onSubmit: (data: ActionPlanFormData) => Promise<void>;
   isLoading?: boolean;
 }
@@ -63,7 +64,7 @@ export interface ActionPlanFormData {
   assigned_to: string | null;
 }
 
-export function ActionPlanForm({ open, onOpenChange, plan, prefillData, onSubmit, isLoading }: ActionPlanFormProps) {
+export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillDate, onSubmit, isLoading }: ActionPlanFormProps) {
   const [formData, setFormData] = useState<ActionPlanFormData>({
     title: '',
     description: '',
@@ -125,6 +126,19 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, onSubmit
           assigned_to: null,
         });
       }
+    } else if (prefillDate) {
+      // Pre-fill from calendar date click
+      setFormData({
+        title: '',
+        description: '',
+        status: 'todo',
+        priority: 'media',
+        due_date: prefillDate.toISOString().split('T')[0],
+        assessment_id: null,
+        risk_id: null,
+        ai_generated: false,
+        assigned_to: null,
+      });
     } else {
       setFormData({
         title: '',
@@ -138,7 +152,7 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, onSubmit
         assigned_to: null,
       });
     }
-  }, [plan, prefillData, open]);
+  }, [plan, prefillData, prefillDate, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

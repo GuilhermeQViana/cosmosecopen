@@ -1,11 +1,21 @@
-import { ActionPlan, STATUS_COLUMNS, PRIORITY_OPTIONS, useUpdateActionPlan } from '@/hooks/useActionPlans';
+import { ActionPlan, STATUS_COLUMNS, PRIORITY_OPTIONS, useUpdateActionPlan, useActionPlanTasks } from '@/hooks/useActionPlans';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { GripVertical, Calendar, Sparkles, Edit, Trash2 } from 'lucide-react';
+import { GripVertical, Calendar, Sparkles, Edit, Trash2, ChevronDown, CheckSquare, Clock, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ActionPlanCardProps {
   plan: ActionPlan;
@@ -17,22 +27,53 @@ interface ActionPlanCardProps {
 
 export function ActionPlanCard({ plan, onEdit, onDelete, onOpen, isDragging }: ActionPlanCardProps) {
   const priorityConfig = PRIORITY_OPTIONS.find((p) => p.value === plan.priority);
+  const updatePlan = useUpdateActionPlan();
+  const { toast } = useToast();
+  const { data: tasks } = useActionPlanTasks(plan.id);
 
   const isOverdue = plan.due_date && new Date(plan.due_date) < new Date() && plan.status !== 'done';
+  
+  // Check if deadline is approaching (within 7 days)
+  const daysUntilDue = plan.due_date ? differenceInDays(new Date(plan.due_date), new Date()) : null;
+  const isApproaching = daysUntilDue !== null && daysUntilDue >= 0 && daysUntilDue <= 7 && plan.status !== 'done';
+
+  // Calculate subtasks progress
+  const completedTasks = tasks?.filter((t) => t.completed).length || 0;
+  const totalTasks = tasks?.length || 0;
+  const hasSubtasks = totalTasks > 0;
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  const handleStatusChange = async (newStatus: typeof STATUS_COLUMNS[number]['value']) => {
+    try {
+      await updatePlan.mutateAsync({ id: plan.id, status: newStatus });
+      toast({ 
+        title: 'Status atualizado',
+        description: `Movido para "${STATUS_COLUMNS.find(s => s.value === newStatus)?.label}"` 
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar o status',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <Card
       className={cn(
-        'cursor-pointer group hover:shadow-md transition-all',
-        isDragging && 'opacity-50 rotate-2 shadow-lg'
+        'cursor-pointer group hover:shadow-md transition-all border-border/50 bg-card/80 backdrop-blur-sm',
+        isDragging && 'opacity-50 rotate-2 shadow-lg',
+        isOverdue && 'border-destructive/30',
+        isApproaching && !isOverdue && 'border-[hsl(var(--warning))]/30'
       )}
       onClick={() => onOpen(plan)}
     >
       <CardHeader className="p-3 pb-2">
         <div className="flex items-start gap-2">
-          <GripVertical className="h-4 w-4 text-muted-foreground/50 mt-1 cursor-grab" />
+          <GripVertical className="h-4 w-4 text-muted-foreground/50 mt-1 cursor-grab flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               {plan.ai_generated && (
                 <span title="Gerado por IA">
                   <Sparkles className="h-3 w-3 text-purple-500" />
@@ -41,10 +82,51 @@ export function ActionPlanCard({ plan, onEdit, onDelete, onOpen, isDragging }: A
               <Badge className={cn('text-xs', priorityConfig?.color)}>
                 {priorityConfig?.label || plan.priority}
               </Badge>
+              {isOverdue && (
+                <Badge variant="destructive" className="text-xs gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Atrasado
+                </Badge>
+              )}
+              {isApproaching && !isOverdue && (
+                <Badge variant="outline" className="text-xs gap-1 border-[hsl(var(--warning))] text-[hsl(var(--warning))]">
+                  <Clock className="h-3 w-3" />
+                  {daysUntilDue === 0 ? 'Hoje' : `${daysUntilDue}d`}
+                </Badge>
+              )}
             </div>
             <h4 className="font-medium text-sm line-clamp-2">{plan.title}</h4>
           </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+            {/* Quick Status Change */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40 bg-popover border-border">
+                <DropdownMenuLabel className="text-xs">Mover para</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {STATUS_COLUMNS.map((status) => (
+                  <DropdownMenuItem
+                    key={status.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusChange(status.value);
+                    }}
+                    className={cn(
+                      'text-xs cursor-pointer',
+                      plan.status === status.value && 'bg-muted'
+                    )}
+                    disabled={plan.status === status.value}
+                  >
+                    <div className={cn('w-2 h-2 rounded-full mr-2', status.color)} />
+                    {status.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               variant="ghost"
               size="icon"
@@ -70,23 +152,33 @@ export function ActionPlanCard({ plan, onEdit, onDelete, onOpen, isDragging }: A
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-3 pt-0">
+      <CardContent className="p-3 pt-0 space-y-2">
         {plan.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+          <p className="text-xs text-muted-foreground line-clamp-2">
             {plan.description}
           </p>
+        )}
+
+        {/* Subtasks Progress */}
+        {hasSubtasks && (
+          <div className="space-y-1">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <CheckSquare className="h-3 w-3" />
+              <span>{completedTasks}/{totalTasks} subtarefas</span>
+            </div>
+            <Progress value={progress} className="h-1" />
+          </div>
         )}
 
         {plan.due_date && (
           <div
             className={cn(
               'flex items-center gap-1 text-xs',
-              isOverdue ? 'text-destructive' : 'text-muted-foreground'
+              isOverdue ? 'text-destructive' : isApproaching ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground'
             )}
           >
             <Calendar className="h-3 w-3" />
             {format(new Date(plan.due_date), 'dd MMM', { locale: ptBR })}
-            {isOverdue && ' (atrasado)'}
           </div>
         )}
       </CardContent>
