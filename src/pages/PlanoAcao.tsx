@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   useActionPlans,
   useCreateActionPlan,
@@ -37,6 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Kanban, Calendar, ListTodo } from 'lucide-react';
 
 export default function PlanoAcao() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState<'kanban' | 'calendar'>('kanban');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
@@ -45,11 +47,36 @@ export default function PlanoAcao() {
   const [detailPlan, setDetailPlan] = useState<ActionPlan | null>(null);
   const [deletePlan, setDeletePlan] = useState<ActionPlan | null>(null);
 
+  // Pre-fill data from URL params (coming from ControlCard)
+  const [prefillData, setPrefillData] = useState<{
+    assessmentId?: string;
+    controlCode?: string;
+    controlName?: string;
+  } | null>(null);
+
   const { toast } = useToast();
   const { data: plans, isLoading } = useActionPlans();
   const createPlan = useCreateActionPlan();
   const updatePlan = useUpdateActionPlan();
   const deletePlanMutation = useDeleteActionPlan();
+
+  // Handle URL params on mount
+  useEffect(() => {
+    const fromAssessment = searchParams.get('fromAssessment');
+    const controlCode = searchParams.get('controlCode');
+    const controlName = searchParams.get('controlName');
+
+    if (fromAssessment || controlCode) {
+      setPrefillData({
+        assessmentId: fromAssessment || undefined,
+        controlCode: controlCode || undefined,
+        controlName: controlName || undefined,
+      });
+      setFormOpen(true);
+      // Clear URL params after processing
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const filteredPlans = plans?.filter((plan) => {
     return priorityFilter === 'all' || plan.priority === priorityFilter;
@@ -57,7 +84,18 @@ export default function PlanoAcao() {
 
   const handleOpenForm = (plan?: ActionPlan) => {
     setSelectedPlan(plan || null);
+    if (!plan) {
+      setPrefillData(null); // Clear prefill when opening for new without context
+    }
     setFormOpen(true);
+  };
+
+  const handleCloseForm = (open: boolean) => {
+    if (!open) {
+      setPrefillData(null);
+      setSelectedPlan(null);
+    }
+    setFormOpen(open);
   };
 
   const handleSubmit = async (data: ActionPlanFormData) => {
@@ -190,8 +228,9 @@ export default function PlanoAcao() {
       {/* Form Dialog */}
       <ActionPlanForm
         open={formOpen}
-        onOpenChange={setFormOpen}
+        onOpenChange={handleCloseForm}
         plan={selectedPlan}
+        prefillData={prefillData}
         onSubmit={handleSubmit}
         isLoading={createPlan.isPending || updatePlan.isPending}
       />

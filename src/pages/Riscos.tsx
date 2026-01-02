@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import {
   useRisks,
@@ -41,6 +42,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, LayoutGrid, List, AlertTriangle } from 'lucide-react';
 
 export default function Riscos() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { currentFramework } = useFrameworkContext();
   const [view, setView] = useState<'grid' | 'matrix'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,12 +54,32 @@ export default function Riscos() {
   const [selectedRisk, setSelectedRisk] = useState<Risk | null>(null);
   const [deleteRisk, setDeleteRisk] = useState<Risk | null>(null);
   const [linkControlsRisk, setLinkControlsRisk] = useState<Risk | null>(null);
+  
+  // Pre-fill data from URL params (coming from ControlCard)
+  const [prefillData, setPrefillData] = useState<{
+    controlCode?: string;
+    controlName?: string;
+  } | null>(null);
 
   const { toast } = useToast();
   const { data: risks, isLoading } = useRisks();
   const createRisk = useCreateRisk();
   const updateRisk = useUpdateRisk();
   const deleteRiskMutation = useDeleteRisk();
+
+  // Handle URL params on mount
+  useEffect(() => {
+    const fromControl = searchParams.get('fromControl');
+    const controlCode = searchParams.get('controlCode');
+    const controlName = searchParams.get('controlName');
+
+    if (fromControl && controlCode) {
+      setPrefillData({ controlCode, controlName: controlName || '' });
+      setFormOpen(true);
+      // Clear URL params after processing
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const filteredRisks = risks?.filter((risk) => {
     const matchesSearch =
@@ -70,7 +92,18 @@ export default function Riscos() {
 
   const handleOpenForm = (risk?: Risk) => {
     setSelectedRisk(risk || null);
+    if (!risk) {
+      setPrefillData(null); // Clear prefill when opening for new without context
+    }
     setFormOpen(true);
+  };
+
+  const handleCloseForm = (open: boolean) => {
+    if (!open) {
+      setPrefillData(null);
+      setSelectedRisk(null);
+    }
+    setFormOpen(open);
   };
 
   const handleSubmit = async (data: RiskFormData) => {
@@ -266,8 +299,9 @@ export default function Riscos() {
       {/* Form Dialog */}
       <RiskForm
         open={formOpen}
-        onOpenChange={setFormOpen}
+        onOpenChange={handleCloseForm}
         risk={selectedRisk}
+        prefillData={prefillData}
         onSubmit={handleSubmit}
         isLoading={createRisk.isPending || updateRisk.isPending}
       />

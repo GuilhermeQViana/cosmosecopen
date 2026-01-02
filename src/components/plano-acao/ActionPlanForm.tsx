@@ -33,10 +33,17 @@ import type { Database } from '@/integrations/supabase/types';
 type TaskStatus = Database['public']['Enums']['task_status'];
 type TaskPriority = Database['public']['Enums']['task_priority'];
 
+interface PrefillData {
+  assessmentId?: string;
+  controlCode?: string;
+  controlName?: string;
+}
+
 interface ActionPlanFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan?: ActionPlan | null;
+  prefillData?: PrefillData | null;
   onSubmit: (data: ActionPlanFormData) => Promise<void>;
   isLoading?: boolean;
 }
@@ -52,7 +59,7 @@ export interface ActionPlanFormData {
   assigned_to: string | null;
 }
 
-export function ActionPlanForm({ open, onOpenChange, plan, onSubmit, isLoading }: ActionPlanFormProps) {
+export function ActionPlanForm({ open, onOpenChange, plan, prefillData, onSubmit, isLoading }: ActionPlanFormProps) {
   const [formData, setFormData] = useState<ActionPlanFormData>({
     title: '',
     description: '',
@@ -76,6 +83,23 @@ export function ActionPlanForm({ open, onOpenChange, plan, onSubmit, isLoading }
         ai_generated: plan.ai_generated,
         assigned_to: plan.assigned_to,
       });
+    } else if (prefillData) {
+      // Pre-fill from assessment/control data
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30); // Default 30 days from now
+      
+      setFormData({
+        title: `Remediar controle ${prefillData.controlCode || 'não conforme'}`,
+        description: prefillData.controlName 
+          ? `Plano de ação para remediar o controle não conforme: ${prefillData.controlCode} - ${prefillData.controlName}`
+          : '',
+        status: 'todo',
+        priority: 'alta',
+        due_date: dueDate.toISOString().split('T')[0],
+        assessment_id: prefillData.assessmentId || null,
+        ai_generated: false,
+        assigned_to: null,
+      });
     } else {
       setFormData({
         title: '',
@@ -88,7 +112,7 @@ export function ActionPlanForm({ open, onOpenChange, plan, onSubmit, isLoading }
         assigned_to: null,
       });
     }
-  }, [plan, open]);
+  }, [plan, prefillData, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
