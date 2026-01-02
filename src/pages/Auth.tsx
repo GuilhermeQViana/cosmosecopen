@@ -284,17 +284,17 @@ export default function Auth() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/5 p-1">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="relative z-10">
+                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/5 p-1 relative z-10">
                     <TabsTrigger 
                       value="login" 
-                      className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-blue-300/70 transition-all"
+                      className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-blue-300/70 transition-all cursor-pointer"
                     >
                       Entrar
                     </TabsTrigger>
                     <TabsTrigger 
                       value="signup" 
-                      className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-blue-300/70 transition-all"
+                      className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-blue-300/70 transition-all cursor-pointer"
                     >
                       Cadastrar
                     </TabsTrigger>
