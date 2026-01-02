@@ -201,6 +201,54 @@ export type Database = {
           },
         ]
       }
+      assessment_comments: {
+        Row: {
+          assessment_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_pinned: boolean | null
+          parent_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_comments_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_evidences: {
         Row: {
           assessment_id: string
@@ -294,39 +342,89 @@ export type Database = {
           },
         ]
       }
+      comment_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string | null
+          emoji: string | null
+          id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string | null
+          emoji?: string | null
+          id?: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string | null
+          emoji?: string | null
+          id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       controls: {
         Row: {
           category: string | null
           code: string
           created_at: string
+          criticality: string | null
           description: string | null
+          evidence_example: string | null
           framework_id: string
           id: string
+          implementation_example: string | null
           name: string
           order_index: number
           parent_id: string | null
+          weight: number | null
+          weight_reason: string | null
         }
         Insert: {
           category?: string | null
           code: string
           created_at?: string
+          criticality?: string | null
           description?: string | null
+          evidence_example?: string | null
           framework_id: string
           id?: string
+          implementation_example?: string | null
           name: string
           order_index?: number
           parent_id?: string | null
+          weight?: number | null
+          weight_reason?: string | null
         }
         Update: {
           category?: string | null
           code?: string
           created_at?: string
+          criticality?: string | null
           description?: string | null
+          evidence_example?: string | null
           framework_id?: string
           id?: string
+          implementation_example?: string | null
           name?: string
           order_index?: number
           parent_id?: string | null
+          weight?: number | null
+          weight_reason?: string | null
         }
         Relationships: [
           {
