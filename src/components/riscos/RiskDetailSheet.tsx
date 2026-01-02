@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Risk, calculateRiskLevel, getRiskLevelColor, getRiskLevelLabel, TREATMENT_OPTIONS } from '@/hooks/useRisks';
 import { useRiskHistory, getRiskTrend } from '@/hooks/useRiskHistory';
 import { RiskHistoryTimeline } from './RiskHistoryTimeline';
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -21,7 +23,7 @@ import {
   Info,
   History,
   Link2,
-  User,
+  ClipboardList,
 } from 'lucide-react';
 
 interface RiskDetailSheetProps {
@@ -31,6 +33,7 @@ interface RiskDetailSheetProps {
 }
 
 export function RiskDetailSheet({ open, onOpenChange, risk }: RiskDetailSheetProps) {
+  const navigate = useNavigate();
   const { data: history, isLoading: historyLoading } = useRiskHistory(risk?.id ?? null);
   const [activeTab, setActiveTab] = useState('details');
 
@@ -47,6 +50,16 @@ export function RiskDetailSheet({ open, onOpenChange, risk }: RiskDetailSheetPro
   const getInitials = (name: string | null) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  const handleCreateActionPlan = () => {
+    const params = new URLSearchParams({
+      fromRisk: risk.id,
+      riskCode: risk.code,
+      riskTitle: risk.title,
+    });
+    navigate(`/plano-acao?${params.toString()}`);
+    onOpenChange(false);
   };
 
   return (
@@ -203,6 +216,14 @@ export function RiskDetailSheet({ open, onOpenChange, risk }: RiskDetailSheetPro
                     <p className="text-sm text-muted-foreground">{risk.treatment_plan}</p>
                   </div>
                 )}
+
+                {/* Create Action Plan Button */}
+                <div className="pt-4 border-t">
+                  <Button onClick={handleCreateActionPlan} className="w-full gap-2">
+                    <ClipboardList className="h-4 w-4" />
+                    Criar Plano de Ação
+                  </Button>
+                </div>
               </div>
             </ScrollArea>
           </TabsContent>

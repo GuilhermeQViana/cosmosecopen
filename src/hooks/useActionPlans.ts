@@ -18,6 +18,7 @@ export interface ActionPlan {
   completed_at: string | null;
   ai_generated: boolean | null;
   assessment_id: string | null;
+  risk_id: string | null;
   created_by: string | null;
   organization_id: string;
   framework_id: string | null;
