@@ -59,7 +59,11 @@ import {
   UserPlus,
   Check,
   X,
-  Clock
+  Clock,
+  Database,
+  Download,
+  FileJson,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -116,6 +120,10 @@ export default function Configuracoes() {
 
   // Leave org state
   const [leaveLoading, setLeaveLoading] = useState<string | null>(null);
+
+  // Backup state
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
 
   // Load profile data
   useEffect(() => {
@@ -325,6 +333,39 @@ export default function Configuracoes() {
       .slice(0, 2);
   };
 
+  const handleExportData = async () => {
+    if (!organization) return;
+    
+    setExportLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('export-data', {
+        body: { format: exportFormat }
+      });
+      
+      if (error) throw error;
+      
+      // Download the file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { 
+        type: exportFormat === 'json' ? 'application/json' : 'text/csv' 
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup-${organization.name.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.${exportFormat}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Backup exportado com sucesso!');
+    } catch (error: any) {
+      console.error('Error exporting data:', error);
+      toast.error('Erro ao exportar dados');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const isAdmin = organization?.role === 'admin';
 
   return (
@@ -337,7 +378,7 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
+        <TabsList className="grid w-full grid-cols-6 lg:w-[720px]">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Perfil</span>
@@ -353,6 +394,10 @@ export default function Configuracoes() {
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             <span className="hidden sm:inline">Notificações</span>
+          </TabsTrigger>
+          <TabsTrigger value="data" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            <span className="hidden sm:inline">Dados</span>
           </TabsTrigger>
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
@@ -895,6 +940,91 @@ export default function Configuracoes() {
                   checked={dueDateReminders}
                   onCheckedChange={setDueDateReminders}
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Data/Backup Tab */}
+        <TabsContent value="data" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Backup de Dados
+              </CardTitle>
+              <CardDescription>
+                Exporte um backup completo dos dados da sua organização
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-start gap-4 p-4 border rounded-lg bg-muted/30">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Download className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium">Exportar Backup Completo</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Inclui controles avaliados, riscos, planos de ação e metadados de evidências
+                  </p>
+                  <div className="flex items-center gap-4 mt-4">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={exportFormat === 'json' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setExportFormat('json')}
+                        className="gap-2"
+                      >
+                        <FileJson className="h-4 w-4" />
+                        JSON
+                      </Button>
+                      <Button
+                        variant={exportFormat === 'csv' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setExportFormat('csv')}
+                        className="gap-2"
+                      >
+                        <FileSpreadsheet className="h-4 w-4" />
+                        CSV
+                      </Button>
+                    </div>
+                    <Button onClick={handleExportData} disabled={exportLoading}>
+                      {exportLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="mr-2 h-4 w-4" />
+                      )}
+                      Exportar Agora
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <h4 className="font-medium">O que está incluído no backup:</h4>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>Avaliações de controles</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>Registro de riscos</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>Planos de ação</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>Metadados de evidências</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Nota: Arquivos de evidências não são incluídos no backup. Faça download individualmente se necessário.
+                </p>
               </div>
             </CardContent>
           </Card>

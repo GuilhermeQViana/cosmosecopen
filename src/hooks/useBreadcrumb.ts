@@ -7,7 +7,8 @@ import { useActionPlans } from './useActionPlans';
 
 export interface BreadcrumbItem {
   label: string;
-  href?: string;
+  path: string;
+  isCurrentPage: boolean;
 }
 
 const routeTitles: Record<string, string> = {
@@ -37,15 +38,11 @@ export function useBreadcrumb(): BreadcrumbItem[] {
 
   return useMemo(() => {
     const items: BreadcrumbItem[] = [
-      { label: 'Home', href: '/dashboard' },
+      { label: 'Home', path: '/dashboard', isCurrentPage: false },
     ];
 
     const pathname = location.pathname;
     const baseTitle = routeTitles[pathname];
-
-    if (baseTitle) {
-      items.push({ label: baseTitle, href: pathname });
-    }
 
     // Add context-specific items based on query params
     const controlId = searchParams.get('control');
@@ -53,32 +50,46 @@ export function useBreadcrumb(): BreadcrumbItem[] {
     const evidenceId = searchParams.get('evidence');
     const planId = searchParams.get('plan');
 
+    if (baseTitle) {
+      const hasSubItem = controlId || riskId || evidenceId || planId;
+      items.push({ 
+        label: baseTitle, 
+        path: pathname, 
+        isCurrentPage: !hasSubItem 
+      });
+    }
+
     if (controlId && pathname === '/diagnostico') {
       const control = controls.find(c => c.id === controlId);
       if (control) {
-        items.push({ label: control.code });
+        items.push({ label: control.code, path: pathname, isCurrentPage: true });
       }
     }
 
     if (riskId && pathname === '/riscos') {
       const risk = risks.find(r => r.id === riskId);
       if (risk) {
-        items.push({ label: risk.code });
+        items.push({ label: risk.code, path: pathname, isCurrentPage: true });
       }
     }
 
     if (evidenceId && pathname === '/evidencias') {
       const evidence = evidences.find(e => e.id === evidenceId);
       if (evidence) {
-        items.push({ label: evidence.name });
+        items.push({ label: evidence.name, path: pathname, isCurrentPage: true });
       }
     }
 
     if (planId && pathname === '/plano-acao') {
       const plan = actionPlans.find(p => p.id === planId);
       if (plan) {
-        items.push({ label: plan.title });
+        items.push({ label: plan.title, path: pathname, isCurrentPage: true });
       }
+    }
+
+    // Handle unknown pages
+    if (!baseTitle && pathname !== '/dashboard') {
+      items.push({ label: 'Página', path: pathname, isCurrentPage: true });
     }
 
     return items;

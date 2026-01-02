@@ -30,6 +30,7 @@ import { AttentionSection } from '@/components/dashboard/AttentionSection';
 import { NextStepsWidget } from '@/components/dashboard/NextStepsWidget';
 import { PeriodFilter, Period, getPeriodDates, getPreviousPeriodDates } from '@/components/dashboard/PeriodFilter';
 import { MetricComparison } from '@/components/dashboard/MetricComparison';
+import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 
 export default function Dashboard() {
   const { organization } = useOrganization();
@@ -237,6 +238,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Onboarding Checklist for new users */}
+      <OnboardingChecklist />
 
       {/* Attention Section */}
       <AttentionSection

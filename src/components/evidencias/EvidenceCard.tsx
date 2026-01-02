@@ -10,9 +10,10 @@ import { Download, Trash2, Calendar, Clock, Loader2 } from 'lucide-react';
 interface EvidenceCardProps {
   evidence: Evidence;
   onDelete: (evidence: Evidence) => void;
+  onPreview?: (evidence: Evidence) => void;
 }
 
-export function EvidenceCard({ evidence, onDelete }: EvidenceCardProps) {
+export function EvidenceCard({ evidence, onDelete, onPreview }: EvidenceCardProps) {
   const downloadEvidence = useDownloadEvidence();
 
   const classificationConfig = CLASSIFICATION_OPTIONS.find(
@@ -26,7 +27,10 @@ export function EvidenceCard({ evidence, onDelete }: EvidenceCardProps) {
   return (
     <Card className="group hover:shadow-md transition-shadow">
       <CardContent className="p-4">
-        <div className="flex items-start gap-3">
+        <div 
+          className="flex items-start gap-3 cursor-pointer" 
+          onClick={() => onPreview?.(evidence)}
+        >
           {/* File Icon */}
           <div className="text-3xl">{getFileIcon(evidence.file_type)}</div>
 
