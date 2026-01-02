@@ -17,15 +17,31 @@ import {
   endOfWeek,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from 'lucide-react';
 
 interface CalendarViewProps {
   plans: ActionPlan[];
   onOpen: (plan: ActionPlan) => void;
+  onCreateWithDate?: (date: Date) => void;
 }
 
-export function CalendarView({ plans, onOpen }: CalendarViewProps) {
+// Get contrast text color based on background
+const getTextColorClass = (bgColorClass: string) => {
+  // For darker backgrounds, use white text
+  if (bgColorClass.includes('slate') || bgColorClass.includes('blue') || 
+      bgColorClass.includes('purple') || bgColorClass.includes('green')) {
+    return 'text-white';
+  }
+  // For yellow/light backgrounds, use dark text
+  if (bgColorClass.includes('yellow')) {
+    return 'text-slate-900';
+  }
+  return 'text-white';
+};
+
+export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [hoveredDay, setHoveredDay] = useState<Date | null>(null);
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -46,13 +62,13 @@ export function CalendarView({ plans, onOpen }: CalendarViewProps) {
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   return (
-    <Card>
+    <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
       <CardContent className="p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-            <h3 className="font-semibold">
+            <h3 className="font-semibold font-space capitalize">
               {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
             </h3>
           </div>
@@ -61,6 +77,7 @@ export function CalendarView({ plans, onOpen }: CalendarViewProps) {
               variant="outline"
               size="icon"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              className="bg-background/50"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -68,6 +85,7 @@ export function CalendarView({ plans, onOpen }: CalendarViewProps) {
               variant="outline"
               size="sm"
               onClick={() => setCurrentMonth(new Date())}
+              className="bg-background/50"
             >
               Hoje
             </Button>
@@ -75,6 +93,7 @@ export function CalendarView({ plans, onOpen }: CalendarViewProps) {
               variant="outline"
               size="icon"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              className="bg-background/50"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -99,15 +118,19 @@ export function CalendarView({ plans, onOpen }: CalendarViewProps) {
             const dayPlans = getPlansForDay(day);
             const isCurrentMonth = isSameMonth(day, currentMonth);
             const isToday = isSameDay(day, new Date());
+            const isHovered = hoveredDay && isSameDay(day, hoveredDay);
 
             return (
               <div
                 key={day.toISOString()}
                 className={cn(
-                  'min-h-[100px] border rounded-md p-1 transition-colors',
+                  'min-h-[100px] border rounded-md p-1 transition-all relative group',
                   !isCurrentMonth && 'bg-muted/30 opacity-50',
-                  isToday && 'border-primary bg-primary/5'
+                  isToday && 'border-primary bg-primary/5',
+                  isHovered && onCreateWithDate && 'border-primary/50 bg-primary/5'
                 )}
+                onMouseEnter={() => setHoveredDay(day)}
+                onMouseLeave={() => setHoveredDay(null)}
               >
                 <div
                   className={cn(
@@ -117,6 +140,25 @@ export function CalendarView({ plans, onOpen }: CalendarViewProps) {
                 >
                   {format(day, 'd')}
                 </div>
+                
+                {/* Add button on hover */}
+                {onCreateWithDate && isCurrentMonth && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={cn(
+                      'absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity',
+                      'hover:bg-primary/20 text-primary'
+                    )}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCreateWithDate(day);
+                    }}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                )}
+
                 <div className="space-y-1">
                   {dayPlans.slice(0, 3).map((plan) => {
                     const priorityConfig = PRIORITY_OPTIONS.find(
@@ -125,24 +167,27 @@ export function CalendarView({ plans, onOpen }: CalendarViewProps) {
                     const statusConfig = STATUS_COLUMNS.find(
                       (s) => s.value === plan.status
                     );
+                    const bgClass = statusConfig?.color || 'bg-slate-500';
+                    const textClass = getTextColorClass(bgClass);
 
                     return (
                       <div
                         key={plan.id}
                         onClick={() => onOpen(plan)}
                         className={cn(
-                          'text-xs p-1 rounded cursor-pointer truncate transition-colors hover:opacity-80',
-                          statusConfig?.color || 'bg-slate-500',
-                          'text-white'
+                          'text-xs p-1 rounded cursor-pointer truncate transition-all hover:opacity-90 hover:shadow-sm',
+                          bgClass,
+                          textClass,
+                          'font-medium'
                         )}
-                        title={plan.title}
+                        title={`${plan.title} (${priorityConfig?.label})`}
                       >
                         {plan.title}
                       </div>
                     );
                   })}
                   {dayPlans.length > 3 && (
-                    <div className="text-xs text-muted-foreground text-center">
+                    <div className="text-xs text-muted-foreground text-center font-medium">
                       +{dayPlans.length - 3} mais
                     </div>
                   )}
