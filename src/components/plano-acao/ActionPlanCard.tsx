@@ -1,8 +1,11 @@
 import { ActionPlan, STATUS_COLUMNS, PRIORITY_OPTIONS, useUpdateActionPlan, useActionPlanTasks } from '@/hooks/useActionPlans';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +33,19 @@ export function ActionPlanCard({ plan, onEdit, onDelete, onOpen, isDragging }: A
   const updatePlan = useUpdateActionPlan();
   const { toast } = useToast();
   const { data: tasks } = useActionPlanTasks(plan.id);
+  const { data: teamMembers } = useTeamMembers();
+
+  const assignedMember = teamMembers?.find(m => m.user_id === plan.assigned_to);
+
+  const getInitials = (name: string | null | undefined): string => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const isOverdue = plan.due_date && new Date(plan.due_date) < new Date() && plan.status !== 'done';
   
@@ -170,17 +186,37 @@ export function ActionPlanCard({ plan, onEdit, onDelete, onOpen, isDragging }: A
           </div>
         )}
 
-        {plan.due_date && (
-          <div
-            className={cn(
-              'flex items-center gap-1 text-xs',
-              isOverdue ? 'text-destructive' : isApproaching ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground'
-            )}
-          >
-            <Calendar className="h-3 w-3" />
-            {format(new Date(plan.due_date), 'dd MMM', { locale: ptBR })}
-          </div>
-        )}
+        <div className="flex items-center justify-between gap-2">
+          {plan.due_date && (
+            <div
+              className={cn(
+                'flex items-center gap-1 text-xs',
+                isOverdue ? 'text-destructive' : isApproaching ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground'
+              )}
+            >
+              <Calendar className="h-3 w-3" />
+              {format(new Date(plan.due_date), 'dd MMM', { locale: ptBR })}
+            </div>
+          )}
+          
+          {assignedMember && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Avatar className="h-6 w-6 border border-border">
+                    <AvatarImage src={assignedMember.profile?.avatar_url || undefined} />
+                    <AvatarFallback className="text-[10px] bg-muted">
+                      {getInitials(assignedMember.profile?.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{assignedMember.profile?.full_name || 'Responsável'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

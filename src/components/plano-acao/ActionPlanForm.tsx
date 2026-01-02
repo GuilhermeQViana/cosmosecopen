@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { ActionPlan, STATUS_COLUMNS, PRIORITY_OPTIONS } from '@/hooks/useActionPlans';
+import { useTeamMembers, TeamMember } from '@/hooks/useTeamMembers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +29,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2, CalendarIcon } from 'lucide-react';
+import { Loader2, CalendarIcon, User, X } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
 type TaskStatus = Database['public']['Enums']['task_status'];
@@ -64,7 +66,23 @@ export interface ActionPlanFormData {
   assigned_to: string | null;
 }
 
+// Helper to format date as YYYY-MM-DD without timezone issues
+function formatDateToLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Helper to parse YYYY-MM-DD string to Date without timezone shift
+function parseDateString(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillDate, onSubmit, isLoading }: ActionPlanFormProps) {
+  const { data: teamMembers, isLoading: isLoadingTeam } = useTeamMembers();
+  
   const [formData, setFormData] = useState<ActionPlanFormData>({
     title: '',
     description: '',
@@ -76,6 +94,18 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillD
     ai_generated: false,
     assigned_to: null,
   });
+
+  const getInitials = (name: string | null | undefined): string => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const selectedMember = teamMembers?.find(m => m.user_id === formData.assigned_to);
 
   useEffect(() => {
     if (plan) {
@@ -104,7 +134,7 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillD
             : '',
           status: 'todo',
           priority: 'alta',
-          due_date: dueDate.toISOString().split('T')[0],
+          due_date: formatDateToLocal(dueDate),
           assessment_id: null,
           risk_id: prefillData.riskId,
           ai_generated: false,
@@ -119,7 +149,7 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillD
             : '',
           status: 'todo',
           priority: 'alta',
-          due_date: dueDate.toISOString().split('T')[0],
+          due_date: formatDateToLocal(dueDate),
           assessment_id: prefillData.assessmentId || null,
           risk_id: null,
           ai_generated: false,
@@ -133,7 +163,7 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillD
         description: '',
         status: 'todo',
         priority: 'media',
-        due_date: prefillDate.toISOString().split('T')[0],
+        due_date: formatDateToLocal(prefillDate),
         assessment_id: null,
         risk_id: null,
         ai_generated: false,
@@ -247,18 +277,18 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillD
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.due_date
-                    ? format(new Date(formData.due_date), 'PPP', { locale: ptBR })
+                    ? format(parseDateString(formData.due_date), 'PPP', { locale: ptBR })
                     : 'Selecione uma data'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={formData.due_date ? new Date(formData.due_date) : undefined}
+                  selected={formData.due_date ? parseDateString(formData.due_date) : undefined}
                   onSelect={(date) =>
                     setFormData({
                       ...formData,
-                      due_date: date ? date.toISOString().split('T')[0] : null,
+                      due_date: date ? formatDateToLocal(date) : null,
                     })
                   }
                   initialFocus
@@ -266,6 +296,62 @@ export function ActionPlanForm({ open, onOpenChange, plan, prefillData, prefillD
                 />
               </PopoverContent>
             </Popover>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Responsável</Label>
+            <Select
+              value={formData.assigned_to || 'none'}
+              onValueChange={(v) => setFormData({ ...formData, assigned_to: v === 'none' ? null : v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um responsável">
+                  {selectedMember ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={selectedMember.profile?.avatar_url || undefined} />
+                        <AvatarFallback className="text-[10px]">
+                          {getInitials(selectedMember.profile?.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate">{selectedMember.profile?.full_name || 'Usuário'}</span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Sem responsável
+                    </span>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border">
+                <SelectItem value="none">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span>Sem responsável</span>
+                  </div>
+                </SelectItem>
+                {isLoadingTeam ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : (
+                  teamMembers?.map((member) => (
+                    <SelectItem key={member.user_id} value={member.user_id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={member.profile?.avatar_url || undefined} />
+                          <AvatarFallback className="text-[10px]">
+                            {getInitials(member.profile?.full_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{member.profile?.full_name || 'Usuário'}</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>

@@ -9,11 +9,13 @@ import {
   STATUS_COLUMNS,
   PRIORITY_OPTIONS,
 } from '@/hooks/useActionPlans';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Sheet,
   SheetContent,
@@ -35,6 +37,7 @@ import {
   Edit,
   Trash2,
   Clock,
+  User,
 } from 'lucide-react';
 
 interface ActionPlanDetailProps {
@@ -121,9 +124,22 @@ export function ActionPlanDetail({ open, onOpenChange, plan, onEdit, onDelete }:
   const { toast } = useToast();
 
   const { data: tasks, isLoading: loadingTasks } = useActionPlanTasks(plan?.id ?? null);
+  const { data: teamMembers } = useTeamMembers();
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
+
+  const assignedMember = teamMembers?.find(m => m.user_id === plan?.assigned_to);
+
+  const getInitials = (name: string | null | undefined): string => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const statusConfig = STATUS_COLUMNS.find((s) => s.value === plan?.status);
   const priorityConfig = PRIORITY_OPTIONS.find((p) => p.value === plan?.priority);
@@ -275,6 +291,25 @@ export function ActionPlanDetail({ open, onOpenChange, plan, onEdit, onDelete }:
                 )}
               </div>
             )}
+
+            {/* Assigned Member */}
+            <div className="flex items-center gap-2 text-sm">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span>Responsável:</span>
+              {assignedMember ? (
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6 border border-border">
+                    <AvatarImage src={assignedMember.profile?.avatar_url || undefined} />
+                    <AvatarFallback className="text-[10px] bg-muted">
+                      {getInitials(assignedMember.profile?.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{assignedMember.profile?.full_name || 'Usuário'}</span>
+                </div>
+              ) : (
+                <span className="text-muted-foreground">Não atribuído</span>
+              )}
+            </div>
 
             {totalTasks > 0 && (
               <div>
