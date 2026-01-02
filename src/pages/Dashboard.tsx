@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { useAssessments } from '@/hooks/useAssessments';
@@ -27,11 +28,13 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines';
 import { AttentionSection } from '@/components/dashboard/AttentionSection';
 import { NextStepsWidget } from '@/components/dashboard/NextStepsWidget';
-import { useMemo } from 'react';
+import { PeriodFilter, Period, getPeriodDates, getPreviousPeriodDates } from '@/components/dashboard/PeriodFilter';
+import { MetricComparison } from '@/components/dashboard/MetricComparison';
 
 export default function Dashboard() {
   const { organization } = useOrganization();
   const { currentFramework } = useFrameworkContext();
+  const [period, setPeriod] = useState<Period>('30d');
   
   // Fetch real data from database
   const { data: controls = [], isLoading: controlsLoading } = useControls();
@@ -42,7 +45,56 @@ export default function Dashboard() {
 
   const isChartsLoading = controlsLoading || assessmentsLoading || risksLoading || actionPlansLoading;
 
-  // Calculate real metrics
+  // Filter data by period for comparison
+  const { currentPeriodData, previousPeriodData } = useMemo(() => {
+    const { start: currentStart } = getPeriodDates(period);
+    const { start: prevStart, end: prevEnd } = getPreviousPeriodDates(period);
+
+    const currentAssessments = assessments.filter(
+      (a) => new Date(a.updated_at) >= currentStart
+    );
+    const previousAssessments = assessments.filter(
+      (a) => {
+        const date = new Date(a.updated_at);
+        return date >= prevStart && date < prevEnd;
+      }
+    );
+
+    const currentRisks = risks.filter(
+      (r) => new Date(r.created_at) >= currentStart
+    );
+    const previousRisks = risks.filter(
+      (r) => {
+        const date = new Date(r.created_at);
+        return date >= prevStart && date < prevEnd;
+      }
+    );
+
+    const currentPlans = actionPlans.filter(
+      (p) => new Date(p.created_at) >= currentStart
+    );
+    const previousPlans = actionPlans.filter(
+      (p) => {
+        const date = new Date(p.created_at);
+        return date >= prevStart && date < prevEnd;
+      }
+    );
+
+    return {
+      currentPeriodData: {
+        assessments: currentAssessments,
+        risks: currentRisks,
+        plans: currentPlans,
+      },
+      previousPeriodData: {
+        assessments: previousAssessments,
+        risks: previousRisks,
+        plans: previousPlans,
+      },
+    };
+  }, [assessments, risks, actionPlans, period]);
+
+  // Calculate real metrics with comparisons
   const metrics = useMemo(() => {
     const totalControls = controls.length;
     const assessedControls = assessments.length;
@@ -52,41 +104,61 @@ export default function Dashboard() {
     const criticalRisks = risks.filter(r => (r.inherent_probability * r.inherent_impact) >= 20).length;
     const pendingActions = actionPlans.filter(a => a.status !== 'done').length;
 
+    // Previous period metrics for comparison
+    const prevAssessedControls = previousPeriodData.assessments.length;
+    const prevConformeCount = previousPeriodData.assessments.filter(a => a.status === 'conforme').length;
+    const prevConformanceScore = prevAssessedControls > 0 ? Math.round((prevConformeCount / prevAssessedControls) * 100) : 0;
+    
+    const prevCriticalRisks = previousPeriodData.risks.filter(r => (r.inherent_probability * r.inherent_impact) >= 20).length;
+    const prevPendingActions = previousPeriodData.plans.filter(a => a.status !== 'done').length;
+
     return [
       {
         title: 'Score de Conformidade',
         value: `${conformanceScore}%`,
+        numericValue: conformanceScore,
+        previousValue: prevConformanceScore,
         description: `${conformeCount} de ${assessedControls} controles conformes`,
         icon: Shield,
         color: 'text-primary',
         bgColor: 'bg-primary/10',
+        higherIsBetter: true,
       },
       {
         title: 'Riscos Críticos',
         value: criticalRisks.toString(),
+        numericValue: criticalRisks,
+        previousValue: prevCriticalRisks,
         description: `de ${risks.length} riscos totais`,
         icon: AlertTriangle,
         color: 'text-[hsl(var(--risk-critical))]',
         bgColor: 'bg-[hsl(var(--risk-critical))]/10',
+        higherIsBetter: false,
       },
       {
         title: 'Evidências',
         value: evidences.length.toString(),
+        numericValue: evidences.length,
+        previousValue: 0,
         description: 'evidências cadastradas',
         icon: FileCheck,
         color: 'text-[hsl(var(--success))]',
         bgColor: 'bg-[hsl(var(--success))]/10',
+        higherIsBetter: true,
       },
       {
         title: 'Ações Pendentes',
         value: pendingActions.toString(),
+        numericValue: pendingActions,
+        previousValue: prevPendingActions,
         description: `de ${actionPlans.length} planos totais`,
         icon: ListTodo,
         color: 'text-[hsl(var(--warning))]',
         bgColor: 'bg-[hsl(var(--warning))]/10',
+        higherIsBetter: false,
       },
     ];
-  }, [controls, assessments, risks, evidences, actionPlans]);
+  }, [controls, assessments, risks, evidences, actionPlans, previousPeriodData]);
 
   // Calculate real KPIs
   const kpis = useMemo(() => {
@@ -153,6 +225,7 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <PeriodFilter value={period} onChange={setPeriod} />
           {currentFramework && (
             <Badge variant="outline" className="text-sm px-3 py-1.5">
               {currentFramework.name}
@@ -191,6 +264,15 @@ export default function Dashboard() {
                 <span className="text-3xl font-bold">{metric.value}</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
+              {metric.previousValue > 0 && (
+                <div className="mt-2">
+                  <MetricComparison
+                    current={metric.numericValue}
+                    previous={metric.previousValue}
+                    higherIsBetter={metric.higherIsBetter}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
