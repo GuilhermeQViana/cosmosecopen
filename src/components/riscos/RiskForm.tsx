@@ -25,10 +25,16 @@ import type { Database } from '@/integrations/supabase/types';
 
 type RiskTreatment = Database['public']['Enums']['risk_treatment'];
 
+interface PrefillData {
+  controlCode?: string;
+  controlName?: string;
+}
+
 interface RiskFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   risk?: Risk | null;
+  prefillData?: PrefillData | null;
   onSubmit: (data: RiskFormData) => Promise<void>;
   isLoading?: boolean;
 }
@@ -49,7 +55,7 @@ export interface RiskFormData {
 const PROBABILITY_LABELS = ['', 'Muito Baixa', 'Baixa', 'Média', 'Alta', 'Muito Alta'];
 const IMPACT_LABELS = ['', 'Muito Baixo', 'Baixo', 'Médio', 'Alto', 'Muito Alto'];
 
-export function RiskForm({ open, onOpenChange, risk, onSubmit, isLoading }: RiskFormProps) {
+export function RiskForm({ open, onOpenChange, risk, prefillData, onSubmit, isLoading }: RiskFormProps) {
   const [formData, setFormData] = useState<RiskFormData>({
     code: '',
     title: '',
@@ -77,6 +83,23 @@ export function RiskForm({ open, onOpenChange, risk, onSubmit, isLoading }: Risk
         treatment: risk.treatment,
         treatment_plan: risk.treatment_plan || '',
       });
+    } else if (prefillData) {
+      // Pre-fill from control data
+      const riskCode = `RSK-${prefillData.controlCode?.replace(/[^A-Z0-9]/gi, '') || 'NEW'}`;
+      setFormData({
+        code: riskCode,
+        title: `Risco relacionado ao controle ${prefillData.controlCode}`,
+        description: prefillData.controlName 
+          ? `Este risco foi identificado a partir do controle não conforme: ${prefillData.controlCode} - ${prefillData.controlName}`
+          : '',
+        category: 'Conformidade',
+        inherent_probability: 3,
+        inherent_impact: 3,
+        residual_probability: null,
+        residual_impact: null,
+        treatment: 'mitigar',
+        treatment_plan: '',
+      });
     } else {
       setFormData({
         code: '',
@@ -91,7 +114,7 @@ export function RiskForm({ open, onOpenChange, risk, onSubmit, isLoading }: Risk
         treatment_plan: '',
       });
     }
-  }, [risk, open]);
+  }, [risk, prefillData, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
