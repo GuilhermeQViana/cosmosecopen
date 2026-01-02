@@ -11,6 +11,12 @@ export interface Control {
   category: string | null;
   parent_id: string | null;
   order_index: number;
+  // New fields for advanced card
+  weight: number | null;
+  criticality: string | null;
+  weight_reason: string | null;
+  implementation_example: string | null;
+  evidence_example: string | null;
 }
 
 /**

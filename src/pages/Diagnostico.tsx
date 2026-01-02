@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { useControls, useControlsByCategory } from '@/hooks/useControls';
 import { useAssessments, useUpsertAssessment, useResetAssessments, useBulkUpsertAssessments } from '@/hooks/useAssessments';
-import { ControlCard } from '@/components/diagnostico/ControlCard';
+import { ControlCardExpanded } from '@/components/diagnostico/ControlCardExpanded';
 import { ControlsTable } from '@/components/diagnostico/ControlsTable';
 import { DiagnosticStats } from '@/components/diagnostico/DiagnosticStats';
 import { DiagnosticActionBar } from '@/components/diagnostico/DiagnosticActionBar';
@@ -376,7 +376,7 @@ export default function Diagnostico() {
                     <div className="grid gap-4 md:grid-cols-2">
                       {category.controls.map((control) => (
                         <div key={control.id} id={`control-${control.id}`}>
-                          <ControlCard
+                          <ControlCardExpanded
                             control={control}
                             assessment={assessmentMap.get(control.id)}
                             onSave={handleSaveAssessment}
