@@ -188,33 +188,10 @@ export default function SelecionarOrganizacao() {
 
     setDeleting(true);
 
-    // Delete related data first
-    const { error: rolesError } = await supabase
-      .from('user_roles')
-      .delete()
-      .eq('organization_id', deletingOrg.id);
-
-    if (rolesError) {
-      toast({
-        title: 'Erro ao excluir',
-        description: rolesError.message,
-        variant: 'destructive',
-      });
-      setDeleting(false);
-      return;
-    }
-
-    // Update profiles that reference this org
-    await supabase
-      .from('profiles')
-      .update({ organization_id: null })
-      .eq('organization_id', deletingOrg.id);
-
-    // Delete the organization
-    const { error } = await supabase
-      .from('organizations')
-      .delete()
-      .eq('id', deletingOrg.id);
+    // Use the secure RPC function to delete organization
+    const { error } = await supabase.rpc('delete_organization', {
+      _org_id: deletingOrg.id
+    });
 
     if (error) {
       toast({
@@ -225,7 +202,7 @@ export default function SelecionarOrganizacao() {
     } else {
       toast({
         title: 'Organização excluída',
-        description: 'A organização foi removida.',
+        description: 'A organização e todos os dados relacionados foram removidos.',
       });
       setDeleteDialogOpen(false);
       setDeletingOrg(null);

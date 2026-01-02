@@ -1046,6 +1046,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delete_organization: { Args: { _org_id: string }; Returns: boolean }
       get_user_organization: { Args: { _user_id: string }; Returns: string }
       get_user_organizations: {
         Args: never
