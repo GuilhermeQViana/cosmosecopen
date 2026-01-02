@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, ArrowRight, Loader2, Shield } from 'lucide-react';
+import { StarField } from '@/components/ui/star-field';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -86,8 +87,9 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/20 p-4">
-      <div className="w-full max-w-lg animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 relative">
+      <StarField starCount={50} dustCount={15} />
+      <div className="w-full max-w-lg animate-fade-in relative z-10">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">

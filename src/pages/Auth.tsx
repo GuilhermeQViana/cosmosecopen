@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Mail, Lock, User, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { StarField } from '@/components/ui/star-field';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -127,7 +128,8 @@ export default function Auth() {
   ];
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid lg:grid-cols-2 relative">
+      <StarField starCount={60} dustCount={20} />
       {/* Left Side - Visual Hero */}
       <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary via-primary to-primary/80 p-12 text-primary-foreground relative overflow-hidden">
         {/* Background Pattern */}

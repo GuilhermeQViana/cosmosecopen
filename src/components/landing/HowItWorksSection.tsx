@@ -35,11 +35,19 @@ export function HowItWorksSection() {
   ];
 
   return (
-    <section id="how-it-works" className="py-20 lg:py-32 bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="py-20 lg:py-32 bg-muted/30 dark:bg-muted/10 relative overflow-hidden">
+      {/* Constellation-like connection line effect */}
+      <div 
+        className="absolute top-1/2 left-0 right-0 h-px opacity-30 dark:opacity-50"
+        style={{
+          background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--primary)), transparent)',
+        }}
+      />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Como Funciona
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 font-space">
+            Como <span className="text-gradient-cosmic">Funciona</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Em apenas 5 passos, comece a gerenciar a conformidade 
@@ -48,8 +56,13 @@ export function HowItWorksSection() {
         </div>
 
         <div className="relative">
-          {/* Connection Line - Desktop */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/20 via-primary to-primary/20 -translate-y-1/2" />
+          {/* Connection Line - Desktop with gradient */}
+          <div 
+            className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2"
+            style={{
+              background: 'linear-gradient(90deg, transparent 5%, hsl(var(--primary) / 0.5) 20%, hsl(var(--secondary) / 0.5) 50%, hsl(var(--primary) / 0.5) 80%, transparent 95%)',
+            }}
+          />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
             {steps.map((step, index) => (
@@ -59,20 +72,23 @@ export function HowItWorksSection() {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Step Card */}
-                <div className="bg-card border border-border rounded-2xl p-6 text-center hover:border-primary/50 transition-colors hover:shadow-lg">
+                <div className="bg-card/80 dark:bg-card/60 backdrop-blur-sm border border-primary/10 dark:border-primary/20 rounded-2xl p-6 text-center hover:border-secondary/50 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-sm group">
                   {/* Number Badge */}
                   <div className="relative inline-flex items-center justify-center mb-6">
-                    <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/25">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg dark:shadow-glow-sm group-hover:scale-110 transition-transform duration-300">
                       <step.icon className="w-7 h-7 text-primary-foreground" />
                     </div>
-                    <span className="absolute -top-2 -right-2 w-8 h-8 bg-card border-2 border-primary rounded-full flex items-center justify-center text-xs font-bold text-primary">
+                    <span className="absolute -top-2 -right-2 w-8 h-8 bg-card border-2 border-secondary dark:border-primary rounded-full flex items-center justify-center text-xs font-bold text-gradient-cosmic font-space">
                       {step.number}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{step.title}</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2 font-space">{step.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
                 </div>
+
+                {/* Constellation dot */}
+                <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-secondary rounded-full shadow-glow-nebula z-10" />
               </div>
             ))}
           </div>

@@ -8,32 +8,28 @@ export function BenefitsSection() {
       metric: '70%',
       title: 'Reduza Riscos de Conformidade',
       description: 'Identifique e trate gaps de conformidade de forma proativa com nossa plataforma.',
-      color: 'text-status-success',
-      bgColor: 'bg-status-success/10',
+      gradient: 'from-success to-success/70',
     },
     {
       icon: Clock,
       metric: '50h',
       title: 'Economize Horas de Trabalho',
       description: 'Automatize tarefas manuais e centralize informações para maior produtividade.',
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      gradient: 'from-primary to-primary/70',
     },
     {
       icon: Eye,
       metric: '100%',
       title: 'Visão Executiva em Tempo Real',
       description: 'Dashboards interativos e relatórios prontos para apresentação à diretoria.',
-      color: 'text-accent',
-      bgColor: 'bg-accent/10',
+      gradient: 'from-secondary to-secondary/70',
     },
     {
       icon: Sparkles,
       metric: 'IA',
       title: 'Planos de Ação Automáticos',
       description: 'Geração inteligente de recomendações baseadas nos gaps identificados.',
-      color: 'text-status-warning',
-      bgColor: 'bg-status-warning/10',
+      gradient: 'from-warning to-warning/70',
     },
   ];
 
@@ -47,23 +43,45 @@ export function BenefitsSection() {
   ];
 
   return (
-    <section id="benefits" className="py-20 lg:py-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="benefits" className="py-20 lg:py-32 relative overflow-hidden">
+      {/* Nebula effects */}
+      <div 
+        className="absolute top-1/4 right-0 w-[600px] h-[600px] opacity-10 dark:opacity-20 blur-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, hsl(var(--primary) / 0.3), transparent 60%)',
+        }}
+      />
+      <div 
+        className="absolute bottom-1/4 left-0 w-[500px] h-[500px] opacity-10 dark:opacity-15 blur-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, hsl(var(--secondary) / 0.2), transparent 60%)',
+        }}
+      />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left - Benefits Grid */}
           <div className="grid sm:grid-cols-2 gap-6">
             {benefits.map((benefit, index) => (
               <Card 
                 key={benefit.title}
-                className="border-0 shadow-lg animate-fade-in"
+                className="group border-0 shadow-lg dark:shadow-none hover:shadow-xl dark:hover:shadow-glow-sm transition-all duration-300 animate-fade-in bg-card/80 dark:bg-card/60 backdrop-blur-sm overflow-hidden"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <CardContent className="p-6">
-                  <div className={`w-12 h-12 ${benefit.bgColor} rounded-xl flex items-center justify-center mb-4`}>
-                    <benefit.icon className={`w-6 h-6 ${benefit.color}`} />
+                <CardContent className="p-6 relative">
+                  {/* Glow effect on hover */}
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{
+                      background: 'radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.1), transparent 60%)',
+                    }}
+                  />
+                  
+                  <div className={`w-12 h-12 bg-gradient-to-br ${benefit.gradient} rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <benefit.icon className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <div className={`text-3xl font-bold ${benefit.color} mb-2`}>{benefit.metric}</div>
-                  <h3 className="font-semibold text-foreground mb-2">{benefit.title}</h3>
+                  <div className="text-3xl font-bold text-gradient-cosmic mb-2 font-space">{benefit.metric}</div>
+                  <h3 className="font-semibold text-foreground mb-2 font-space">{benefit.title}</h3>
                   <p className="text-sm text-muted-foreground">{benefit.description}</p>
                 </CardContent>
               </Card>
@@ -85,11 +103,11 @@ export function BenefitsSection() {
               {checklistItems.map((item, index) => (
                 <li 
                   key={index}
-                  className="flex items-center gap-3 animate-fade-in"
+                  className="flex items-center gap-3 animate-fade-in group"
                   style={{ animationDelay: `${0.3 + index * 0.05}s` }}
                 >
-                  <div className="w-6 h-6 bg-status-success/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-status-success" />
+                  <div className="w-6 h-6 bg-gradient-to-br from-success to-success/70 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm">
+                    <CheckCircle2 className="w-4 h-4 text-success-foreground" />
                   </div>
                   <span className="text-foreground">{item}</span>
                 </li>

@@ -51,11 +51,19 @@ export function FeaturesSection() {
   ];
 
   return (
-    <section id="features" className="py-20 lg:py-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="py-20 lg:py-32 relative">
+      {/* Subtle nebula background */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] opacity-10 dark:opacity-20 blur-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, hsl(var(--primary) / 0.3), transparent 70%)',
+        }}
+      />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Funcionalidades Completas
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 font-space">
+            Funcionalidades <span className="text-gradient-cosmic">Completas</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Tudo o que você precisa para gerenciar a governança de segurança 
@@ -67,22 +75,22 @@ export function FeaturesSection() {
           {features.map((feature, index) => (
             <Card 
               key={feature.title}
-              className="group border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 animate-fade-in"
+              className="group border border-primary/10 dark:border-primary/20 hover:border-secondary/50 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-sm hover:-translate-y-1 animate-fade-in bg-card/50 dark:bg-card/40 backdrop-blur-sm"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <feature.icon className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 dark:from-primary/30 dark:to-secondary/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <feature.icon className="w-6 h-6 text-primary group-hover:text-secondary transition-colors" />
                   </div>
                   {feature.badge && (
-                    <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                    <Badge className="bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-glow-sm">
                       <Sparkles className="w-3 h-3 mr-1" />
                       {feature.badge}
                     </Badge>
                   )}
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2 font-space">{feature.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
               </CardContent>
             </Card>
