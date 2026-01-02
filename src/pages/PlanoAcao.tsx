@@ -9,6 +9,7 @@ import {
   PRIORITY_OPTIONS,
   STATUS_COLUMNS,
 } from '@/hooks/useActionPlans';
+import { useDeleteAllActionPlans } from '@/hooks/useDeleteAllActionPlans';
 import { KanbanBoard } from '@/components/plano-acao/KanbanBoard';
 import { CalendarView } from '@/components/plano-acao/CalendarView';
 import { ActionPlanForm, ActionPlanFormData } from '@/components/plano-acao/ActionPlanForm';
@@ -38,8 +39,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Kanban, Calendar, ListTodo, Sparkles, Search, X } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Kanban, Calendar, ListTodo, Sparkles, Search, X, Trash2 } from 'lucide-react';
 
 export default function PlanoAcao() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -53,6 +53,7 @@ export default function PlanoAcao() {
   const [selectedPlan, setSelectedPlan] = useState<ActionPlan | null>(null);
   const [detailPlan, setDetailPlan] = useState<ActionPlan | null>(null);
   const [deletePlan, setDeletePlan] = useState<ActionPlan | null>(null);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [prefillDate, setPrefillDate] = useState<Date | null>(null);
 
   // Pre-fill data from URL params (coming from ControlCard or RiskCard)
@@ -70,6 +71,7 @@ export default function PlanoAcao() {
   const createPlan = useCreateActionPlan();
   const updatePlan = useUpdateActionPlan();
   const deletePlanMutation = useDeleteActionPlan();
+  const deleteAllMutation = useDeleteAllActionPlans();
 
   // Handle URL params on mount
   useEffect(() => {
@@ -183,6 +185,20 @@ export default function PlanoAcao() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    try {
+      await deleteAllMutation.mutateAsync();
+      toast({ title: 'Todos os planos de ação foram excluídos' });
+      setDeleteAllOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível excluir os planos',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleStatsFilterClick = (filter: 'all' | 'in_progress' | 'overdue' | 'done') => {
     setStatsFilter(statsFilter === filter ? 'all' : filter);
     // Reset other filters when using stats filter
@@ -222,10 +238,22 @@ export default function PlanoAcao() {
               Gerencie as ações de remediação e melhoria
             </p>
           </div>
-          <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-primary/30 group">
-            <Sparkles className="h-4 w-4 mr-2 group-hover:animate-pulse" />
-            Nova Ação
-          </Button>
+          <div className="flex items-center gap-2">
+            {plans && plans.length > 0 && (
+              <Button 
+                variant="outline" 
+                onClick={() => setDeleteAllOpen(true)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir Todos
+              </Button>
+            )}
+            <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-primary/30 group">
+              <Sparkles className="h-4 w-4 mr-2 group-hover:animate-pulse" />
+              Nova Ação
+            </Button>
+          </div>
         </div>
       </AnimatedItem>
 
@@ -426,6 +454,30 @@ export default function PlanoAcao() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Confirmation */}
+      <AlertDialog open={deleteAllOpen} onOpenChange={setDeleteAllOpen}>
+        <AlertDialogContent className="border-border/50 bg-card/95 backdrop-blur-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-space text-destructive">Excluir Todos os Planos de Ação</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir <strong>todos os {plans?.length || 0} planos de ação</strong>?
+              <br /><br />
+              Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAll}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteAllMutation.isPending}
+            >
+              {deleteAllMutation.isPending ? 'Excluindo...' : 'Excluir Todos'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
