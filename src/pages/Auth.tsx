@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Mail, Lock, User, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Loader2, CheckCircle2, ArrowLeft, Sparkles } from 'lucide-react';
 import { StarField } from '@/components/ui/star-field';
+import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -129,12 +130,35 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 relative">
-      <StarField starCount={60} dustCount={20} />
-      {/* Left Side - Visual Hero */}
-      <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary via-primary to-primary/80 p-12 text-primary-foreground relative overflow-hidden">
-        {/* Background Pattern */}
+      <StarField starCount={80} dustCount={25} shootingStarCount={2} />
+      
+      {/* Left Side - Cosmic Visual Hero */}
+      <div className="hidden lg:flex flex-col justify-between p-12 text-white relative overflow-hidden">
+        {/* Cosmic Background with gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(225,85%,25%)] via-[hsl(225,90%,35%)] to-[hsl(200,85%,30%)]" />
+        
+        {/* Animated nebula overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div 
+            className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl animate-pulse"
+            style={{ 
+              background: 'radial-gradient(circle, hsl(190 100% 50% / 0.4), transparent 70%)',
+              animationDuration: '4s'
+            }}
+          />
+          <div 
+            className="absolute bottom-0 left-0 w-80 h-80 rounded-full blur-3xl animate-pulse"
+            style={{ 
+              background: 'radial-gradient(circle, hsl(225 100% 60% / 0.4), transparent 70%)',
+              animationDuration: '5s',
+              animationDelay: '1s'
+            }}
+          />
+        </div>
+        
+        {/* Constellation Pattern */}
         <div 
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-20"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
@@ -142,21 +166,27 @@ export default function Auth() {
 
         {/* Logo */}
         <div className="relative z-10">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center backdrop-blur-sm group-hover:bg-primary-foreground/30 transition-colors">
-              <Shield className="w-6 h-6" />
+          <Link to="/" className="inline-block group">
+            <div className="flex items-center gap-3 p-3 -m-3 rounded-xl transition-all duration-300 hover:bg-white/10">
+              <CosmoSecLogo size="lg" showText={true} />
             </div>
-            <span className="text-2xl font-bold font-space tracking-wide">CosmoSec</span>
           </Link>
         </div>
 
         {/* Content */}
-        <div className="relative z-10 space-y-8">
+        <div className="relative z-10 space-y-10">
           <div>
-            <h1 className="text-4xl font-bold mb-4">
-              Simplifique a Governança de Segurança
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm mb-6">
+              <Sparkles className="w-4 h-4 text-cyan-300" />
+              <span className="text-cyan-100">Plataforma GRC completa</span>
+            </div>
+            <h1 className="text-5xl font-bold mb-6 font-space leading-tight">
+              Simplifique a<br />
+              <span className="bg-gradient-to-r from-cyan-300 to-blue-200 bg-clip-text text-transparent">
+                Governança de Segurança
+              </span>
             </h1>
-            <p className="text-lg text-primary-foreground/80 max-w-md">
+            <p className="text-xl text-white/70 max-w-lg leading-relaxed">
               A plataforma completa de GRC para organizações que levam 
               cibersegurança a sério.
             </p>
@@ -164,95 +194,101 @@ export default function Auth() {
 
           <ul className="space-y-4">
             {features.map((feature, index) => (
-              <li key={index} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="w-6 h-6 bg-primary-foreground/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-4 h-4" />
+              <li 
+                key={index} 
+                className="flex items-center gap-4 opacity-0 animate-stagger-fade-up" 
+                style={{ animationDelay: `${300 + index * 100}ms`, animationFillMode: 'forwards' }}
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-cyan-400/30 to-blue-500/30 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0 border border-white/20 shadow-lg shadow-cyan-500/20">
+                  <CheckCircle2 className="w-4 h-4 text-cyan-300" />
                 </div>
-                <span className="text-primary-foreground/90">{feature}</span>
+                <span className="text-white/90 text-lg">{feature}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Footer Quote */}
+        {/* Footer Quote with glass effect */}
         <div className="relative z-10">
-          <blockquote className="border-l-2 border-primary-foreground/30 pl-4">
-            <p className="text-primary-foreground/70 italic">
-              "A segurança não é um produto, mas um processo."
-            </p>
-            <cite className="text-sm text-primary-foreground/50 mt-2 block">— Bruce Schneier</cite>
-          </blockquote>
+          <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10">
+            <blockquote className="border-l-2 border-cyan-400/50 pl-4">
+              <p className="text-white/80 italic text-lg">
+                "A segurança não é um produto, mas um processo."
+              </p>
+              <cite className="text-sm text-white/50 mt-3 block font-medium">— Bruce Schneier</cite>
+            </blockquote>
+          </div>
         </div>
       </div>
 
       {/* Right Side - Form */}
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex flex-col min-h-screen bg-background relative">
+        {/* Subtle gradient overlay for light mode */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        
         {/* Mobile Header */}
-        <div className="lg:hidden p-4 border-b border-border">
-          <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Voltar</span>
+        <div className="lg:hidden p-4 border-b border-border relative z-10">
+          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm">Voltar</span>
           </Link>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
-          <div className="w-full max-w-md animate-fade-in">
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative z-10">
+          <div className="w-full max-w-md">
             {/* Mobile Logo */}
-            <div className="flex flex-col items-center mb-8 lg:hidden">
-              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
-                <Shield className="w-8 h-8 text-primary-foreground" />
-              </div>
-              <h1 className="text-2xl font-bold text-foreground font-space">CosmoSec</h1>
-              <p className="text-muted-foreground text-sm">Plataforma de Governança, Riscos e Conformidade</p>
+            <div className="flex flex-col items-center mb-8 lg:hidden opacity-0 animate-stagger-fade-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+              <CosmoSecLogo size="xl" />
+              <p className="text-muted-foreground text-sm mt-2">Plataforma de Governança, Riscos e Conformidade</p>
             </div>
 
-            <Card className="border-0 shadow-xl lg:shadow-none lg:border">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-center text-2xl">Bem-vindo</CardTitle>
-                <CardDescription className="text-center">
+            <Card className="border-0 shadow-2xl lg:shadow-xl bg-card/80 backdrop-blur-sm lg:border lg:border-border/50 opacity-0 animate-stagger-scale-in" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+              <CardHeader className="pb-4 text-center">
+                <CardTitle className="text-2xl font-space">Bem-vindo</CardTitle>
+                <CardDescription>
                   Entre ou crie sua conta para continuar
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="login">Entrar</TabsTrigger>
-                    <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+                    <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Entrar</TabsTrigger>
+                    <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cadastrar</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="login">
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="login-email">E-mail</Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="relative group">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                           <Input
                             id="login-email"
                             type="email"
                             placeholder="seu@email.com"
                             value={loginEmail}
                             onChange={(e) => setLoginEmail(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="login-password">Senha</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="relative group">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                           <Input
                             id="login-password"
                             type="password"
                             placeholder="••••••••"
                             value={loginPassword}
                             onChange={(e) => setLoginPassword(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
                             required
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                      <Button type="submit" className="w-full h-12 text-base font-medium" size="lg" disabled={loading}>
                         {loading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -269,65 +305,65 @@ export default function Auth() {
                     <form onSubmit={handleSignup} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="signup-name">Nome completo</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="relative group">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                           <Input
                             id="signup-name"
                             type="text"
                             placeholder="Seu nome"
                             value={signupName}
                             onChange={(e) => setSignupName(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="signup-email">E-mail</Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="relative group">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                           <Input
                             id="signup-email"
                             type="email"
                             placeholder="seu@email.com"
                             value={signupEmail}
                             onChange={(e) => setSignupEmail(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="signup-password">Senha</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="relative group">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                           <Input
                             id="signup-password"
                             type="password"
                             placeholder="••••••••"
                             value={signupPassword}
                             onChange={(e) => setSignupPassword(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="signup-confirm">Confirmar senha</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="relative group">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                           <Input
                             id="signup-confirm"
                             type="password"
                             placeholder="••••••••"
                             value={signupConfirmPassword}
                             onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary focus:bg-background transition-all"
                             required
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                      <Button type="submit" className="w-full h-12 text-base font-medium" size="lg" disabled={loading}>
                         {loading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -343,11 +379,11 @@ export default function Auth() {
               </CardContent>
             </Card>
 
-            <p className="text-center text-sm text-muted-foreground mt-6">
+            <p className="text-center text-sm text-muted-foreground mt-6 opacity-0 animate-stagger-fade-in" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
               Ao continuar, você concorda com os{' '}
-              <a href="#" className="text-primary hover:underline">Termos de Uso</a>
+              <a href="#" className="text-primary hover:underline font-medium">Termos de Uso</a>
               {' '}e{' '}
-              <a href="#" className="text-primary hover:underline">Política de Privacidade</a>.
+              <a href="#" className="text-primary hover:underline font-medium">Política de Privacidade</a>.
             </p>
           </div>
         </div>
