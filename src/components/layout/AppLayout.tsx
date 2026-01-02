@@ -11,6 +11,7 @@ import { CommandPalette } from '@/components/CommandPalette';
 import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { StarField } from '@/components/ui/star-field';
 import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { Button } from '@/components/ui/button';
 import {
@@ -74,6 +75,7 @@ export function AppLayout() {
 
   return (
     <SidebarProvider>
+      <StarField starCount={60} dustCount={20} />
       <CommandPalette />
       <OnboardingTour />
       <KeyboardShortcutsDialog />
