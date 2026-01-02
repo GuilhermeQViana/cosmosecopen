@@ -1,11 +1,24 @@
 import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  calculateRiskScore,
+  getRiskScoreClassification,
+  getMaturityGapDescription,
+  getControlWeightInfo,
+} from '@/lib/risk-methodology';
 import { cn } from '@/lib/utils';
+import { AlertTriangle, Info, Zap } from 'lucide-react';
 
 interface RiskScoreBadgeProps {
   maturityLevel: number;
   targetMaturity: number;
   weight?: number;
   criticality?: string | null;
+  showDetails?: boolean;
 }
 
 export function RiskScoreBadge({
@@ -13,48 +26,91 @@ export function RiskScoreBadge({
   targetMaturity,
   weight = 1,
   criticality,
+  showDetails = true,
 }: RiskScoreBadgeProps) {
-  // Calculate risk score: gap * weight
+  // Calculate using standardized methodology
+  const riskScore = calculateRiskScore(maturityLevel, targetMaturity, weight);
+  const classification = getRiskScoreClassification(riskScore);
   const gap = Math.max(0, targetMaturity - maturityLevel);
-  const riskScore = gap * weight;
+  const gapDescription = getMaturityGapDescription(gap);
+  const weightInfo = getControlWeightInfo(weight);
 
-  // Determine color based on score
-  const getScoreConfig = () => {
-    if (riskScore === 0) {
-      return {
-        label: 'Baixo',
-        className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-      };
-    }
-    if (riskScore <= 3) {
-      return {
-        label: 'Médio',
-        className: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-      };
-    }
-    if (riskScore <= 6) {
-      return {
-        label: 'Alto',
-        className: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
-      };
-    }
-    return {
-      label: 'Crítico',
-      className: 'bg-destructive/10 text-destructive border-destructive/20',
-    };
-  };
-
-  const config = getScoreConfig();
+  const isCritical = classification.level === 'CRITICAL';
+  const isHigh = classification.level === 'HIGH';
 
   return (
-    <div className="flex items-center gap-2">
-      <Badge variant="outline" className={cn('font-mono', config.className)}>
-        Risk Score: {riskScore}
-      </Badge>
-      {criticality === 'critico' && (
-        <Badge variant="destructive" className="text-xs">
-          Crítico
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="outline"
+              className={cn(
+                'font-mono cursor-help transition-all',
+                classification.color,
+                isCritical && 'animate-pulse'
+              )}
+            >
+              {isCritical && <AlertTriangle className="w-3 h-3 mr-1" />}
+              Risk Score: {riskScore}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs p-3">
+            <div className="space-y-2 text-xs">
+              <div className="font-semibold text-sm">
+                Cálculo do Risk Score
+              </div>
+              <div className="font-mono bg-muted p-2 rounded">
+                ({targetMaturity} - {maturityLevel}) × {weight} = {riskScore}
+              </div>
+              <div className="text-muted-foreground">
+                (Alvo - Atual) × Peso = Score
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+
+        <Badge
+          variant="outline"
+          className={cn(
+            'text-xs',
+            classification.color
+          )}
+        >
+          {classification.label}
         </Badge>
+
+        {(isCritical || isHigh) && (
+          <Badge
+            variant={isCritical ? 'destructive' : 'outline'}
+            className={cn(
+              'text-xs',
+              !isCritical && 'bg-orange-500/10 text-orange-600 border-orange-500/30'
+            )}
+          >
+            <Zap className="w-3 h-3 mr-1" />
+            {classification.action}
+          </Badge>
+        )}
+      </div>
+
+      {showDetails && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Info className="w-3 h-3" />
+          <span>Gap {gap}: {gapDescription}</span>
+          {weight > 1 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="text-[10px] cursor-help">
+                  Peso {weight} ({weightInfo.label})
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs">
+                <p className="text-xs">{weightInfo.description}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       )}
     </div>
   );
