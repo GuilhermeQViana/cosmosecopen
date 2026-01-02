@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ActionPlan,
+  ActionPlanTask,
   useActionPlanTasks,
   useCreateTask,
   useUpdateTask,
@@ -11,7 +12,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
@@ -37,6 +37,77 @@ interface ActionPlanDetailProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan: ActionPlan | null;
+}
+
+interface EditableTaskItemProps {
+  task: ActionPlanTask;
+  planId: string;
+  onToggle: (taskId: string, completed: boolean) => void;
+  onDelete: (taskId: string) => void;
+}
+
+function EditableTaskItem({ task, planId, onToggle, onDelete }: EditableTaskItemProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(task.title);
+  const updateTask = useUpdateTask();
+
+  const handleSaveEdit = async () => {
+    if (editTitle.trim() && editTitle !== task.title) {
+      await updateTask.mutateAsync({ 
+        id: task.id, 
+        planId, 
+        title: editTitle.trim() 
+      });
+    }
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 group">
+      <button
+        onClick={() => onToggle(task.id, task.completed || false)}
+        className="flex-shrink-0"
+      >
+        {task.completed ? (
+          <CheckCircle2 className="h-5 w-5 text-green-500" />
+        ) : (
+          <Circle className="h-5 w-5 text-muted-foreground" />
+        )}
+      </button>
+      {isEditing ? (
+        <Input
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          onBlur={handleSaveEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSaveEdit();
+            if (e.key === 'Escape') setIsEditing(false);
+          }}
+          autoFocus
+          className="flex-1 h-7 text-sm"
+        />
+      ) : (
+        <span
+          onDoubleClick={() => !task.completed && setIsEditing(true)}
+          className={cn(
+            'flex-1 text-sm cursor-pointer',
+            task.completed && 'line-through text-muted-foreground'
+          )}
+          title="Clique duas vezes para editar"
+        >
+          {task.title}
+        </span>
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => onDelete(task.id)}
+      >
+        <X className="h-3 w-3" />
+      </Button>
+    </div>
+  );
 }
 
 export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailProps) {
@@ -127,7 +198,6 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
 
         <ScrollArea className="h-[calc(100vh-150px)] pr-4">
           <div className="space-y-6">
-            {/* Description */}
             {plan.description && (
               <div>
                 <h4 className="text-sm font-medium mb-2">Descrição</h4>
@@ -135,7 +205,6 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
               </div>
             )}
 
-            {/* Due date */}
             {plan.due_date && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -143,7 +212,6 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
               </div>
             )}
 
-            {/* Progress */}
             {totalTasks > 0 && (
               <div>
                 <div className="flex items-center justify-between text-sm mb-2">
@@ -161,11 +229,9 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
               </div>
             )}
 
-            {/* Subtasks */}
             <div>
               <h4 className="text-sm font-medium mb-3">Subtarefas</h4>
 
-              {/* Add task form */}
               <form onSubmit={handleAddTask} className="flex gap-2 mb-3">
                 <Input
                   placeholder="Adicionar subtarefa..."
@@ -186,7 +252,6 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
                 </Button>
               </form>
 
-              {/* Task list */}
               {loadingTasks ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -194,37 +259,13 @@ export function ActionPlanDetail({ open, onOpenChange, plan }: ActionPlanDetailP
               ) : tasks && tasks.length > 0 ? (
                 <div className="space-y-2">
                   {tasks.map((task) => (
-                    <div
+                    <EditableTaskItem
                       key={task.id}
-                      className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 group"
-                    >
-                      <button
-                        onClick={() => handleToggleTask(task.id, task.completed || false)}
-                        className="flex-shrink-0"
-                      >
-                        {task.completed ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </button>
-                      <span
-                        className={cn(
-                          'flex-1 text-sm',
-                          task.completed && 'line-through text-muted-foreground'
-                        )}
-                      >
-                        {task.title}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDeleteTask(task.id)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
+                      task={task}
+                      planId={plan.id}
+                      onToggle={handleToggleTask}
+                      onDelete={handleDeleteTask}
+                    />
                   ))}
                 </div>
               ) : (
