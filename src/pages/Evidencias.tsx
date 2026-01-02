@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { AnimatedItem, StaggeredGrid } from '@/components/ui/staggered-list';
 import {
   useEvidences,
   useDeleteEvidence,
@@ -15,7 +16,7 @@ import { EvidencePreviewDialog } from '@/components/evidencias/EvidencePreviewDi
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton, SkeletonCard, PageLoader } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -98,23 +99,33 @@ export default function Evidencias() {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)]">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FileCheck className="h-6 w-6 text-primary" />
-            Cofre de Evidências
-          </h1>
-          <p className="text-muted-foreground">Gerencie documentos e evidências de conformidade</p>
-        </div>
-        <Button onClick={() => setUploadOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Evidência
-        </Button>
+    <div className="h-[calc(100vh-8rem)] relative">
+      {/* Cosmic background effects */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 -right-20 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -left-20 w-72 h-72 bg-chart-2/5 rounded-full blur-3xl" />
       </div>
 
-      {evidences && <EvidenceStats evidences={evidences} />}
+      {/* Header */}
+      <AnimatedItem animation="fade-up" delay={0}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <FileCheck className="h-6 w-6 text-primary" />
+              Cofre de Evidências
+            </h1>
+            <p className="text-muted-foreground">Gerencie documentos e evidências de conformidade</p>
+          </div>
+          <Button onClick={() => setUploadOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Evidência
+          </Button>
+        </div>
+      </AnimatedItem>
+
+      <AnimatedItem animation="fade-up" delay={50}>
+        {evidences && <EvidenceStats evidences={evidences} />}
+      </AnimatedItem>
 
       <ResizablePanelGroup direction="horizontal" className="mt-6 rounded-lg border">
         {/* Folder Tree */}
@@ -157,7 +168,9 @@ export default function Evidencias() {
 
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-40" />)}
+                {[...Array(6)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
               </div>
             ) : filteredEvidences.length === 0 ? (
               <Card>
@@ -170,11 +183,11 @@ export default function Evidencias() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <StaggeredGrid columns={3} staggerDelay={60} animation="scale-in" className="gap-4">
                 {filteredEvidences.map((evidence) => (
                   <EvidenceCard key={evidence.id} evidence={evidence} onDelete={setDeleteEvidence} onPreview={setPreviewEvidence} />
                 ))}
-              </div>
+              </StaggeredGrid>
             )}
           </div>
         </ResizablePanel>
