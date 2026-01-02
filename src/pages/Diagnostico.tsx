@@ -121,6 +121,9 @@ export default function Diagnostico() {
         observations,
       });
       toast.success('Avaliação salva com sucesso');
+      
+      // After saving, check for non-conforming controls that need AI plans
+      await checkForAIGeneration();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao salvar avaliação');
     } finally {
