@@ -7,89 +7,97 @@
 
 @layer base {
   :root {
-    /* CosmoSec Light Theme - Professional with space accents */
-    --background: 210 20% 98%;
+    /* CosmoSec Light Theme - Celestial Dawn */
+    /* Soft cosmic white with subtle blue undertone */
+    --background: 220 30% 98%;
     --foreground: 222 47% 11%;
 
-    --card: 0 0% 100%;
+    /* Pure white cards with subtle warmth */
+    --card: 220 20% 99%;
     --card-foreground: 222 47% 11%;
 
-    --popover: 0 0% 100%;
+    --popover: 220 20% 99%;
     --popover-foreground: 222 47% 11%;
 
-    /* Event Horizon - Primary Brand #2E5CFF */
-    --primary: 225 100% 59%;
+    /* Event Horizon - Primary Brand (slightly softer for light mode) */
+    --primary: 225 85% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Nebula - Secondary/Highlights #00D4FF */
-    --secondary: 190 100% 50%;
-    --secondary-foreground: 220 35% 6%;
+    /* Nebula - Secondary/Highlights (softer cyan) */
+    --secondary: 190 80% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 215 20% 96%;
-    --muted-foreground: 215 25% 45%;
+    /* Soft cosmic muted tones */
+    --muted: 220 25% 95%;
+    --muted-foreground: 220 15% 40%;
 
-    --accent: 225 100% 95%;
-    --accent-foreground: 225 100% 50%;
+    /* Gentle cosmic accent */
+    --accent: 225 60% 96%;
+    --accent-foreground: 225 85% 45%;
 
-    /* Supernova - Danger/Alert #FF6B00 */
-    --destructive: 27 100% 50%;
+    /* Supernova - Danger/Alert (slightly softer) */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 225 100% 59% / 0.15;
-    --input: 225 100% 59% / 0.15;
-    --ring: 190 100% 50%;
+    /* Soft cosmic borders */
+    --border: 220 25% 88%;
+    --input: 220 25% 88%;
+    --ring: 225 85% 55%;
 
     --radius: 0.75rem;
 
-    /* Status colors */
-    --success: 142 76% 36%;
+    /* Status colors - softer for light mode */
+    --success: 142 71% 40%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 95% 48%;
     --warning-foreground: 0 0% 0%;
-    --info: 190 100% 42%;
+    --info: 200 85% 48%;
     --info-foreground: 0 0% 100%;
 
-    /* Risk levels */
-    --risk-critical: 27 100% 50%;
-    --risk-high: 0 84% 60%;
-    --risk-medium: 38 92% 50%;
-    --risk-low: 142 76% 36%;
-    --risk-very-low: 190 100% 42%;
+    /* Risk levels - harmonized for light mode */
+    --risk-critical: 0 72% 51%;
+    --risk-high: 15 85% 55%;
+    --risk-medium: 38 95% 48%;
+    --risk-low: 142 71% 40%;
+    --risk-very-low: 200 85% 48%;
 
-    /* Maturity levels */
-    --maturity-0: 0 0% 60%;
-    --maturity-1: 0 84% 60%;
-    --maturity-2: 25 95% 53%;
-    --maturity-3: 38 92% 50%;
-    --maturity-4: 142 76% 50%;
-    --maturity-5: 142 76% 36%;
+    /* Maturity levels - softer gradation */
+    --maturity-0: 220 10% 55%;
+    --maturity-1: 0 70% 55%;
+    --maturity-2: 25 90% 50%;
+    --maturity-3: 38 90% 48%;
+    --maturity-4: 142 70% 45%;
+    --maturity-5: 142 71% 35%;
 
     /* Conformity status */
-    --conforme: 142 76% 36%;
-    --parcial: 38 92% 50%;
-    --nao-conforme: 0 84% 60%;
+    --conforme: 142 71% 40%;
+    --parcial: 38 95% 48%;
+    --nao-conforme: 0 72% 51%;
 
-    /* Sidebar - Deep Void */
-    --sidebar-background: 220 35% 8%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 225 100% 59%;
+    /* Sidebar Light - Soft cosmic gradient */
+    --sidebar-background: 225 40% 15%;
+    --sidebar-foreground: 220 25% 95%;
+    --sidebar-primary: 225 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 35% 14%;
-    --sidebar-accent-foreground: 210 40% 95%;
-    --sidebar-border: 225 100% 59% / 0.2;
-    --sidebar-ring: 190 100% 50%;
+    --sidebar-accent: 225 35% 22%;
+    --sidebar-accent-foreground: 220 25% 98%;
+    --sidebar-border: 225 50% 30%;
+    --sidebar-ring: 190 80% 50%;
 
-    /* Charts - Cosmic palette */
-    --chart-1: 225 100% 59%;
-    --chart-2: 190 100% 50%;
-    --chart-3: 142 76% 42%;
-    --chart-4: 27 100% 50%;
-    --chart-5: 280 87% 60%;
-    --chart-6: 38 92% 50%;
+    /* Charts - Cosmic palette for light mode */
+    --chart-1: 225 85% 55%;
+    --chart-2: 190 80% 45%;
+    --chart-3: 142 71% 40%;
+    --chart-4: 15 85% 55%;
+    --chart-5: 280 75% 55%;
+    --chart-6: 38 95% 48%;
 
-    /* Cosmic effects */
-    --glow-primary: 225 100% 59%;
-    --glow-nebula: 190 100% 50%;
+    /* Cosmic effects - softer for light mode */
+    --glow-primary: 225 85% 55%;
+    --glow-nebula: 190 80% 45%;
+
+    /* Nebula accent for light mode gradients */
+    --nebula: 200 85% 60%;
   }
 
   .dark {
@@ -126,14 +134,21 @@
     --destructive-foreground: 0 0% 100%;
 
     /* Bordas sutis com primary a 20% */
-    --border: 225 100% 59% / 0.2;
-    --input: 225 100% 59% / 0.2;
+    --border: 222 30% 22%;
+    --input: 222 30% 22%;
     --ring: 190 100% 50%;
 
     /* Status colors dark */
     --success: 142 76% 42%;
     --warning: 38 92% 55%;
     --info: 190 100% 55%;
+
+    /* Risk levels dark */
+    --risk-critical: 27 100% 55%;
+    --risk-high: 0 84% 60%;
+    --risk-medium: 38 92% 55%;
+    --risk-low: 142 76% 45%;
+    --risk-very-low: 190 100% 50%;
 
     /* Sidebar dark - Even deeper void */
     --sidebar-background: 220 35% 4%;
@@ -142,7 +157,7 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 35% 12%;
     --sidebar-accent-foreground: 210 40% 95%;
-    --sidebar-border: 225 100% 59% / 0.15;
+    --sidebar-border: 222 30% 18%;
     --sidebar-ring: 190 100% 50%;
 
     /* Charts dark - Cosmic palette */
@@ -152,6 +167,9 @@
     --chart-4: 27 100% 55%;
     --chart-5: 280 87% 65%;
     --chart-6: 38 92% 60%;
+
+    /* Nebula accent for dark mode */
+    --nebula: 190 100% 70%;
   }
 }
 

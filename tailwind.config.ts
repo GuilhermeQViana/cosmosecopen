@@ -110,6 +110,8 @@ export default {
           primary: "hsl(var(--glow-primary))",
           nebula: "hsl(var(--glow-nebula))",
         },
+        // Nebula accent color
+        nebula: "hsl(var(--nebula))",
       },
       borderRadius: {
         lg: "var(--radius)",
