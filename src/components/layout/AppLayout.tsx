@@ -7,6 +7,7 @@ import { AppSidebar } from './AppSidebar';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Search } from 'lucide-react';
 import { CommandPalette } from '@/components/CommandPalette';
+import { NotificationCenter } from './NotificationCenter';
 import { Button } from '@/components/ui/button';
 import {
   Breadcrumb,
@@ -107,6 +108,7 @@ export function AppLayout() {
                 <span className="text-xs">⌘</span>K
               </kbd>
             </Button>
+            <NotificationCenter />
           </header>
           <main className="flex-1 p-6 overflow-auto">
             <Outlet />
