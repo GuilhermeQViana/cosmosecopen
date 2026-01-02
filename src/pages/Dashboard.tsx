@@ -9,6 +9,7 @@ import { useActionPlans } from '@/hooks/useActionPlans';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { StaggeredGrid, AnimatedItem } from '@/components/ui/staggered-list';
 import {
   Shield,
   AlertTriangle,
@@ -217,11 +218,17 @@ export default function Dashboard() {
   }, [assessments, controls, currentFramework]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 relative">
+      {/* Subtle cosmic background effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <AnimatedItem animation="fade-up" delay={0} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard Executivo</h1>
+          <h1 className="text-2xl font-bold text-foreground font-space">Dashboard Executivo</h1>
           <p className="text-muted-foreground">
             Visão geral de conformidade da {organization?.name || 'organização'}
           </p>
@@ -229,44 +236,48 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <PeriodFilter value={period} onChange={setPeriod} />
           {currentFramework && (
-            <Badge variant="outline" className="text-sm px-3 py-1.5">
+            <Badge variant="outline" className="text-sm px-3 py-1.5 bg-primary/5 border-primary/20">
               {currentFramework.name}
             </Badge>
           )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Activity className="h-4 w-4" />
+            <Activity className="h-4 w-4 animate-pulse text-primary" />
             Atualizado agora
           </div>
         </div>
-      </div>
+      </AnimatedItem>
 
       {/* Onboarding Checklist for new users */}
-      <OnboardingChecklist />
+      <AnimatedItem animation="fade-up" delay={50}>
+        <OnboardingChecklist />
+      </AnimatedItem>
 
       {/* Attention Section */}
-      <AttentionSection
-        controls={controls}
-        assessments={assessments}
-        risks={risks}
-        actionPlans={actionPlans}
-        isLoading={isChartsLoading}
-      />
+      <AnimatedItem animation="fade-up" delay={100}>
+        <AttentionSection
+          controls={controls}
+          assessments={assessments}
+          risks={risks}
+          actionPlans={actionPlans}
+          isLoading={isChartsLoading}
+        />
+      </AnimatedItem>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StaggeredGrid columns={4} staggerDelay={80} animation="scale-in">
         {metrics.map((metric) => (
-          <Card key={metric.title} className="card-metric">
+          <Card key={metric.title} className="card-metric group hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {metric.title}
               </CardTitle>
-              <div className={`p-2 rounded-lg ${metric.bgColor}`}>
+              <div className={`p-2 rounded-lg ${metric.bgColor} group-hover:scale-110 transition-transform`}>
                 <metric.icon className={`w-4 h-4 ${metric.color}`} />
               </div>
             </CardHeader>
             <CardContent>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold">{metric.value}</span>
+                <span className="text-3xl font-bold font-space">{metric.value}</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
               {metric.previousValue > 0 && (
@@ -281,105 +292,119 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </StaggeredGrid>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <StaggeredGrid columns={4} staggerDelay={60} animation="fade-up">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} className="p-4">
+          <Card key={kpi.label} className="p-4 group hover:border-primary/30 transition-all duration-300">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">{kpi.label}</span>
-              <Target className="h-4 w-4 text-muted-foreground" />
+              <Target className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-2xl font-bold">{kpi.value}</span>
+              <span className="text-2xl font-bold font-space">{kpi.value}</span>
               <span className="text-sm text-muted-foreground">/ {kpi.total}</span>
             </div>
             <Progress value={kpi.percent} className="h-1.5" />
           </Card>
         ))}
-      </div>
+      </StaggeredGrid>
 
       {/* Charts Row 1 */}
-      <MaturityTrendChart 
-        assessments={assessments} 
-        frameworkName={currentFramework?.name} 
-        isLoading={assessmentsLoading}
-      />
+      <AnimatedItem animation="fade-up" delay={200}>
+        <MaturityTrendChart 
+          assessments={assessments} 
+          frameworkName={currentFramework?.name} 
+          isLoading={assessmentsLoading}
+        />
+      </AnimatedItem>
 
       {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <StaggeredGrid columns={3} staggerDelay={100} animation="fade-up">
         <ComplianceRadarChart controls={controls} assessments={assessments} isLoading={isChartsLoading} />
         <RiskDistributionChart risks={risks} isLoading={risksLoading} />
         <ActionPlanStatusChart actionPlans={actionPlans} isLoading={actionPlansLoading} />
-      </div>
+      </StaggeredGrid>
 
       {/* Charts Row 3 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <RiskScoreMetrics controls={controls} assessments={assessments} isLoading={isChartsLoading} />
-        <ControlsMaturityChart assessments={assessments} isLoading={assessmentsLoading} />
+        <AnimatedItem animation="fade-up" delay={250}>
+          <RiskScoreMetrics controls={controls} assessments={assessments} isLoading={isChartsLoading} />
+        </AnimatedItem>
+        <AnimatedItem animation="fade-up" delay={300}>
+          <ControlsMaturityChart assessments={assessments} isLoading={assessmentsLoading} />
+        </AnimatedItem>
       </div>
 
       {/* Charts Row 4 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <NextStepsWidget
-          controls={controls}
-          assessments={assessments}
-          risks={risks}
-          actionPlans={actionPlans}
-          evidences={evidences}
-          isLoading={isChartsLoading}
-        />
+        <AnimatedItem animation="fade-up" delay={350}>
+          <NextStepsWidget
+            controls={controls}
+            assessments={assessments}
+            risks={risks}
+            actionPlans={actionPlans}
+            evidences={evidences}
+            isLoading={isChartsLoading}
+          />
+        </AnimatedItem>
         <div className="lg:col-span-2 space-y-4">
-          <RecentActivity />
-          <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />
+          <AnimatedItem animation="fade-up" delay={400}>
+            <RecentActivity />
+          </AnimatedItem>
+          <AnimatedItem animation="fade-up" delay={450}>
+            <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />
+          </AnimatedItem>
         </div>
       </div>
 
       {/* Top Gaps */}
       {recentGaps.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Gaps de Controles</CardTitle>
-            <CardDescription>Controles que precisam de atenção prioritária</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentGaps.map((gap, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    {gap.status === 'nao_conforme' ? (
-                      <XCircle className="w-5 h-5 text-destructive" />
-                    ) : (
-                      <Clock className="w-5 h-5 text-[hsl(var(--warning))]" />
-                    )}
-                    <div>
-                      <p className="font-medium text-sm">{gap.name}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{gap.control}</p>
+        <AnimatedItem animation="fade-up" delay={500}>
+          <Card className="border-border/50 hover:border-primary/30 transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="font-space">Top Gaps de Controles</CardTitle>
+              <CardDescription>Controles que precisam de atenção prioritária</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {recentGaps.map((gap, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      {gap.status === 'nao_conforme' ? (
+                        <XCircle className="w-5 h-5 text-destructive group-hover:scale-110 transition-transform" />
+                      ) : (
+                        <Clock className="w-5 h-5 text-[hsl(var(--warning))] group-hover:scale-110 transition-transform" />
+                      )}
+                      <div>
+                        <p className="font-medium text-sm">{gap.name}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{gap.control}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {gap.framework}
+                      </Badge>
+                      <Badge
+                        className={
+                          gap.status === 'nao_conforme'
+                            ? 'badge-nao-conforme'
+                            : 'badge-parcial'
+                        }
+                      >
+                        {gap.status === 'nao_conforme' ? 'Não Conforme' : 'Parcial'}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {gap.framework}
-                    </Badge>
-                    <Badge
-                      className={
-                        gap.status === 'nao_conforme'
-                          ? 'badge-nao-conforme'
-                          : 'badge-parcial'
-                      }
-                    >
-                      {gap.status === 'nao_conforme' ? 'Não Conforme' : 'Parcial'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </AnimatedItem>
       )}
     </div>
   );

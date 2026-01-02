@@ -24,7 +24,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SkeletonCard } from '@/components/ui/skeleton';
+import { StaggeredGrid, AnimatedItem } from '@/components/ui/staggered-list';
 import {
   Select,
   SelectContent,
@@ -43,7 +44,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, LayoutGrid, List, AlertTriangle, Download, HelpCircle } from 'lucide-react';
+import { Plus, Search, LayoutGrid, List, AlertTriangle, Download } from 'lucide-react';
 
 const LEVEL_FILTERS = [
   { value: 'all', label: 'Todos os níveis' },
@@ -180,129 +181,149 @@ export default function Riscos() {
   const handleFilterCritical = () => setLevelFilter('critical');
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <AlertTriangle className="h-6 w-6 text-primary" />
-            Registro de Riscos
-          </h1>
-          <p className="text-muted-foreground">Gerencie os riscos de segurança da organização</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {currentFramework && (
-            <Badge variant="outline" className="text-sm px-3 py-1.5">{currentFramework.name}</Badge>
-          )}
-          <RiskMethodologyInfo />
-          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={filteredRisks.length === 0}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-          <Button onClick={() => handleOpenForm()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Risco
-          </Button>
-        </div>
+    <div className="space-y-6 relative">
+      {/* Subtle cosmic background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-20 right-10 w-[400px] h-[400px] bg-[hsl(var(--risk-critical))]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-10 w-[300px] h-[300px] bg-primary/5 rounded-full blur-3xl" />
       </div>
+
+      {/* Header */}
+      <AnimatedItem animation="fade-up" delay={0}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2 font-space">
+              <div className="p-2 rounded-lg bg-[hsl(var(--risk-critical))]/10">
+                <AlertTriangle className="h-6 w-6 text-[hsl(var(--risk-critical))]" />
+              </div>
+              Registro de Riscos
+            </h1>
+            <p className="text-muted-foreground mt-1">Gerencie os riscos de segurança da organização</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {currentFramework && (
+              <Badge variant="outline" className="text-sm px-3 py-1.5 bg-primary/5 border-primary/20">{currentFramework.name}</Badge>
+            )}
+            <RiskMethodologyInfo />
+            <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={filteredRisks.length === 0} className="hover:bg-primary/10 hover:border-primary/30">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+            <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-primary/30">
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Risco
+            </Button>
+          </div>
+        </div>
+      </AnimatedItem>
 
       {/* Critical Alert */}
       {risks && risks.length > 0 && (
-        <CriticalRisksAlert risks={risks} onFilterCritical={handleFilterCritical} />
+        <AnimatedItem animation="fade-up" delay={50}>
+          <CriticalRisksAlert risks={risks} onFilterCritical={handleFilterCritical} />
+        </AnimatedItem>
       )}
 
       {/* Stats */}
-      {risks && <RiskStats risks={risks} />}
+      {risks && (
+        <AnimatedItem animation="fade-up" delay={100}>
+          <RiskStats risks={risks} />
+        </AnimatedItem>
+      )}
 
       {/* View Tabs */}
-      <Tabs value={view} onValueChange={(v) => setView(v as 'grid' | 'matrix')}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <TabsList>
-            <TabsTrigger value="grid" className="gap-2"><LayoutGrid className="h-4 w-4" />Lista</TabsTrigger>
-            <TabsTrigger value="matrix" className="gap-2"><List className="h-4 w-4" />Matriz</TabsTrigger>
-          </TabsList>
+      <AnimatedItem animation="fade-up" delay={150}>
+        <Tabs value={view} onValueChange={(v) => setView(v as 'grid' | 'matrix')}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <TabsList className="bg-muted/50 backdrop-blur-sm">
+              <TabsTrigger value="grid" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><LayoutGrid className="h-4 w-4" />Lista</TabsTrigger>
+              <TabsTrigger value="matrix" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><List className="h-4 w-4" />Matriz</TabsTrigger>
+            </TabsList>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Buscar risco..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-[180px]" />
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input placeholder="Buscar risco..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 w-[180px] bg-background/50 focus:bg-background" />
+              </div>
+              <Select value={levelFilter} onValueChange={setLevelFilter}>
+                <SelectTrigger className="w-[140px] bg-background/50"><SelectValue placeholder="Nível" /></SelectTrigger>
+                <SelectContent>
+                  {LEVEL_FILTERS.map((f) => (<SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[130px] bg-background/50"><SelectValue placeholder="Categoria" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {RISK_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+                </SelectContent>
+              </Select>
+              <Select value={treatmentFilter} onValueChange={setTreatmentFilter}>
+                <SelectTrigger className="w-[120px] bg-background/50"><SelectValue placeholder="Tratamento" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {TREATMENT_OPTIONS.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-[140px]"><SelectValue placeholder="Nível" /></SelectTrigger>
-              <SelectContent>
-                {LEVEL_FILTERS.map((f) => (<SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[130px]"><SelectValue placeholder="Categoria" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                {RISK_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
-              </SelectContent>
-            </Select>
-            <Select value={treatmentFilter} onValueChange={setTreatmentFilter}>
-              <SelectTrigger className="w-[120px]"><SelectValue placeholder="Tratamento" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {TREATMENT_OPTIONS.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
           </div>
-        </div>
 
-        <TabsContent value="grid" className="mt-6">
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (<Skeleton key={i} className="h-48" />))}
-            </div>
-          ) : filteredRisks.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">Nenhum risco encontrado</h3>
-                <p className="text-muted-foreground mb-4">
-                  {searchQuery || categoryFilter !== 'all' || treatmentFilter !== 'all' || levelFilter !== 'all'
-                    ? 'Tente ajustar os filtros de busca' : 'Comece cadastrando o primeiro risco da organização'}
-                </p>
-                {!searchQuery && categoryFilter === 'all' && treatmentFilter === 'all' && levelFilter === 'all' && (
-                  <Button onClick={() => handleOpenForm()}><Plus className="h-4 w-4 mr-2" />Novo Risco</Button>
-                )}
+          <TabsContent value="grid" className="mt-6">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (<SkeletonCard key={i} />))}
+              </div>
+            ) : filteredRisks.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
+                    <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2 font-space">Nenhum risco encontrado</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {searchQuery || categoryFilter !== 'all' || treatmentFilter !== 'all' || levelFilter !== 'all'
+                      ? 'Tente ajustar os filtros de busca' : 'Comece cadastrando o primeiro risco da organização'}
+                  </p>
+                  {!searchQuery && categoryFilter === 'all' && treatmentFilter === 'all' && levelFilter === 'all' && (
+                    <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80"><Plus className="h-4 w-4 mr-2" />Novo Risco</Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <StaggeredGrid columns={3} staggerDelay={60} animation="scale-in">
+                {filteredRisks.map((risk) => (
+                  <RiskCard key={risk.id} risk={risk} onEdit={handleOpenForm} onDelete={setDeleteRisk} onLinkControls={setLinkControlsRisk} onViewDetails={setDetailRisk} />
+                ))}
+              </StaggeredGrid>
+            )}
+          </TabsContent>
+
+          <TabsContent value="matrix" className="mt-6">
+            <Card className="border-border/50 hover:border-primary/30 transition-all">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="font-space">Matriz de Riscos 5x5</CardTitle>
+                  <Button variant="outline" size="sm" onClick={() => setShowResidual(!showResidual)} className="hover:bg-primary/10">
+                    {showResidual ? 'Ver Inerente' : 'Ver Residual'}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? <SkeletonCard className="h-[400px]" /> : <RiskMatrix risks={filteredRisks} onRiskClick={setDetailRisk} showResidual={showResidual} />}
               </CardContent>
             </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredRisks.map((risk) => (
-                <RiskCard key={risk.id} risk={risk} onEdit={handleOpenForm} onDelete={setDeleteRisk} onLinkControls={setLinkControlsRisk} onViewDetails={setDetailRisk} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="matrix" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Matriz de Riscos 5x5</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => setShowResidual(!showResidual)}>
-                  {showResidual ? 'Ver Inerente' : 'Ver Residual'}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? <Skeleton className="h-[400px]" /> : <RiskMatrix risks={filteredRisks} onRiskClick={setDetailRisk} showResidual={showResidual} />}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </AnimatedItem>
 
       <RiskForm open={formOpen} onOpenChange={handleCloseForm} risk={selectedRisk} prefillData={prefillData} onSubmit={handleSubmit} isLoading={createRisk.isPending || updateRisk.isPending} />
       <LinkControlsDialog open={!!linkControlsRisk} onOpenChange={(open) => !open && setLinkControlsRisk(null)} risk={linkControlsRisk} />
       <RiskDetailSheet open={!!detailRisk} onOpenChange={(open) => !open && setDetailRisk(null)} risk={detailRisk} />
 
       <AlertDialog open={!!deleteRisk} onOpenChange={(open) => !open && setDeleteRisk(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-border/50 bg-card/95 backdrop-blur-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Risco</AlertDialogTitle>
+            <AlertDialogTitle className="font-space">Excluir Risco</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja excluir o risco "{deleteRisk?.code} - {deleteRisk?.title}"? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
