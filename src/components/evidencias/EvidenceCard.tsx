@@ -5,16 +5,22 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Download, Trash2, Calendar, Clock, Loader2 } from 'lucide-react';
+import { Download, Trash2, Calendar, Clock, Loader2, GripVertical } from 'lucide-react';
 
 interface EvidenceCardProps {
   evidence: Evidence;
   onDelete: (evidence: Evidence) => void;
   onPreview?: (evidence: Evidence) => void;
+  isDragging?: boolean;
 }
 
-export function EvidenceCard({ evidence, onDelete, onPreview }: EvidenceCardProps) {
+export function EvidenceCard({ evidence, onDelete, onPreview, isDragging }: EvidenceCardProps) {
   const downloadEvidence = useDownloadEvidence();
+
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('application/json', JSON.stringify({ evidenceId: evidence.id }));
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
   const classificationConfig = CLASSIFICATION_OPTIONS.find(
     (c) => c.value === evidence.classification
@@ -25,12 +31,23 @@ export function EvidenceCard({ evidence, onDelete, onPreview }: EvidenceCardProp
     new Date(evidence.expires_at) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card 
+      className={cn(
+        "group hover:shadow-md transition-all cursor-grab active:cursor-grabbing",
+        isDragging && "opacity-50 ring-2 ring-primary"
+      )}
+      draggable
+      onDragStart={handleDragStart}
+    >
       <CardContent className="p-4">
         <div 
           className="flex items-start gap-3 cursor-pointer" 
           onClick={() => onPreview?.(evidence)}
         >
+          {/* Drag Handle */}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground">
+            <GripVertical className="h-5 w-5" />
+          </div>
           {/* File Icon */}
           <div className="text-3xl">{getFileIcon(evidence.file_type)}</div>
 
