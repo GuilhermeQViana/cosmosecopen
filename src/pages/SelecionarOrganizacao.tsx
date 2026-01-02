@@ -39,7 +39,6 @@ import {
   Building2, 
   Plus, 
   Loader2, 
-  Shield, 
   ArrowRight,
   Crown,
   Eye,
@@ -47,8 +46,11 @@ import {
   LogOut,
   MoreVertical,
   Pencil,
-  Trash2
+  Trash2,
+  Sparkles
 } from 'lucide-react';
+import { StarField } from '@/components/ui/star-field';
+import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -251,32 +253,54 @@ export default function SelecionarOrganizacao() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Carregando organizações...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+        <StarField starCount={60} dustCount={20} shootingStarCount={2} />
+        <div className="flex flex-col items-center gap-4 relative z-10">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary relative z-10" />
+          </div>
+          <p className="text-muted-foreground animate-pulse">Carregando organizações...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 p-4">
-      <div className="max-w-4xl mx-auto pt-8">
+    <div className="min-h-screen p-4 relative overflow-hidden">
+      {/* Cosmic Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/10" />
+      <StarField starCount={80} dustCount={25} shootingStarCount={3} />
+      
+      {/* Nebula Effects */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      
+      <div className="max-w-4xl mx-auto pt-8 relative z-10">
         {/* Header */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
-            <Shield className="w-8 h-8 text-primary-foreground" />
+        <div className="flex flex-col items-center mb-10 animate-fade-in">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl scale-150 animate-pulse" />
+            <CosmoSecLogo size="xl" className="relative z-10" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Selecionar Organização</h1>
-          <p className="text-muted-foreground text-sm text-center mt-2">
-            Escolha a organização que deseja acessar
-          </p>
+          
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
+              <Sparkles className="w-4 h-4" />
+              Central de Organizações
+            </div>
+            <h1 className="text-3xl font-bold text-foreground font-space">
+              Selecionar Organização
+            </h1>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              Escolha a organização que deseja acessar ou crie uma nova
+            </p>
+          </div>
         </div>
 
         {/* Organizations Grid */}
-        <div className="grid gap-4 md:grid-cols-2 mb-6">
-          {organizations.map((org) => {
+        <div className="grid gap-4 md:grid-cols-2 mb-8">
+          {organizations.map((org, index) => {
             const roleInfo = roleLabels[org.role || 'analyst'];
             const RoleIcon = roleInfo.icon;
             const isAdmin = org.role === 'admin';
@@ -284,22 +308,26 @@ export default function SelecionarOrganizacao() {
             return (
               <Card 
                 key={org.id} 
-                className="group hover:border-primary/50 transition-all duration-200"
+                className="group border-border/50 bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                        {org.logo_url ? (
-                          <img src={org.logo_url} alt={org.name} className="w-8 h-8 rounded" />
-                        ) : (
-                          <span className="text-lg font-bold text-primary">
-                            {getInitials(org.name)}
-                          </span>
-                        )}
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-primary/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center border border-primary/20">
+                          {org.logo_url ? (
+                            <img src={org.logo_url} alt={org.name} className="w-8 h-8 rounded" />
+                          ) : (
+                            <span className="text-lg font-bold text-primary font-space">
+                              {getInitials(org.name)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{org.name}</CardTitle>
+                        <CardTitle className="text-lg font-space">{org.name}</CardTitle>
                         <Badge variant="outline" className={`mt-1 ${roleInfo.color}`}>
                           <RoleIcon className="w-3 h-3 mr-1" />
                           {roleInfo.label}
@@ -312,13 +340,13 @@ export default function SelecionarOrganizacao() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <MoreVertical className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-popover border z-50">
+                        <DropdownMenuContent align="end" className="bg-popover/95 backdrop-blur-sm border z-50">
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
@@ -350,12 +378,11 @@ export default function SelecionarOrganizacao() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="line-clamp-2 mb-4">
+                  <CardDescription className="line-clamp-2 mb-4 min-h-[40px]">
                     {org.description || 'Sem descrição'}
                   </CardDescription>
                   <Button 
-                    className="w-full group-hover:bg-primary"
-                    variant="outline"
+                    className="w-full bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-primary/90 shadow-md shadow-primary/20 group-hover:shadow-lg group-hover:shadow-primary/30 transition-all"
                     disabled={selecting === org.id}
                     onClick={() => handleSelectOrganization(org.id)}
                   >
@@ -379,23 +406,29 @@ export default function SelecionarOrganizacao() {
           {/* Card para criar nova organização */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Card className="border-dashed hover:border-primary/50 transition-all duration-200 cursor-pointer group">
-                <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] text-muted-foreground group-hover:text-primary">
-                  <div className="w-12 h-12 border-2 border-dashed rounded-xl flex items-center justify-center mb-3 group-hover:border-primary">
-                    <Plus className="w-6 h-6" />
+              <Card 
+                className="border-dashed border-2 border-border/50 bg-card/20 backdrop-blur-xl hover:border-primary/50 hover:bg-card/40 transition-all duration-300 cursor-pointer group animate-fade-in"
+                style={{ animationDelay: `${organizations.length * 0.1}s` }}
+              >
+                <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] text-muted-foreground group-hover:text-primary transition-colors">
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 bg-primary/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative w-14 h-14 border-2 border-dashed border-current rounded-xl flex items-center justify-center group-hover:border-primary transition-colors">
+                      <Plus className="w-7 h-7" />
+                    </div>
                   </div>
-                  <p className="font-medium">Criar Nova Organização</p>
-                  <p className="text-sm text-center mt-1">
+                  <p className="font-semibold font-space text-lg">Criar Nova Organização</p>
+                  <p className="text-sm text-center mt-1 opacity-70">
                     Configure um novo ambiente de GRC
                   </p>
                 </CardContent>
               </Card>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-card/95 backdrop-blur-xl border-border/50">
               <form onSubmit={handleCreateOrganization}>
                 <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Building2 className="w-5 h-5" />
+                  <DialogTitle className="flex items-center gap-2 font-space">
+                    <Building2 className="w-5 h-5 text-primary" />
                     Nova Organização
                   </DialogTitle>
                   <DialogDescription>
@@ -411,6 +444,7 @@ export default function SelecionarOrganizacao() {
                       value={newOrgName}
                       onChange={(e) => setNewOrgName(e.target.value)}
                       required
+                      className="bg-background/50 border-border/50 focus:border-primary/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -421,6 +455,7 @@ export default function SelecionarOrganizacao() {
                       value={newOrgDescription}
                       onChange={(e) => setNewOrgDescription(e.target.value)}
                       rows={3}
+                      className="bg-background/50 border-border/50 focus:border-primary/50"
                     />
                   </div>
                 </div>
@@ -428,7 +463,7 @@ export default function SelecionarOrganizacao() {
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={creating}>
+                  <Button type="submit" disabled={creating} className="bg-gradient-to-r from-primary to-primary/80">
                     {creating ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -448,8 +483,12 @@ export default function SelecionarOrganizacao() {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-center">
-          <Button variant="ghost" onClick={() => signOut()} className="text-muted-foreground">
+        <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <Button 
+            variant="ghost" 
+            onClick={() => signOut()} 
+            className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 transition-colors"
+          >
             <LogOut className="w-4 h-4 mr-2" />
             Sair da conta
           </Button>
@@ -458,11 +497,11 @@ export default function SelecionarOrganizacao() {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/50">
           <form onSubmit={handleEditOrganization}>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Pencil className="w-5 h-5" />
+              <DialogTitle className="flex items-center gap-2 font-space">
+                <Pencil className="w-5 h-5 text-primary" />
                 Editar Organização
               </DialogTitle>
               <DialogDescription>
@@ -478,6 +517,7 @@ export default function SelecionarOrganizacao() {
                   value={editingOrg?.name || ''}
                   onChange={(e) => setEditingOrg(prev => prev ? { ...prev, name: e.target.value } : null)}
                   required
+                  className="bg-background/50 border-border/50 focus:border-primary/50"
                 />
               </div>
               <div className="space-y-2">
@@ -488,6 +528,7 @@ export default function SelecionarOrganizacao() {
                   value={editingOrg?.description || ''}
                   onChange={(e) => setEditingOrg(prev => prev ? { ...prev, description: e.target.value } : null)}
                   rows={3}
+                  className="bg-background/50 border-border/50 focus:border-primary/50"
                 />
               </div>
             </div>
@@ -495,7 +536,7 @@ export default function SelecionarOrganizacao() {
               <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving} className="bg-gradient-to-r from-primary to-primary/80">
                 {saving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -510,14 +551,13 @@ export default function SelecionarOrganizacao() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-card/95 backdrop-blur-xl border-border/50">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir organização?</AlertDialogTitle>
+            <AlertDialogTitle className="font-space">Excluir Organização</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir <strong>{deletingOrg?.name}</strong>? 
-              Esta ação não pode ser desfeita e todos os dados associados serão perdidos.
+              Tem certeza que deseja excluir <strong>{deletingOrg?.name}</strong>? Esta ação não pode ser desfeita e todos os dados associados serão perdidos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -525,11 +565,11 @@ export default function SelecionarOrganizacao() {
             <AlertDialogAction
               onClick={handleDeleteOrganization}
               disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90"
             >
               {deleting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Excluindo...
                 </>
               ) : (
