@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.send-invite-email]
 verify_jwt = true
+
+[functions.generate-report]
+verify_jwt = true

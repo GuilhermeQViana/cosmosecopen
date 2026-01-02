@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,8 +28,7 @@ import {
   File,
   TrendingUp,
   BarChart3,
-  PieChart,
-  CheckCircle2,
+  Loader2,
   Clock,
   XCircle,
 } from 'lucide-react';
@@ -84,13 +84,6 @@ const reportTypes = [
   },
 ];
 
-const recentReports = [
-  { id: 1, name: 'Relatório de Conformidade - Dezembro 2024', date: '2024-12-30', type: 'PDF', size: '2.4 MB' },
-  { id: 2, name: 'Gap Analysis NIST CSF', date: '2024-12-28', type: 'Excel', size: '1.8 MB' },
-  { id: 3, name: 'Relatório Executivo Q4', date: '2024-12-25', type: 'PDF', size: '3.1 MB' },
-  { id: 4, name: 'Inventário de Riscos', date: '2024-12-20', type: 'PDF', size: '1.2 MB' },
-];
-
 export default function Relatorios() {
   const { organization } = useOrganization();
   const [selectedFramework, setSelectedFramework] = useState('all');
@@ -98,16 +91,47 @@ export default function Relatorios() {
   const [generating, setGenerating] = useState<string | null>(null);
 
   const handleGenerateReport = async (reportId: string) => {
+    if (!organization?.id) {
+      toast.error('Organização não encontrada');
+      return;
+    }
+
     setGenerating(reportId);
     
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.success('Relatório gerado com sucesso!', {
-      description: 'O download iniciará automaticamente.',
-    });
-    
-    setGenerating(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-report', {
+        body: {
+          type: reportId,
+          organizationId: organization.id,
+          frameworkId: selectedFramework !== 'all' ? selectedFramework : undefined,
+          period: selectedPeriod,
+        },
+      });
+
+      if (error) throw error;
+
+      // Create HTML blob and trigger download
+      const blob = new Blob([data.html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `relatorio-${reportId}-${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success('Relatório gerado com sucesso!', {
+        description: 'O download foi iniciado. Abra o arquivo HTML no navegador para visualizar ou imprimir como PDF.',
+      });
+    } catch (error: any) {
+      console.error('Error generating report:', error);
+      toast.error('Erro ao gerar relatório', {
+        description: error.message,
+      });
+    } finally {
+      setGenerating(null);
+    }
   };
 
   const handlePrint = () => {
