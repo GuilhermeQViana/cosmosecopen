@@ -4,6 +4,7 @@ import {
   useCreateEvidenceFolder, 
   useUpdateEvidenceFolder, 
   useDeleteEvidenceFolder,
+  useMoveEvidenceToFolder,
   EvidenceFolder 
 } from '@/hooks/useEvidenceFolders';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,7 @@ export function EvidenceFolderTree({
   const createFolder = useCreateEvidenceFolder();
   const updateFolder = useUpdateEvidenceFolder();
   const deleteFolder = useDeleteEvidenceFolder();
+  const moveEvidence = useMoveEvidenceToFolder();
 
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
@@ -58,6 +60,33 @@ export function EvidenceFolderTree({
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderParentId, setNewFolderParentId] = useState<string | null>(null);
   const [editingFolder, setEditingFolder] = useState<EvidenceFolder | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent, folderId: string | null) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverFolderId(folderId);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverFolderId(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, folderId: string | null) => {
+    e.preventDefault();
+    setDragOverFolderId(null);
+    
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (data.evidenceId) {
+        await moveEvidence.mutateAsync({ evidenceId: data.evidenceId, folderId });
+        toast.success('Evidência movida com sucesso');
+      }
+    } catch (error) {
+      toast.error('Erro ao mover evidência');
+    }
+  };
 
   // Build folder tree
   const buildTree = (parentId: string | null): EvidenceFolder[] => {
@@ -138,6 +167,7 @@ export function EvidenceFolderTree({
     const children = buildTree(folder.id);
     const isExpanded = expandedFolders.has(folder.id);
     const isSelected = selectedFolderId === folder.id;
+    const isDragOver = dragOverFolderId === folder.id;
     const count = evidenceCountByFolder[folder.id] || 0;
 
     return (
@@ -146,13 +176,17 @@ export function EvidenceFolderTree({
           <ContextMenuTrigger>
             <div
               className={cn(
-                'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors',
+                'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all',
                 isSelected 
                   ? 'bg-primary/10 text-primary' 
-                  : 'hover:bg-muted text-foreground'
+                  : 'hover:bg-muted text-foreground',
+                isDragOver && 'bg-primary/20 ring-2 ring-primary ring-inset'
               )}
               style={{ paddingLeft: `${depth * 16 + 8}px` }}
               onClick={() => onSelectFolder(folder.id)}
+              onDragOver={(e) => handleDragOver(e, folder.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, folder.id)}
             >
               {children.length > 0 && (
                 <ChevronRight
@@ -225,12 +259,16 @@ export function EvidenceFolderTree({
           {/* Root folder */}
           <div
             className={cn(
-              'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors',
+              'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all',
               selectedFolderId === null 
                 ? 'bg-primary/10 text-primary' 
-                : 'hover:bg-muted text-foreground'
+                : 'hover:bg-muted text-foreground',
+              dragOverFolderId === 'root' && 'bg-primary/20 ring-2 ring-primary ring-inset'
             )}
             onClick={() => onSelectFolder(null)}
+            onDragOver={(e) => handleDragOver(e, 'root')}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, null)}
           >
             <div className="w-4" />
             <Home className="h-4 w-4 shrink-0" />
