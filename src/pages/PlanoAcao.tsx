@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AnimatedItem } from '@/components/ui/staggered-list';
 import {
   Select,
   SelectContent,
@@ -35,7 +36,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Kanban, Calendar, ListTodo } from 'lucide-react';
+import { Plus, Kanban, Calendar, ListTodo, Sparkles } from 'lucide-react';
 
 export default function PlanoAcao() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -142,97 +143,115 @@ export default function PlanoAcao() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ListTodo className="h-6 w-6 text-primary" />
-            Plano de Ação
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie as ações de remediação e melhoria
-          </p>
-        </div>
-        <Button onClick={() => handleOpenForm()}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Ação
-        </Button>
+    <div className="space-y-6 relative">
+      {/* Subtle cosmic background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-10 left-20 w-[350px] h-[350px] bg-[hsl(var(--success))]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-20 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
       </div>
 
+      {/* Header */}
+      <AnimatedItem animation="fade-up" delay={0}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2 font-space">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <ListTodo className="h-6 w-6 text-primary" />
+              </div>
+              Plano de Ação
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Gerencie as ações de remediação e melhoria
+            </p>
+          </div>
+          <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-primary/30 group">
+            <Sparkles className="h-4 w-4 mr-2 group-hover:animate-pulse" />
+            Nova Ação
+          </Button>
+        </div>
+      </AnimatedItem>
+
       {/* Stats */}
-      {plans && <ActionPlanStats plans={plans} />}
+      {plans && (
+        <AnimatedItem animation="fade-up" delay={100}>
+          <ActionPlanStats plans={plans} />
+        </AnimatedItem>
+      )}
 
       {/* View Tabs */}
-      <Tabs value={view} onValueChange={(v) => setView(v as 'kanban' | 'calendar')}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <TabsList>
-            <TabsTrigger value="kanban" className="gap-2">
-              <Kanban className="h-4 w-4" />
-              Kanban
-            </TabsTrigger>
-            <TabsTrigger value="calendar" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              Calendário
-            </TabsTrigger>
-          </TabsList>
+      <AnimatedItem animation="fade-up" delay={150}>
+        <Tabs value={view} onValueChange={(v) => setView(v as 'kanban' | 'calendar')}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <TabsList className="bg-muted/50 backdrop-blur-sm">
+              <TabsTrigger value="kanban" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Kanban className="h-4 w-4" />
+                Kanban
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Calendar className="h-4 w-4" />
+                Calendário
+              </TabsTrigger>
+            </TabsList>
 
-          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Prioridade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {PRIORITY_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-[150px] bg-background/50">
+                <SelectValue placeholder="Prioridade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                {PRIORITY_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Kanban View */}
-        <TabsContent value="kanban" className="mt-6">
-          {isLoading ? (
-            <div className="flex gap-4">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="w-72 h-[500px]" />
-              ))}
-            </div>
-          ) : filteredPlans.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <ListTodo className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">Nenhuma ação cadastrada</h3>
-                <p className="text-muted-foreground mb-4">
-                  Comece criando seu primeiro plano de ação
-                </p>
-                <Button onClick={() => handleOpenForm()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Ação
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <KanbanBoard
-              plans={filteredPlans}
-              onEdit={handleOpenForm}
-              onDelete={setDeletePlan}
-              onOpen={setDetailPlan}
-            />
-          )}
-        </TabsContent>
+          {/* Kanban View */}
+          <TabsContent value="kanban" className="mt-6">
+            {isLoading ? (
+              <div className="flex gap-4 overflow-x-auto pb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="w-72 h-[500px] flex-shrink-0" />
+                ))}
+              </div>
+            ) : filteredPlans.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
+                    <ListTodo className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2 font-space">Nenhuma ação cadastrada</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Comece criando seu primeiro plano de ação
+                  </p>
+                  <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova Ação
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <KanbanBoard
+                plans={filteredPlans}
+                onEdit={handleOpenForm}
+                onDelete={setDeletePlan}
+                onOpen={setDetailPlan}
+              />
+            )}
+          </TabsContent>
 
-        {/* Calendar View */}
-        <TabsContent value="calendar" className="mt-6">
-          {isLoading ? (
-            <Skeleton className="h-[600px]" />
-          ) : (
-            <CalendarView plans={filteredPlans} onOpen={setDetailPlan} />
-          )}
-        </TabsContent>
-      </Tabs>
+          {/* Calendar View */}
+          <TabsContent value="calendar" className="mt-6">
+            {isLoading ? (
+              <Skeleton className="h-[600px]" />
+            ) : (
+              <CalendarView plans={filteredPlans} onOpen={setDetailPlan} />
+            )}
+          </TabsContent>
+        </Tabs>
+      </AnimatedItem>
 
       {/* Form Dialog */}
       <ActionPlanForm
@@ -253,9 +272,9 @@ export default function PlanoAcao() {
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deletePlan} onOpenChange={(open) => !open && setDeletePlan(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-border/50 bg-card/95 backdrop-blur-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Plano de Ação</AlertDialogTitle>
+            <AlertDialogTitle className="font-space">Excluir Plano de Ação</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja excluir "{deletePlan?.title}"?
               Esta ação não pode ser desfeita.
