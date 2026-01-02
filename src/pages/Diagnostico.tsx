@@ -13,7 +13,7 @@ import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton, SkeletonMetric, SkeletonCard, PageLoader } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Search, FolderOpen, ClipboardCheck, LayoutGrid, Table2, Calculator } from 'lucide-react';
@@ -269,18 +269,39 @@ export default function Diagnostico() {
         </div>
       </AnimatedItem>
 
-      {/* Loading state */}
+      {/* Cosmic Loading state */}
       {isLoading && (
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Stats skeletons */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24" />
+              <SkeletonMetric key={i} />
             ))}
           </div>
-          <Skeleton className="h-10" />
+          {/* Filter skeleton */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} variant="shimmer" className="h-9 w-24 rounded-full" />
+              ))}
+            </div>
+            <Skeleton variant="shimmer" className="h-10 w-80" />
+          </div>
+          {/* Cards skeletons */}
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-32" />
+              <div key={i} className="rounded-xl border border-primary/20 bg-card/60 backdrop-blur-sm p-4 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton variant="cosmic" className="h-5 w-5 rounded" />
+                  <Skeleton variant="shimmer" className="h-5 w-48" />
+                  <Skeleton variant="shimmer" className="h-4 w-24" />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {[1, 2].map((j) => (
+                    <SkeletonCard key={j} />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
