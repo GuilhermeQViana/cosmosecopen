@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { ActionPlan, PRIORITY_OPTIONS, STATUS_COLUMNS } from '@/hooks/useActionPlans';
+import { DayPlansDialog } from './DayPlansDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import {
   format,
@@ -17,7 +17,7 @@ import {
   endOfWeek,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Maximize2 } from 'lucide-react';
 
 interface CalendarViewProps {
   plans: ActionPlan[];
@@ -42,6 +42,8 @@ const getTextColorClass = (bgColorClass: string) => {
 export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoveredDay, setHoveredDay] = useState<Date | null>(null);
+  const [expandedDay, setExpandedDay] = useState<Date | null>(null);
+  const [expandedDayPlans, setExpandedDayPlans] = useState<ActionPlan[]>([]);
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -52,11 +54,21 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   }, [currentMonth]);
 
+  // Helper to parse date without timezone issues
+  const parseDateSafe = (dateStr: string): Date => {
+    return new Date(dateStr + 'T12:00:00');
+  };
+
   const getPlansForDay = (day: Date) => {
     return plans.filter((plan) => {
       if (!plan.due_date) return false;
-      return isSameDay(new Date(plan.due_date), day);
+      return isSameDay(parseDateSafe(plan.due_date), day);
     });
+  };
+
+  const handleExpandDay = (day: Date, dayPlans: ActionPlan[]) => {
+    setExpandedDay(day);
+    setExpandedDayPlans(dayPlans);
   };
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -187,15 +199,31 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
                     );
                   })}
                   {dayPlans.length > 3 && (
-                    <div className="text-xs text-muted-foreground text-center font-medium">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleExpandDay(day, dayPlans);
+                      }}
+                      className="w-full text-xs text-primary hover:text-primary/80 text-center font-medium flex items-center justify-center gap-1 py-0.5 hover:bg-primary/10 rounded transition-colors"
+                    >
+                      <Maximize2 className="h-3 w-3" />
                       +{dayPlans.length - 3} mais
-                    </div>
+                    </button>
                   )}
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Day Plans Dialog */}
+        <DayPlansDialog
+          open={!!expandedDay}
+          onOpenChange={(open) => !open && setExpandedDay(null)}
+          date={expandedDay}
+          plans={expandedDayPlans}
+          onPlanClick={onOpen}
+        />
       </CardContent>
     </Card>
   );
