@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,9 +7,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { MaturitySlider } from './MaturitySlider';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
-import { ChevronDown, ChevronUp, MessageSquare, Save, Loader2 } from 'lucide-react';
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  MessageSquare, 
+  Save, 
+  Loader2,
+  AlertTriangle,
+  ListTodo,
+  ArrowRight,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Database } from '@/integrations/supabase/types';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type MaturityLevel = Database['public']['Enums']['maturity_level'];
 
@@ -48,6 +63,7 @@ export function ControlCard({
   onSave,
   isSaving = false,
 }: ControlCardProps) {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [maturityLevel, setMaturityLevel] = useState<number>(
     assessment ? parseInt(assessment.maturity_level) : 0
@@ -76,8 +92,29 @@ export function ControlCard({
     setHasChanges(false);
   };
 
+  const handleCreateRisk = () => {
+    // Navigate to risks page with pre-filled data from this control
+    const params = new URLSearchParams({
+      fromControl: control.id,
+      controlCode: control.code,
+      controlName: control.name,
+    });
+    navigate(`/riscos?${params.toString()}`);
+  };
+
+  const handleCreateActionPlan = () => {
+    // Navigate to action plans page with pre-filled data from this assessment
+    const params = new URLSearchParams({
+      fromAssessment: assessment?.id || '',
+      controlCode: control.code,
+      controlName: control.name,
+    });
+    navigate(`/plano-acao?${params.toString()}`);
+  };
+
   const status = assessment?.status || 'nao_conforme';
   const statusConfig = STATUS_CONFIG[status];
+  const isNonConforming = status === 'nao_conforme' || status === 'parcial';
 
   return (
     <Card
@@ -145,6 +182,57 @@ export function ControlCard({
                 className="resize-none"
               />
             </div>
+
+            {/* Contextual Actions for Non-Conforming Controls */}
+            {isNonConforming && assessment && (
+              <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-destructive">
+                  <AlertTriangle className="w-4 h-4" />
+                  Ações Recomendadas
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Este controle foi avaliado como {status === 'nao_conforme' ? 'não conforme' : 'parcialmente conforme'}. 
+                  Considere criar um risco associado ou um plano de ação para remediar.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCreateRisk}
+                        className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <AlertTriangle className="w-4 h-4 mr-2" />
+                        Criar Risco
+                        <ArrowRight className="w-3 h-3 ml-auto opacity-50" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Registrar um risco associado a este controle não conforme
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCreateActionPlan}
+                        className="flex-1 border-[hsl(var(--warning))]/30 text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning))]/10"
+                      >
+                        <ListTodo className="w-4 h-4 mr-2" />
+                        Criar Plano de Ação
+                        <ArrowRight className="w-3 h-3 ml-auto opacity-50" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Criar um plano de ação para remediar este controle
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            )}
 
             {hasChanges && (
               <Button
