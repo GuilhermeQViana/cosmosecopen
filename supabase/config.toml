@@ -1,16 +1,16 @@
 project_id = "tsuzjyejcwbzmsheclsp"
 
 [functions.generate-action-plan]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-invite-email]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-report]
-verify_jwt = true
+verify_jwt = false
 
 [functions.export-data]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-bulk-action-plans]
-verify_jwt = true
+verify_jwt = false
