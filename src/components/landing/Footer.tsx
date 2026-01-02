@@ -35,9 +35,9 @@ export function Footer() {
               <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
                 <Shield className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground">
-                Cora <span className="text-primary">GovSec</span>
-              </span>
+            <span className="text-xl font-bold text-foreground font-space tracking-wide">
+              <span className="text-gradient-cosmic">CosmoSec</span>
+            </span>
             </Link>
             <p className="text-muted-foreground text-sm max-w-sm mb-6">
               Plataforma completa de Governança, Riscos e Conformidade para segurança cibernética. 
@@ -110,7 +110,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="py-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} Cora GovSec. Todos os direitos reservados.
+            © {currentYear} CosmoSec. Todos os direitos reservados.
           </p>
           <p className="text-sm text-muted-foreground">
             Feito com ❤️ para profissionais de segurança

@@ -72,9 +72,9 @@ export function BenefitsSection() {
 
           {/* Right - Content */}
           <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6 font-space">
               Por que escolher o{' '}
-              <span className="text-primary">Cora GovSec</span>?
+              <span className="text-gradient-cosmic">CosmoSec</span>?
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
               Uma plataforma completa desenvolvida por especialistas em segurança da informação 

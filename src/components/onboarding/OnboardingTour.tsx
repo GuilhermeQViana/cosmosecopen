@@ -18,7 +18,7 @@ interface TourStep {
 const tourSteps: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Bem-vindo ao Cora GovSec!',
+    title: 'Bem-vindo ao CosmoSec!',
     description: 'Vamos fazer um tour rápido pelos principais recursos da plataforma. Você pode pular a qualquer momento.',
     route: '/dashboard',
     position: 'center',
@@ -75,7 +75,7 @@ const tourSteps: TourStep[] = [
   },
 ];
 
-const TOUR_STORAGE_KEY = 'cora-tour-completed';
+const TOUR_STORAGE_KEY = 'cosmosec-tour-completed';
 
 export function OnboardingTour() {
   const location = useLocation();

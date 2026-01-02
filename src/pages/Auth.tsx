@@ -144,7 +144,7 @@ export default function Auth() {
             <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center backdrop-blur-sm group-hover:bg-primary-foreground/30 transition-colors">
               <Shield className="w-6 h-6" />
             </div>
-            <span className="text-2xl font-bold">Cora GovSec</span>
+            <span className="text-2xl font-bold font-space tracking-wide">CosmoSec</span>
           </Link>
         </div>
 
@@ -200,7 +200,7 @@ export default function Auth() {
               <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
                 <Shield className="w-8 h-8 text-primary-foreground" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">Cora GovSec</h1>
+              <h1 className="text-2xl font-bold text-foreground font-space">CosmoSec</h1>
               <p className="text-muted-foreground text-sm">Plataforma de Governança, Riscos e Conformidade</p>
             </div>
 

@@ -30,7 +30,7 @@ interface ChecklistItem {
   isComplete: boolean;
 }
 
-const CHECKLIST_DISMISSED_KEY = 'cora-checklist-dismissed';
+const CHECKLIST_DISMISSED_KEY = 'cosmosec-checklist-dismissed';
 
 export function OnboardingChecklist() {
   const navigate = useNavigate();

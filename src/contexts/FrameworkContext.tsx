@@ -23,7 +23,7 @@ interface FrameworkContextType {
 
 const FrameworkContext = createContext<FrameworkContextType | undefined>(undefined);
 
-const FRAMEWORK_STORAGE_KEY = 'cora_selected_framework';
+const FRAMEWORK_STORAGE_KEY = 'cosmosec_selected_framework';
 
 export function FrameworkProvider({ children }: { children: React.ReactNode }) {
   const [currentFrameworkCode, setCurrentFrameworkCode] = useState<FrameworkCode | null>(() => {
