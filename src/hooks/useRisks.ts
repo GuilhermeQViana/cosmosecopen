@@ -225,7 +225,7 @@ export function useUnlinkRiskControl() {
   });
 }
 
-// Helper functions
+// Helper functions using standardized methodology
 export function calculateRiskLevel(probability: number, impact: number): number {
   return probability * impact;
 }

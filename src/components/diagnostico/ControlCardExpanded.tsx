@@ -5,6 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { MaturitySlider } from './MaturitySlider';
 import { RiskScoreBadge } from './RiskScoreBadge';
 import { ControlEvidencesList } from './ControlEvidencesList';
@@ -12,6 +17,12 @@ import { ControlActionPlans } from './ControlActionPlans';
 import { AssessmentComments } from './AssessmentComments';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
+import {
+  MATURITY_LEVELS,
+  getControlWeightInfo,
+  calculateRiskScore,
+  getRiskScoreClassification,
+} from '@/lib/risk-methodology';
 import {
   ChevronDown,
   ChevronUp,
@@ -21,6 +32,7 @@ import {
   AlertTriangle,
   Zap,
   Info,
+  Scale,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Database } from '@/integrations/supabase/types';
@@ -55,34 +67,6 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     label: 'N/A',
     className: 'bg-muted text-muted-foreground',
   },
-};
-
-const CRITICALITY_CONFIG: Record<string, { label: string; className: string }> = {
-  baixo: {
-    label: 'Baixo',
-    className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
-  },
-  medio: {
-    label: 'Médio',
-    className: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
-  },
-  alto: {
-    label: 'Alto',
-    className: 'bg-orange-500/10 text-orange-600 border-orange-500/30',
-  },
-  critico: {
-    label: 'Crítico',
-    className: 'bg-destructive/10 text-destructive border-destructive/30',
-  },
-};
-
-const MATURITY_DESCRIPTIONS: Record<number, { label: string; description: string }> = {
-  0: { label: 'Inexistente', description: 'Nenhum processo definido ou implementado' },
-  1: { label: 'Inicial', description: 'Processos ad-hoc e não documentados' },
-  2: { label: 'Repetível', description: 'Processos definidos mas não padronizados' },
-  3: { label: 'Definido', description: 'Processos documentados e padronizados' },
-  4: { label: 'Gerenciado', description: 'Processos medidos e controlados' },
-  5: { label: 'Otimizado', description: 'Melhoria contínua e otimização' },
 };
 
 export function ControlCardExpanded({
@@ -130,17 +114,23 @@ export function ControlCardExpanded({
 
   const status = assessment?.status || 'nao_conforme';
   const statusConfig = STATUS_CONFIG[status];
-  const isCritical = control.criticality === 'critico';
-  const criticalityConfig = control.criticality ? CRITICALITY_CONFIG[control.criticality] : null;
   const targetMaturity = assessment ? parseInt(assessment.target_maturity) : 3;
-  const maturityInfo = MATURITY_DESCRIPTIONS[maturityLevel];
+  const maturityInfo = MATURITY_LEVELS[maturityLevel as keyof typeof MATURITY_LEVELS];
+  
+  // Get weight info from methodology
+  const weight = control.weight || 1;
+  const weightInfo = getControlWeightInfo(weight);
+  const riskScore = calculateRiskScore(maturityLevel, targetMaturity, weight);
+  const riskClassification = getRiskScoreClassification(riskScore);
+  const isCriticalRisk = riskClassification.level === 'CRITICAL';
+  const isHighRisk = riskClassification.level === 'HIGH';
 
   return (
     <Card
       className={cn(
         'transition-all duration-200',
         expanded && 'ring-1 ring-primary/20 shadow-lg',
-        isCritical && 'border-destructive/30'
+        isCriticalRisk && 'border-destructive/30 ring-1 ring-destructive/20'
       )}
     >
       {/* Header */}
@@ -152,18 +142,29 @@ export function ControlCardExpanded({
               <code className="text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded font-semibold">
                 {control.code}
               </code>
-              {control.weight && control.weight > 1 && (
-                <Badge variant="outline" className="text-xs">
-                  Peso: {control.weight}
-                </Badge>
+              {weight > 1 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className={cn('text-xs cursor-help', weightInfo.color)}>
+                      <Scale className="w-3 h-3 mr-1" />
+                      Peso {weight} ({weightInfo.label})
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs">
+                    <p className="text-xs">{weightInfo.description}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
-              {criticalityConfig && (
+              {(isCriticalRisk || isHighRisk) && (
                 <Badge
-                  variant="outline"
-                  className={cn('text-xs', criticalityConfig.className)}
+                  variant={isCriticalRisk ? 'destructive' : 'outline'}
+                  className={cn(
+                    'text-xs',
+                    !isCriticalRisk && 'bg-orange-500/10 text-orange-600 border-orange-500/30'
+                  )}
                 >
-                  {isCritical && <Zap className="w-3 h-3 mr-1" />}
-                  {criticalityConfig.label}
+                  <Zap className="w-3 h-3 mr-1" />
+                  {riskClassification.action}
                 </Badge>
               )}
               <Badge variant="outline" className={statusConfig.className}>
@@ -173,7 +174,7 @@ export function ControlCardExpanded({
 
             {/* Title */}
             <h3 className="font-medium text-sm text-foreground leading-tight flex items-center gap-2">
-              {isCritical && (
+              {isCriticalRisk && (
                 <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
               )}
               {control.name}
@@ -230,11 +231,6 @@ export function ControlCardExpanded({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Nível de Maturidade</span>
-            {control.weight && control.weight > 1 && (
-              <Badge variant="secondary" className="text-xs">
-                Peso: Alto ({control.weight})
-              </Badge>
-            )}
           </div>
           
           <MaturitySlider
@@ -242,6 +238,7 @@ export function ControlCardExpanded({
             target={targetMaturity}
             onChange={handleMaturityChange}
             showLabels={expanded}
+            showEvidence={expanded}
           />
         </div>
 
@@ -262,8 +259,7 @@ export function ControlCardExpanded({
               <RiskScoreBadge
                 maturityLevel={maturityLevel}
                 targetMaturity={targetMaturity}
-                weight={control.weight}
-                criticality={control.criticality}
+                weight={weight}
               />
             </div>
           </div>
