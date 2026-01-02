@@ -138,36 +138,67 @@ export function useNonConformingControls() {
   const { organization } = useOrganization();
   const { currentFramework } = useFrameworkContext();
 
-  const findNonConformingWithoutPlans = async (
-    controls: Array<{ id: string; code: string; name: string; description: string | null }>,
-    assessments: Array<{ id: string; control_id: string; maturity_level: string; target_maturity: string; status: string }>
-  ): Promise<ControlForGeneration[]> => {
+  const findNonConformingWithoutPlans = async (): Promise<ControlForGeneration[]> => {
     if (!organization?.id || !currentFramework?.id) {
+      console.log('[AI Plans] No organization or framework selected');
       return [];
     }
 
-    // Find assessments with non-conforming status
-    const nonConformingAssessments = assessments.filter(
-      a => a.status === 'nao_conforme' || a.status === 'parcial'
-    );
+    console.log('[AI Plans] Fetching fresh data from database...');
 
-    if (nonConformingAssessments.length === 0) {
+    // 1. Fetch controls for current framework
+    const { data: controls, error: controlsError } = await supabase
+      .from('controls')
+      .select('id, code, name, description')
+      .eq('framework_id', currentFramework.id);
+
+    if (controlsError) {
+      console.error('[AI Plans] Error fetching controls:', controlsError);
       return [];
     }
 
-    // Get existing action plans for these assessments
-    const assessmentIds = nonConformingAssessments.map(a => a.id);
-    const { data: existingPlans } = await supabase
+    if (!controls || controls.length === 0) {
+      console.log('[AI Plans] No controls found for framework');
+      return [];
+    }
+
+    // 2. Fetch non-conforming assessments (FRESH DATA from database)
+    const { data: assessments, error: assessmentsError } = await supabase
+      .from('assessments')
+      .select('id, control_id, maturity_level, target_maturity, status')
+      .eq('organization_id', organization.id)
+      .in('status', ['nao_conforme', 'parcial']);
+
+    if (assessmentsError) {
+      console.error('[AI Plans] Error fetching assessments:', assessmentsError);
+      return [];
+    }
+
+    console.log('[AI Plans] Non-conforming assessments found:', assessments?.length || 0);
+
+    if (!assessments || assessments.length === 0) {
+      console.log('[AI Plans] No non-conforming assessments found');
+      return [];
+    }
+
+    // 3. Get existing action plans for these assessments
+    const assessmentIds = assessments.map(a => a.id);
+    const { data: existingPlans, error: plansError } = await supabase
       .from('action_plans')
       .select('assessment_id')
       .in('assessment_id', assessmentIds);
 
-    const existingAssessmentIds = new Set(existingPlans?.map(p => p.assessment_id) || []);
+    if (plansError) {
+      console.error('[AI Plans] Error fetching existing plans:', plansError);
+    }
 
-    // Filter out assessments that already have plans
+    const existingAssessmentIds = new Set(existingPlans?.map(p => p.assessment_id) || []);
+    console.log('[AI Plans] Existing plans found:', existingPlans?.length || 0);
+
+    // 4. Filter out assessments that already have plans
     const controlsForGeneration: ControlForGeneration[] = [];
 
-    for (const assessment of nonConformingAssessments) {
+    for (const assessment of assessments) {
       if (existingAssessmentIds.has(assessment.id)) {
         continue;
       }
@@ -187,6 +218,8 @@ export function useNonConformingControls() {
         targetMaturity: parseInt(assessment.target_maturity) || 3,
       });
     }
+
+    console.log('[AI Plans] Controls for AI generation:', controlsForGeneration.length);
 
     return controlsForGeneration;
   };

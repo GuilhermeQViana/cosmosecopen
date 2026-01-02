@@ -137,12 +137,14 @@ export default function Diagnostico() {
 
   // Check for non-conforming controls and trigger AI dialog
   const checkForAIGeneration = useCallback(async () => {
-    const eligibleControls = await findNonConformingWithoutPlans(controls, assessments);
+    console.log('[AI Plans] Checking for controls that need AI plans...');
+    const eligibleControls = await findNonConformingWithoutPlans();
+    console.log('[AI Plans] Eligible controls:', eligibleControls.length);
     if (eligibleControls.length > 0) {
       setControlsForAIGeneration(eligibleControls);
       setAiPlansDialogOpen(true);
     }
-  }, [controls, assessments, findNonConformingWithoutPlans]);
+  }, [findNonConformingWithoutPlans]);
 
   // Bulk save all pending changes
   const handleBulkSave = useCallback(async () => {
@@ -161,10 +163,8 @@ export default function Diagnostico() {
       toast.success(`${changes.length} avaliações salvas com sucesso`);
       
       // After saving, check for non-conforming controls
-      // Use setTimeout to allow the query to refresh
-      setTimeout(() => {
-        checkForAIGeneration();
-      }, 500);
+      // Now fetches fresh data directly from database
+      await checkForAIGeneration();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao salvar avaliações');
     } finally {
