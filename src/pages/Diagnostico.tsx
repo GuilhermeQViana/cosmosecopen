@@ -9,6 +9,7 @@ import { DiagnosticActionBar } from '@/components/diagnostico/DiagnosticActionBa
 import { StatusFilter, StatusFilterValue } from '@/components/diagnostico/StatusFilter';
 import { CategoryProgress } from '@/components/diagnostico/CategoryProgress';
 import { RiskMethodologyInfo } from '@/components/shared/RiskMethodologyInfo';
+import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -287,6 +288,13 @@ export default function Diagnostico() {
             onRestoreSnapshot={handleRestoreSnapshot}
             isSaving={isBulkSaving}
             hasChanges={pendingChanges.size > 0}
+          />
+
+          {/* Critical Risk Alert */}
+          <CriticalRiskAlert 
+            controls={controls} 
+            assessments={assessments}
+            onFilterCritical={() => setStatusFilter('nao_conforme')}
           />
 
           {/* Stats */}
