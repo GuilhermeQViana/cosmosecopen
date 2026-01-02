@@ -345,6 +345,51 @@ export type Database = {
           },
         ]
       }
+      diagnostic_snapshots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          framework_id: string
+          id: string
+          name: string
+          organization_id: string
+          snapshot_data: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          framework_id: string
+          id?: string
+          name: string
+          organization_id: string
+          snapshot_data: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          framework_id?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          snapshot_data?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_snapshots_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "frameworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diagnostic_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence_folders: {
         Row: {
           created_at: string
