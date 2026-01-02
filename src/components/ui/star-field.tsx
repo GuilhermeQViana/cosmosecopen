@@ -12,13 +12,29 @@ interface Star {
   type: 'star' | 'dust';
 }
 
+interface ShootingStar {
+  id: number;
+  startX: number;
+  startY: number;
+  angle: number;
+  length: number;
+  duration: number;
+  delay: number;
+}
+
 interface StarFieldProps {
   starCount?: number;
   dustCount?: number;
+  shootingStarCount?: number;
   className?: string;
 }
 
-export function StarField({ starCount = 50, dustCount = 30, className }: StarFieldProps) {
+export function StarField({ 
+  starCount = 50, 
+  dustCount = 30, 
+  shootingStarCount = 3,
+  className 
+}: StarFieldProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -59,6 +75,24 @@ export function StarField({ starCount = 50, dustCount = 30, className }: StarFie
     return stars;
   }, [starCount, dustCount]);
 
+  const shootingStars = useMemo(() => {
+    const stars: ShootingStar[] = [];
+    
+    for (let i = 0; i < shootingStarCount; i++) {
+      stars.push({
+        id: i,
+        startX: Math.random() * 80 + 10,
+        startY: Math.random() * 30,
+        angle: Math.random() * 30 + 30, // 30-60 degrees
+        length: Math.random() * 80 + 60,
+        duration: Math.random() * 1.5 + 1,
+        delay: Math.random() * 15 + i * 8, // Stagger shooting stars
+      });
+    }
+    
+    return stars;
+  }, [shootingStarCount]);
+
   if (!mounted) return null;
 
   return (
@@ -69,6 +103,7 @@ export function StarField({ starCount = 50, dustCount = 30, className }: StarFie
       )}
       aria-hidden="true"
     >
+      {/* Static stars and dust */}
       {particles.map((particle) => (
         <div
           key={particle.id}
@@ -89,6 +124,26 @@ export function StarField({ starCount = 50, dustCount = 30, className }: StarFie
             boxShadow: particle.type === 'star' 
               ? `0 0 ${particle.size * 2}px hsl(var(--secondary) / 0.6)` 
               : 'none',
+          }}
+        />
+      ))}
+      
+      {/* Shooting stars */}
+      {shootingStars.map((star) => (
+        <div
+          key={`shooting-${star.id}`}
+          className="absolute animate-shooting-star"
+          style={{
+            left: `${star.startX}%`,
+            top: `${star.startY}%`,
+            width: `${star.length}px`,
+            height: '2px',
+            background: `linear-gradient(90deg, transparent, hsl(var(--secondary) / 0.8), hsl(var(--nebula)))`,
+            transform: `rotate(${star.angle}deg)`,
+            animationDuration: `${star.duration}s`,
+            animationDelay: `${star.delay}s`,
+            borderRadius: '100px',
+            boxShadow: '0 0 6px hsl(var(--nebula) / 0.6), 0 0 12px hsl(var(--secondary) / 0.4)',
           }}
         />
       ))}

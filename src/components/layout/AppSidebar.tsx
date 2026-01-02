@@ -49,6 +49,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 
 type NavItem = {
   title: string;
@@ -122,12 +123,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-sidebar-primary rounded-xl flex items-center justify-center flex-shrink-0">
-            <Shield className="w-5 h-5 text-sidebar-primary-foreground" />
-          </div>
+          <CosmoSecLogo size="sm" showText={false} variant="icon" />
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-semibold text-sidebar-foreground truncate font-space">CosmoSec</span>
+              <span className="font-semibold text-sidebar-foreground truncate font-space bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">CosmoSec</span>
               {/* Organization Selector */}
               {organizations.length > 1 ? (
                 <DropdownMenu>
