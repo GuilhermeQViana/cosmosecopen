@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
@@ -8,6 +9,9 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, Search } from 'lucide-react';
 import { CommandPalette } from '@/components/CommandPalette';
 import { NotificationCenter } from './NotificationCenter';
+import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { Button } from '@/components/ui/button';
 import {
   Breadcrumb,
@@ -36,6 +40,7 @@ export function AppLayout() {
   const { organization, organizations, loading: orgLoading } = useOrganization();
   const { currentFramework, isLoading: frameworkLoading } = useFrameworkContext();
   const location = useLocation();
+  const breadcrumbItems = useBreadcrumb();
 
   if (authLoading || orgLoading || frameworkLoading) {
     return (
@@ -67,11 +72,11 @@ export function AppLayout() {
     return <Navigate to="/selecionar-framework" replace />;
   }
 
-  const currentTitle = routeTitles[location.pathname] || 'Página';
-
   return (
     <SidebarProvider>
       <CommandPalette />
+      <OnboardingTour />
+      <KeyboardShortcutsDialog />
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
@@ -80,13 +85,16 @@ export function AppLayout() {
             <Separator orientation="vertical" className="h-4 mx-2" />
             <Breadcrumb className="flex-1">
               <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{currentTitle}</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumbItems.map((item, index) => (
+                  <BreadcrumbItem key={item.path}>
+                    {index > 0 && <BreadcrumbSeparator />}
+                    {item.isCurrentPage ? (
+                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink href={item.path}>{item.label}</BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
             <Button
