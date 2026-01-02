@@ -2,3 +2,6 @@ project_id = "tsuzjyejcwbzmsheclsp"
 
 [functions.generate-action-plan]
 verify_jwt = true
+
+[functions.send-invite-email]
+verify_jwt = true
