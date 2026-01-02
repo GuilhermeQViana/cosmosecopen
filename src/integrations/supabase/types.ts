@@ -663,6 +663,53 @@ export type Database = {
           },
         ]
       }
+      risk_history: {
+        Row: {
+          change_type: string
+          changed_by: string | null
+          created_at: string
+          field_changed: string | null
+          id: string
+          new_level: number | null
+          new_value: string | null
+          old_level: number | null
+          old_value: string | null
+          risk_id: string
+        }
+        Insert: {
+          change_type: string
+          changed_by?: string | null
+          created_at?: string
+          field_changed?: string | null
+          id?: string
+          new_level?: number | null
+          new_value?: string | null
+          old_level?: number | null
+          old_value?: string | null
+          risk_id: string
+        }
+        Update: {
+          change_type?: string
+          changed_by?: string | null
+          created_at?: string
+          field_changed?: string | null
+          id?: string
+          new_level?: number | null
+          new_value?: string | null
+          old_level?: number | null
+          old_value?: string | null
+          risk_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_history_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           category: string | null
@@ -776,6 +823,7 @@ export type Database = {
     }
     Functions: {
       accept_organization_invite: { Args: { _token: string }; Returns: boolean }
+      check_deadline_notifications: { Args: never; Returns: undefined }
       create_organization_with_admin: {
         Args: { org_description?: string; org_name: string }
         Returns: {

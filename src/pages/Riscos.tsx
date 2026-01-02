@@ -15,6 +15,7 @@ import { RiskCard } from '@/components/riscos/RiskCard';
 import { RiskForm, RiskFormData } from '@/components/riscos/RiskForm';
 import { RiskStats } from '@/components/riscos/RiskStats';
 import { LinkControlsDialog } from '@/components/riscos/LinkControlsDialog';
+import { RiskDetailSheet } from '@/components/riscos/RiskDetailSheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +55,7 @@ export default function Riscos() {
   const [selectedRisk, setSelectedRisk] = useState<Risk | null>(null);
   const [deleteRisk, setDeleteRisk] = useState<Risk | null>(null);
   const [linkControlsRisk, setLinkControlsRisk] = useState<Risk | null>(null);
+  const [detailRisk, setDetailRisk] = useState<Risk | null>(null);
   
   // Pre-fill data from URL params (coming from ControlCard)
   const [prefillData, setPrefillData] = useState<{
@@ -260,6 +262,7 @@ export default function Riscos() {
                   onEdit={handleOpenForm}
                   onDelete={setDeleteRisk}
                   onLinkControls={setLinkControlsRisk}
+                  onViewDetails={setDetailRisk}
                 />
               ))}
             </div>
@@ -311,6 +314,13 @@ export default function Riscos() {
         open={!!linkControlsRisk}
         onOpenChange={(open) => !open && setLinkControlsRisk(null)}
         risk={linkControlsRisk}
+      />
+
+      {/* Risk Detail Sheet */}
+      <RiskDetailSheet
+        open={!!detailRisk}
+        onOpenChange={(open) => !open && setDetailRisk(null)}
+        risk={detailRisk}
       />
 
       {/* Delete Confirmation */}
