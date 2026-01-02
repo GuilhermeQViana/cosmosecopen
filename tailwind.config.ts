@@ -142,6 +142,31 @@ export default {
           "0%, 100%": { boxShadow: "0 0 15px hsl(var(--primary) / 0.3)" },
           "50%": { boxShadow: "0 0 30px hsl(var(--primary) / 0.6)" },
         },
+        "twinkle": {
+          "0%, 100%": { opacity: "0.3", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.2)" },
+        },
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0) translateX(0)" },
+          "33%": { transform: "translateY(-10px) translateX(5px)" },
+          "66%": { transform: "translateY(5px) translateX(-5px)" },
+        },
+        "shooting-star": {
+          "0%": { 
+            opacity: "0", 
+            transform: "translateX(0) translateY(0) rotate(var(--tw-rotate))" 
+          },
+          "10%": { 
+            opacity: "1" 
+          },
+          "70%": { 
+            opacity: "1" 
+          },
+          "100%": { 
+            opacity: "0", 
+            transform: "translateX(300px) translateY(300px) rotate(var(--tw-rotate))" 
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -150,6 +175,9 @@ export default {
         "slide-up": "slide-up 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "twinkle": "twinkle 3s ease-in-out infinite",
+        "float-slow": "float-slow 10s ease-in-out infinite",
+        "shooting-star": "shooting-star 2s ease-out infinite",
       },
       boxShadow: {
         "glow-sm": "0 0 10px hsl(var(--primary) / 0.3)",
