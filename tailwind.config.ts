@@ -169,6 +169,20 @@ export default {
             transform: "translateX(300px) translateY(300px) rotate(var(--tw-rotate))" 
           },
         },
+        "shimmer": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        "cosmic-pulse": {
+          "0%, 100%": { 
+            opacity: "0.4",
+            boxShadow: "0 0 10px hsl(var(--primary) / 0.2)" 
+          },
+          "50%": { 
+            opacity: "0.8",
+            boxShadow: "0 0 20px hsl(var(--secondary) / 0.3)" 
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -180,6 +194,8 @@ export default {
         "twinkle": "twinkle 3s ease-in-out infinite",
         "float-slow": "float-slow 10s ease-in-out infinite",
         "shooting-star": "shooting-star 2s ease-out infinite",
+        "shimmer": "shimmer 2s ease-in-out infinite",
+        "cosmic-pulse": "cosmic-pulse 2s ease-in-out infinite",
       },
       boxShadow: {
         "glow-sm": "0 0 10px hsl(var(--primary) / 0.3)",
