@@ -84,6 +84,12 @@ const reportTypes = [
   },
 ];
 
+const recentReports = [
+  { id: 1, name: 'Relatório de Conformidade - Janeiro 2026', date: '2026-01-02', type: 'HTML', size: '1.2 MB' },
+  { id: 2, name: 'Gap Analysis NIST CSF', date: '2025-12-28', type: 'HTML', size: '0.9 MB' },
+  { id: 3, name: 'Relatório Executivo Q4', date: '2025-12-25', type: 'HTML', size: '1.5 MB' },
+];
+
 export default function Relatorios() {
   const { organization } = useOrganization();
   const [selectedFramework, setSelectedFramework] = useState('all');
