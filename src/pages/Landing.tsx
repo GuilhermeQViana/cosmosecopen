@@ -6,12 +6,14 @@ import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { BenefitsSection } from '@/components/landing/BenefitsSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { Footer } from '@/components/landing/Footer';
+import { StarField } from '@/components/ui/star-field';
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <StarField starCount={80} dustCount={25} />
       <Navbar />
-      <main>
+      <main className="relative z-10">
         <HeroSection />
         <FrameworksSection />
         <FeaturesSection />
