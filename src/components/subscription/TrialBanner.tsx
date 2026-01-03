@@ -1,13 +1,41 @@
-import { Clock, CreditCard, Sparkles } from 'lucide-react';
+import { Clock, CreditCard, Sparkles, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSubscription';
 
 export function TrialBanner() {
-  const { isTrialing, daysRemaining, subscriptionStatus, hasAccess, createCheckout, isLoading } = useSubscription();
+  const { isTrialing, daysRemaining, subscriptionStatus, createCheckout, isLoading, openCustomerPortal } = useSubscription();
 
-  if (isLoading || subscriptionStatus === 'active') {
+  if (isLoading) {
     return null;
+  }
+
+  // Show Pro banner for active subscribers
+  if (subscriptionStatus === 'active') {
+    return (
+      <div className="flex items-center justify-between gap-4 px-4 py-2 border-b bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border-amber-500/30">
+        <div className="flex items-center gap-3">
+          <Badge 
+            variant="outline" 
+            className="border-amber-500 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+          >
+            <Crown className="w-3 h-3 mr-1" />
+            Pro
+          </Badge>
+          <span className="text-sm text-muted-foreground">
+            Você é um assinante Pro! Aproveite todos os recursos.
+          </span>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={openCustomerPortal}
+          className="gap-2 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+        >
+          Gerenciar Assinatura
+        </Button>
+      </div>
+    );
   }
 
   if (!isTrialing || daysRemaining === null) {
