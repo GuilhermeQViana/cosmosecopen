@@ -75,7 +75,7 @@ export function HeroSection() {
               <Button size="lg" variant="cosmic" asChild className="text-base px-8 group">
                 <Link to="/auth">
                   <Sparkles className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-                  Começar Gratuitamente
+                  Testar 7 Dias Grátis
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -88,6 +88,11 @@ export function HeroSection() {
                 <a href="#features">Ver Demonstração</a>
               </Button>
             </div>
+
+            {/* Trial info */}
+            <p className="text-sm text-muted-foreground mt-4">
+              Após 7 dias, R$ 449,90/mês. Cancele quando quiser.
+            </p>
 
             {/* Stats with Glow */}
             <div className="grid grid-cols-3 gap-6 mt-12 pt-8 border-t border-primary/20 dark:border-primary/30">

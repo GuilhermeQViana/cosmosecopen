@@ -15,6 +15,9 @@ import { StarField } from '@/components/ui/star-field';
 import { PageTransition } from './PageTransition';
 import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { Button } from '@/components/ui/button';
+import { TrialBanner } from '@/components/subscription/TrialBanner';
+import { SubscriptionRequired } from '@/components/subscription/SubscriptionRequired';
+import { useSubscription } from '@/hooks/useSubscription';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -41,10 +44,14 @@ export function AppLayout() {
   const { user, loading: authLoading } = useAuth();
   const { organization, organizations, loading: orgLoading } = useOrganization();
   const { currentFramework, isLoading: frameworkLoading } = useFrameworkContext();
+  const { hasAccess, isLoading: subscriptionLoading, subscriptionStatus } = useSubscription();
   const location = useLocation();
   const breadcrumbItems = useBreadcrumb();
 
-  if (authLoading || orgLoading || frameworkLoading) {
+  // Allowed routes even when subscription expired
+  const allowedWithoutSubscription = ['/configuracoes', '/selecionar-organizacao', '/selecionar-framework'];
+
+  if (authLoading || orgLoading || frameworkLoading || subscriptionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -74,6 +81,11 @@ export function AppLayout() {
     return <Navigate to="/selecionar-framework" replace />;
   }
 
+  // Verificar acesso à assinatura
+  if (!hasAccess && !allowedWithoutSubscription.includes(location.pathname)) {
+    return <SubscriptionRequired />;
+  }
+
   return (
     <SidebarProvider>
       <StarField starCount={60} dustCount={20} />
@@ -82,7 +94,8 @@ export function AppLayout() {
       <KeyboardShortcutsDialog />
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 flex flex-col">
+          <TrialBanner />
           <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4 mx-2" />

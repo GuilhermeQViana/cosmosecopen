@@ -71,7 +71,8 @@ import {
   Upload,
   FileJson,
   FileSpreadsheet,
-  FileCode2
+  FileCode2,
+  CreditCard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
@@ -79,6 +80,7 @@ import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworks
 import { ChangePasswordDialog } from '@/components/configuracoes/ChangePasswordDialog';
 import { ImageUploadWithCrop } from '@/components/configuracoes/ImageUploadWithCrop';
 import { ImportBackupDialog } from '@/components/configuracoes/ImportBackupDialog';
+import { SubscriptionTab } from '@/components/configuracoes/SubscriptionTab';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -435,10 +437,14 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 lg:w-[840px]">
+        <TabsList className="grid w-full grid-cols-8 lg:w-[960px]">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Perfil</span>
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            <span className="hidden sm:inline">Assinatura</span>
           </TabsTrigger>
           <TabsTrigger value="organization" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
@@ -465,6 +471,11 @@ export default function Configuracoes() {
             <span className="hidden sm:inline">Aparência</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* Subscription Tab */}
+        <TabsContent value="subscription" className="space-y-6">
+          <SubscriptionTab />
+        </TabsContent>
 
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-6">
