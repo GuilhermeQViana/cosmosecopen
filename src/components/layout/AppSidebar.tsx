@@ -52,6 +52,7 @@ import {
   Crown,
   Building,
   ArrowLeftRight,
+  HelpCircle,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
@@ -342,6 +343,26 @@ export function AppSidebar() {
                 >
                   <Building className="w-4 h-4" />
                   <span>Fornecedores (VRM)</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Ajuda */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  tooltip="Documentação"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <a href="/documentacao" target="_blank" rel="noopener noreferrer">
+                    <HelpCircle className="w-4 h-4" />
+                    <span>Ajuda</span>
+                  </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

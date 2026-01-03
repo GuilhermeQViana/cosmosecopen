@@ -11,6 +11,7 @@ export function Footer() {
       { label: 'Frameworks', href: '#frameworks' },
       { label: 'Como Funciona', href: '#how-it-works' },
       { label: 'Benefícios', href: '#benefits' },
+      { label: 'Documentação', href: '/documentacao', isRoute: true },
     ],
     empresa: [
       { label: 'Sobre Nós', href: '#' },
@@ -68,9 +69,15 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.produto.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </a>
+                  {link.isRoute ? (
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
