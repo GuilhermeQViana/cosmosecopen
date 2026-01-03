@@ -28,6 +28,8 @@ import Configuracoes from "@/pages/Configuracoes";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import Fornecedores from "@/pages/Fornecedores";
 import FornecedoresDashboard from "@/pages/FornecedoresDashboard";
+import VendorRequisitos from "@/pages/VendorRequisitos";
+import VendorAgenda from "@/pages/VendorAgenda";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +71,8 @@ const App = () => (
                   <Route element={<VendorLayout />}>
                     <Route path="/vrm" element={<FornecedoresDashboard />} />
                     <Route path="/vrm/fornecedores" element={<Fornecedores />} />
+                    <Route path="/vrm/requisitos" element={<VendorRequisitos />} />
+                    <Route path="/vrm/agenda" element={<VendorAgenda />} />
                     <Route path="/vrm/configuracoes" element={<Configuracoes />} />
                   </Route>
 

@@ -39,6 +39,8 @@ import {
   Crown,
   Shield,
   ArrowLeftRight,
+  FileText,
+  Calendar,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
@@ -52,6 +54,8 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { title: 'Dashboard', url: '/vrm', icon: LayoutDashboard },
   { title: 'Fornecedores', url: '/vrm/fornecedores', icon: Building },
+  { title: 'Requisitos', url: '/vrm/requisitos', icon: FileText },
+  { title: 'Agenda', url: '/vrm/agenda', icon: Calendar },
 ];
 
 const configNavItems: NavItem[] = [
