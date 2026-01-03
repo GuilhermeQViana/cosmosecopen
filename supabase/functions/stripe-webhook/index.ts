@@ -205,6 +205,12 @@ serve(async (req) => {
 
         if (!subscriptionId) break;
 
+        // Skip first invoice (already handled by checkout.session.completed)
+        if (invoice.billing_reason === 'subscription_create') {
+          logStep("Skipping first invoice - handled by checkout.session.completed");
+          break;
+        }
+
         // Get subscription to find organization
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const organizationId = subscription.metadata?.organization_id;
@@ -229,6 +235,120 @@ serve(async (req) => {
         }
 
         logStep("Invoice paid - subscription renewed", { organizationId, subscriptionEndDate });
+
+        // Send payment confirmation email to admins
+        try {
+          const { data: organization } = await supabaseClient
+            .from('organizations')
+            .select('name')
+            .eq('id', organizationId)
+            .single();
+
+          const { data: adminRoles } = await supabaseClient
+            .from('user_roles')
+            .select('user_id')
+            .eq('organization_id', organizationId)
+            .eq('role', 'admin');
+
+          if (adminRoles && organization) {
+            const amountPaid = (invoice.amount_paid / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const nextBillingDate = new Date(subscription.current_period_end * 1000).toLocaleDateString('pt-BR');
+
+            for (const role of adminRoles) {
+              const { data: { user } } = await supabaseClient.auth.admin.getUserById(role.user_id);
+              
+              if (user?.email) {
+                const { data: profile } = await supabaseClient
+                  .from('profiles')
+                  .select('full_name')
+                  .eq('id', role.user_id)
+                  .single();
+
+                await resend.emails.send({
+                  from: "CosmoSec <onboarding@resend.dev>",
+                  to: [user.email],
+                  subject: "✅ Pagamento confirmado - CosmoSec",
+                  html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                      <meta charset="utf-8">
+                      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    </head>
+                    <body style="margin: 0; padding: 0; background-color: #0a0a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a1a; padding: 40px 20px;">
+                        <tr>
+                          <td align="center">
+                            <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+                              <tr>
+                                <td style="padding: 40px 40px 20px; text-align: center; background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);">
+                                  <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">Pagamento Confirmado</h1>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 30px 40px;">
+                                  <p style="color: #e2e8f0; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                    Olá <strong style="color: #22c55e;">${profile?.full_name || 'Usuário'}</strong>,
+                                  </p>
+                                  <p style="color: #e2e8f0; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                    O pagamento da assinatura de <strong style="color: #ffffff;">${organization.name}</strong> foi processado com sucesso!
+                                  </p>
+                                  
+                                  <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: 24px; margin: 24px 0;">
+                                    <h3 style="color: #22c55e; font-size: 14px; font-weight: 600; margin: 0 0 16px; text-transform: uppercase; letter-spacing: 0.5px;">Detalhes do Pagamento</h3>
+                                    <table style="width: 100%; color: #e2e8f0; font-size: 14px;">
+                                      <tr>
+                                        <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">Valor pago</td>
+                                        <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right; font-weight: 600; color: #22c55e;">${amountPaid}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">Plano</td>
+                                        <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right;">Profissional</td>
+                                      </tr>
+                                      <tr>
+                                        <td style="padding: 8px 0;">Próxima cobrança</td>
+                                        <td style="padding: 8px 0; text-align: right;">${nextBillingDate}</td>
+                                      </tr>
+                                    </table>
+                                  </div>
+                                  
+                                  <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin: 20px 0;">
+                                    Sua assinatura foi renovada automaticamente. Você pode gerenciar sua assinatura a qualquer momento nas configurações da sua conta.
+                                  </p>
+                                  
+                                  <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                    <tr>
+                                      <td align="center">
+                                        <a href="https://cosmosec.lovable.dev/configuracoes" style="display: inline-block; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Gerenciar Assinatura →</a>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 24px 40px; background: rgba(0, 0, 0, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                  <p style="color: #64748b; font-size: 12px; line-height: 1.5; margin: 0; text-align: center;">
+                                    © ${new Date().getFullYear()} CosmoSec. Todos os direitos reservados.
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </body>
+                    </html>
+                  `,
+                });
+                logStep("Payment confirmation email sent", { email: user.email });
+              }
+            }
+          }
+        } catch (emailError) {
+          logStep("Error sending payment confirmation email", { error: emailError });
+        }
+
         break;
       }
 
