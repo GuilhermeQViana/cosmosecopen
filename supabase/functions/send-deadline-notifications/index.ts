@@ -32,6 +32,7 @@ interface ActionPlan {
   status: string;
   assigned_to: string | null;
   organization_id: string;
+  isOverdue?: boolean;
 }
 
 interface Profile {
@@ -40,10 +41,18 @@ interface Profile {
   organization_id: string | null;
 }
 
-interface UserEmail {
-  id: string;
-  email: string;
-}
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr + "T12:00:00");
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+};
+
+const getDaysOverdue = (dateStr: string): number => {
+  const dueDate = new Date(dateStr + "T12:00:00");
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  const diffTime = today.getTime() - dueDate.getTime();
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+};
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("[Deadline Notifications] Starting...");
@@ -57,50 +66,72 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Parse request body for optional parameters
     let daysAhead = 3;
+    let includeOverdue = true;
     let testMode = false;
     let testEmail = "";
     
     try {
       const body = await req.json();
       daysAhead = body.daysAhead ?? 3;
+      includeOverdue = body.includeOverdue ?? true;
       testMode = body.testMode ?? false;
       testEmail = body.testEmail ?? "";
     } catch {
       // No body, use defaults
     }
 
-    console.log(`[Deadline Notifications] Looking for plans due in ${daysAhead} days, testMode: ${testMode}`);
+    console.log(`[Deadline Notifications] Looking for plans due in ${daysAhead} days, includeOverdue: ${includeOverdue}`);
 
-    // Calculate the target date
     const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
+    
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() + daysAhead);
     const targetDateStr = targetDate.toISOString().split("T")[0];
 
-    console.log(`[Deadline Notifications] Target date: ${targetDateStr}`);
+    console.log(`[Deadline Notifications] Today: ${todayStr}, Target date: ${targetDateStr}`);
 
-    // Get action plans due on the target date
-    const { data: plans, error: plansError } = await supabase
+    // Get action plans due on target date
+    const { data: upcomingPlans, error: upcomingError } = await supabase
       .from("action_plans")
       .select("id, title, description, due_date, priority, status, assigned_to, organization_id")
       .eq("due_date", targetDateStr)
       .neq("status", "done")
       .returns<ActionPlan[]>();
 
-    if (plansError) {
-      console.error("[Deadline Notifications] Error fetching plans:", plansError);
-      throw plansError;
+    if (upcomingError) {
+      console.error("[Deadline Notifications] Error fetching upcoming plans:", upcomingError);
+      throw upcomingError;
     }
 
-    console.log(`[Deadline Notifications] Found ${plans?.length || 0} plans due on ${targetDateStr}`);
+    // Get overdue plans if enabled
+    let overduePlans: ActionPlan[] = [];
+    if (includeOverdue) {
+      const { data: overdueData, error: overdueError } = await supabase
+        .from("action_plans")
+        .select("id, title, description, due_date, priority, status, assigned_to, organization_id")
+        .lt("due_date", todayStr)
+        .neq("status", "done")
+        .returns<ActionPlan[]>();
 
-    if (!plans || plans.length === 0) {
+      if (overdueError) {
+        console.error("[Deadline Notifications] Error fetching overdue plans:", overdueError);
+      } else {
+        overduePlans = (overdueData || []).map(p => ({ ...p, isOverdue: true }));
+      }
+    }
+
+    const allPlans = [...overduePlans, ...(upcomingPlans || [])];
+    
+    console.log(`[Deadline Notifications] Found ${upcomingPlans?.length || 0} upcoming plans, ${overduePlans.length} overdue plans`);
+
+    if (allPlans.length === 0) {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "No plans due on target date",
+          message: "No plans found",
           emailsSent: 0 
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -109,26 +140,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Group plans by assigned user
     const plansByUser = new Map<string, ActionPlan[]>();
-    const unassignedPlans: ActionPlan[] = [];
 
-    for (const plan of plans) {
+    for (const plan of allPlans) {
       if (plan.assigned_to) {
         if (!plansByUser.has(plan.assigned_to)) {
           plansByUser.set(plan.assigned_to, []);
         }
         plansByUser.get(plan.assigned_to)!.push(plan);
-      } else {
-        unassignedPlans.push(plan);
       }
     }
 
-    // Get user emails
     const userIds = Array.from(plansByUser.keys());
     const emailsSent: string[] = [];
     const errors: string[] = [];
 
     if (userIds.length > 0) {
-      // Get user emails from auth.users via admin API
       const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
       
       if (authError) {
@@ -136,7 +162,6 @@ const handler = async (req: Request): Promise<Response> => {
         throw authError;
       }
 
-      // Get profiles for names
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, full_name")
@@ -150,7 +175,6 @@ const handler = async (req: Request): Promise<Response> => {
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
       const userEmailMap = new Map(authUsers?.users?.map(u => [u.id, u.email]) || []);
 
-      // Send emails to each user
       for (const [userId, userPlans] of plansByUser) {
         const userEmail = testMode ? testEmail : userEmailMap.get(userId);
         const profile = profileMap.get(userId);
@@ -161,24 +185,59 @@ const handler = async (req: Request): Promise<Response> => {
           continue;
         }
 
-        console.log(`[Deadline Notifications] Sending email to ${userEmail} with ${userPlans.length} plans`);
+        const userOverduePlans = userPlans.filter(p => p.isOverdue);
+        const userUpcomingPlans = userPlans.filter(p => !p.isOverdue);
 
-        const plansHtml = userPlans.map(plan => `
-          <tr>
-            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-              <strong>${plan.title}</strong>
-              ${plan.description ? `<br><span style="color: #64748b; font-size: 13px;">${plan.description.substring(0, 100)}${plan.description.length > 100 ? '...' : ''}</span>` : ''}
-            </td>
-            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">
-              <span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ${plan.priority === 'critica' ? '#fee2e2' : plan.priority === 'alta' ? '#ffedd5' : '#fef9c3'}; color: ${plan.priority === 'critica' ? '#991b1b' : plan.priority === 'alta' ? '#9a3412' : '#854d0e'};">
-                ${PRIORITY_LABELS[plan.priority] || plan.priority}
-              </span>
-            </td>
-            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">
-              ${STATUS_LABELS[plan.status] || plan.status}
-            </td>
-          </tr>
-        `).join("");
+        console.log(`[Deadline Notifications] Sending email to ${userEmail} with ${userOverduePlans.length} overdue, ${userUpcomingPlans.length} upcoming`);
+
+        const renderPlanRow = (plan: ActionPlan) => {
+          const isOverdue = plan.isOverdue;
+          const daysOver = isOverdue ? getDaysOverdue(plan.due_date) : 0;
+          const rowBg = isOverdue ? "background: #fef2f2;" : "";
+          const priorityBg = plan.priority === "critica" ? "#fee2e2" : plan.priority === "alta" ? "#ffedd5" : "#fef9c3";
+          const priorityColor = plan.priority === "critica" ? "#991b1b" : plan.priority === "alta" ? "#9a3412" : "#854d0e";
+          
+          return `
+            <tr style="${rowBg}">
+              <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                <strong>${plan.title}</strong>
+                ${plan.description ? `<br><span style="color: #64748b; font-size: 13px;">${plan.description.substring(0, 80)}${plan.description.length > 80 ? "..." : ""}</span>` : ""}
+              </td>
+              <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">
+                ${isOverdue 
+                  ? `<span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #dc2626; color: white;">🚨 ${daysOver} dia(s) atrás</span>`
+                  : `<span style="color: #475569; font-size: 13px;">${formatDate(plan.due_date)}</span>`
+                }
+              </td>
+              <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">
+                <span style="display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ${priorityBg}; color: ${priorityColor};">
+                  ${PRIORITY_LABELS[plan.priority] || plan.priority}
+                </span>
+              </td>
+              <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-size: 13px;">
+                ${STATUS_LABELS[plan.status] || plan.status}
+              </td>
+            </tr>
+          `;
+        };
+
+        const overdueSection = userOverduePlans.length > 0 ? `
+          <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #dc2626; border-radius: 0 12px 12px 0; padding: 16px; margin-bottom: 24px;">
+            <p style="color: #991b1b; margin: 0; font-size: 15px; font-weight: 600;">
+              🚨 <strong>${userOverduePlans.length}</strong> plano(s) com prazo VENCIDO que precisam de atenção imediata!
+            </p>
+          </div>
+        ` : "";
+
+        const upcomingSection = userUpcomingPlans.length > 0 ? `
+          <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center;">
+            <p style="color: #92400e; margin: 0; font-size: 15px;">
+              ⏰ <strong>${userUpcomingPlans.length}</strong> plano(s) com prazo para <strong>${daysAhead === 0 ? "hoje" : daysAhead === 1 ? "amanhã" : `${daysAhead} dias`}</strong>.
+            </p>
+          </div>
+        ` : "";
+
+        const allPlansRows = [...userOverduePlans, ...userUpcomingPlans].map(renderPlanRow).join("");
 
         const emailHtml = `
           <!DOCTYPE html>
@@ -187,35 +246,36 @@ const handler = async (req: Request): Promise<Response> => {
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
-          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 700px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 750px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
             <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
               <div style="text-align: center; margin-bottom: 30px;">
                 <h1 style="color: #0f172a; margin-bottom: 10px;">🛡️ CosmoSec GRC</h1>
                 <p style="color: #64748b; font-size: 14px;">Lembrete de Prazos</p>
               </div>
               
-              <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
-                <p style="color: #92400e; margin: 0; font-size: 16px;">
-                  ⏰ <strong>Olá, ${userName}!</strong><br>
-                  Você tem <strong>${userPlans.length}</strong> plano(s) de ação com prazo para <strong>${daysAhead === 0 ? 'hoje' : daysAhead === 1 ? 'amanhã' : `${daysAhead} dias`}</strong>.
-                </p>
-              </div>
+              <p style="color: #1e293b; font-size: 16px; margin-bottom: 20px;">
+                Olá, <strong>${userName}</strong>!
+              </p>
+              
+              ${overdueSection}
+              ${upcomingSection}
               
               <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
                 <thead>
                   <tr style="background: #1e293b; color: white;">
                     <th style="padding: 12px; text-align: left; font-weight: 600;">Plano de Ação</th>
-                    <th style="padding: 12px; text-align: center; font-weight: 600; width: 100px;">Prioridade</th>
-                    <th style="padding: 12px; text-align: center; font-weight: 600; width: 120px;">Status</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 600; width: 130px;">Prazo</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 600; width: 90px;">Prioridade</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 600; width: 100px;">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${plansHtml}
+                  ${allPlansRows}
                 </tbody>
               </table>
               
               <div style="text-align: center; margin-top: 30px;">
-                <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || '#'}/plano-acao" 
+                <a href="${Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovable.app") || "#"}/plano-acao" 
                    style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Ver Planos de Ação
                 </a>
@@ -231,18 +291,25 @@ const handler = async (req: Request): Promise<Response> => {
           </html>
         `;
 
+        const subjectParts: string[] = [];
+        if (userOverduePlans.length > 0) {
+          subjectParts.push(`🚨 ${userOverduePlans.length} vencido(s)`);
+        }
+        if (userUpcomingPlans.length > 0) {
+          subjectParts.push(`⏰ ${userUpcomingPlans.length} próximo(s)`);
+        }
+
         try {
           const emailResponse = await resend.emails.send({
             from: "CosmoSec GRC <onboarding@resend.dev>",
             to: [userEmail],
-            subject: `⏰ Lembrete: ${userPlans.length} plano(s) de ação com prazo próximo`,
+            subject: `Planos de Ação: ${subjectParts.join(" | ")}`,
             html: emailHtml,
           });
 
           console.log(`[Deadline Notifications] Email sent to ${userEmail}:`, emailResponse);
           emailsSent.push(userEmail);
 
-          // Only send one email in test mode
           if (testMode) break;
         } catch (emailError: any) {
           console.error(`[Deadline Notifications] Error sending email to ${userEmail}:`, emailError);
@@ -251,16 +318,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Notify admins about unassigned plans
-    if (unassignedPlans.length > 0 && !testMode) {
-      console.log(`[Deadline Notifications] ${unassignedPlans.length} plans without assignee`);
-      // Could add logic to notify admins about unassigned plans
-    }
-
     return new Response(
       JSON.stringify({
         success: true,
-        plansFound: plans.length,
+        upcomingPlans: upcomingPlans?.length || 0,
+        overduePlans: overduePlans.length,
         emailsSent: emailsSent.length,
         emailAddresses: emailsSent,
         errors: errors.length > 0 ? errors : undefined,
