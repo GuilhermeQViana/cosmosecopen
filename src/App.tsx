@@ -24,6 +24,7 @@ import Equipe from "@/pages/Equipe";
 import Auditoria from "@/pages/Auditoria";
 import Configuracoes from "@/pages/Configuracoes";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import Fornecedores from "@/pages/Fornecedores";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
                     <Route path="/plano-acao" element={<PlanoAcao />} />
                     <Route path="/relatorios" element={<Relatorios />} />
                     <Route path="/mapeamento" element={<Mapeamento />} />
+                    <Route path="/fornecedores" element={<Fornecedores />} />
                     <Route path="/equipe" element={<Equipe />} />
                     <Route path="/auditoria" element={<Auditoria />} />
                     <Route path="/configuracoes" element={<Configuracoes />} />

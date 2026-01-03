@@ -50,6 +50,7 @@ import {
   Landmark,
   Layers,
   Crown,
+  Building,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
@@ -67,6 +68,7 @@ const mainNavItems: NavItem[] = [
   { title: 'Riscos', url: '/riscos', icon: AlertTriangle, badgeKey: 'riscos' },
   { title: 'Evidências', url: '/evidencias', icon: FileCheck },
   { title: 'Plano de Ação', url: '/plano-acao', icon: ListTodo, badgeKey: 'planoAcao' },
+  { title: 'Fornecedores', url: '/fornecedores', icon: Building },
   { title: 'Relatórios', url: '/relatorios', icon: FileBarChart },
 ];
 
