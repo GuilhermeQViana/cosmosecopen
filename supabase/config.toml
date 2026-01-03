@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.generate-bulk-action-plans]
 verify_jwt = false
+
+[functions.send-deadline-notifications]
+verify_jwt = false

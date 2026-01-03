@@ -16,6 +16,7 @@ import { ActionPlanForm, ActionPlanFormData } from '@/components/plano-acao/Acti
 import { ActionPlanDetail } from '@/components/plano-acao/ActionPlanDetail';
 import { ActionPlanStats } from '@/components/plano-acao/ActionPlanStats';
 import { ExportActionPlans } from '@/components/plano-acao/ExportActionPlans';
+import { SendDeadlineNotifications } from '@/components/plano-acao/SendDeadlineNotifications';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -242,6 +243,7 @@ export default function PlanoAcao() {
           <div className="flex items-center gap-2 flex-wrap">
             {plans && plans.length > 0 && (
               <>
+                <SendDeadlineNotifications />
                 <ExportActionPlans plans={filteredPlans} />
                 <Button 
                   variant="outline" 
