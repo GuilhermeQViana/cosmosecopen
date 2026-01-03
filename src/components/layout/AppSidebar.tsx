@@ -5,6 +5,7 @@ import { useFrameworkContext, FrameworkCode } from '@/contexts/FrameworkContext'
 import { useMenuBadges } from '@/hooks/useMenuBadges';
 import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
+import { getFrameworkIcon } from '@/lib/framework-icons';
 import {
   Sidebar,
   SidebarContent,
@@ -76,17 +77,34 @@ const configNavItems: NavItem[] = [
   { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
 
-const frameworkIcons: Record<FrameworkCode, React.ReactNode> = {
+// Default icons for standard frameworks (fallback)
+const defaultFrameworkIcons: Record<string, React.ReactNode> = {
   nist_csf: <Shield className="w-4 h-4" />,
   iso_27001: <Building2 className="w-4 h-4" />,
   bcb_cmn: <Landmark className="w-4 h-4" />,
 };
 
-const frameworkColors: Record<FrameworkCode, string> = {
+const frameworkColors: Record<string, string> = {
   nist_csf: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   iso_27001: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   bcb_cmn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
 };
+
+// Helper to get framework icon - uses custom icon if available, otherwise falls back to defaults
+function getFrameworkIconElement(framework: { code: string; icon?: string | null; is_custom?: boolean }): React.ReactNode {
+  if (framework.is_custom && framework.icon) {
+    const IconComponent = getFrameworkIcon(framework.icon);
+    return <IconComponent className="w-4 h-4" />;
+  }
+  return defaultFrameworkIcons[framework.code] || <Shield className="w-4 h-4" />;
+}
+
+function getFrameworkColorClass(code: string, isCustom?: boolean): string {
+  if (isCustom) {
+    return 'bg-purple-500/10 text-purple-600 dark:text-purple-400';
+  }
+  return frameworkColors[code] || 'bg-primary/10 text-primary';
+}
 
 export function AppSidebar() {
   const location = useLocation();
@@ -194,10 +212,10 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <button className={cn(
                   "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
-                  frameworkColors[currentFramework.code as FrameworkCode],
+                  getFrameworkColorClass(currentFramework.code, currentFramework.is_custom),
                   "hover:opacity-80"
                 )}>
-                  {frameworkIcons[currentFramework.code as FrameworkCode]}
+                  {getFrameworkIconElement(currentFramework)}
                   <span className="font-medium truncate flex-1 text-left">{currentFramework.name}</span>
                   <ChevronDown className="w-4 h-4 flex-shrink-0 opacity-60" />
                 </button>
@@ -206,18 +224,21 @@ export function AppSidebar() {
                 <DropdownMenuLabel>Trocar framework</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {frameworks.map((framework) => {
-                  const code = framework.code as FrameworkCode;
+                  const colorClass = getFrameworkColorClass(framework.code, framework.is_custom);
                   return (
                     <DropdownMenuItem
                       key={framework.id}
-                      onClick={() => handleSwitchFramework(code)}
+                      onClick={() => handleSwitchFramework(framework.code as FrameworkCode)}
                       className="flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className={cn("w-6 h-6 rounded flex items-center justify-center flex-shrink-0", frameworkColors[code])}>
-                          {frameworkIcons[code]}
+                        <div className={cn("w-6 h-6 rounded flex items-center justify-center flex-shrink-0", colorClass)}>
+                          {getFrameworkIconElement(framework)}
                         </div>
                         <span className="truncate">{framework.name}</span>
+                        {framework.is_custom && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0">Custom</Badge>
+                        )}
                       </div>
                       {framework.id === currentFramework.id && (
                         <Check className="w-4 h-4 text-primary flex-shrink-0" />
