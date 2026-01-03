@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.customer-portal]
 verify_jwt = false
+
+[functions.send-trial-reminder]
+verify_jwt = false
