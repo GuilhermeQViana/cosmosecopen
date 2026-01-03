@@ -15,6 +15,7 @@ import { CalendarView } from '@/components/plano-acao/CalendarView';
 import { ActionPlanForm, ActionPlanFormData } from '@/components/plano-acao/ActionPlanForm';
 import { ActionPlanDetail } from '@/components/plano-acao/ActionPlanDetail';
 import { ActionPlanStats } from '@/components/plano-acao/ActionPlanStats';
+import { ExportActionPlans } from '@/components/plano-acao/ExportActionPlans';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -238,16 +239,19 @@ export default function PlanoAcao() {
               Gerencie as ações de remediação e melhoria
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {plans && plans.length > 0 && (
-              <Button 
-                variant="outline" 
-                onClick={() => setDeleteAllOpen(true)}
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir Todos
-              </Button>
+              <>
+                <ExportActionPlans plans={filteredPlans} />
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDeleteAllOpen(true)}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir Todos
+                </Button>
+              </>
             )}
             <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-primary/30 group">
               <Sparkles className="h-4 w-4 mr-2 group-hover:animate-pulse" />

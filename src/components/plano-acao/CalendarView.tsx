@@ -3,6 +3,13 @@ import { ActionPlan, PRIORITY_OPTIONS, STATUS_COLUMNS } from '@/hooks/useActionP
 import { DayPlansDialog } from './DayPlansDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import {
   format,
@@ -13,8 +20,14 @@ import {
   isSameDay,
   addMonths,
   subMonths,
+  addWeeks,
+  subWeeks,
+  addQuarters,
+  subQuarters,
   startOfWeek,
   endOfWeek,
+  startOfQuarter,
+  endOfQuarter,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Maximize2 } from 'lucide-react';
@@ -25,14 +38,14 @@ interface CalendarViewProps {
   onCreateWithDate?: (date: Date) => void;
 }
 
+type PeriodType = 'week' | 'month' | 'quarter';
+
 // Get contrast text color based on background
 const getTextColorClass = (bgColorClass: string) => {
-  // For darker backgrounds, use white text
   if (bgColorClass.includes('slate') || bgColorClass.includes('blue') || 
       bgColorClass.includes('purple') || bgColorClass.includes('green')) {
     return 'text-white';
   }
-  // For yellow/light backgrounds, use dark text
   if (bgColorClass.includes('yellow')) {
     return 'text-slate-900';
   }
@@ -40,19 +53,59 @@ const getTextColorClass = (bgColorClass: string) => {
 };
 
 export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [periodType, setPeriodType] = useState<PeriodType>('month');
   const [hoveredDay, setHoveredDay] = useState<Date | null>(null);
   const [expandedDay, setExpandedDay] = useState<Date | null>(null);
   const [expandedDayPlans, setExpandedDayPlans] = useState<ActionPlan[]>([]);
 
-  const days = useMemo(() => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
-    const calendarStart = startOfWeek(monthStart, { locale: ptBR });
-    const calendarEnd = endOfWeek(monthEnd, { locale: ptBR });
+  const { days, periodLabel } = useMemo(() => {
+    let start: Date;
+    let end: Date;
+    let label: string;
 
-    return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-  }, [currentMonth]);
+    switch (periodType) {
+      case 'week':
+        start = startOfWeek(currentDate, { locale: ptBR });
+        end = endOfWeek(currentDate, { locale: ptBR });
+        label = `${format(start, 'd MMM', { locale: ptBR })} - ${format(end, 'd MMM yyyy', { locale: ptBR })}`;
+        break;
+      case 'quarter':
+        start = startOfQuarter(currentDate);
+        end = endOfQuarter(currentDate);
+        const quarterNum = Math.floor(start.getMonth() / 3) + 1;
+        label = `${quarterNum}º Trimestre ${format(currentDate, 'yyyy')}`;
+        // For quarter, we'll show weeks (expand to include full weeks)
+        start = startOfWeek(start, { locale: ptBR });
+        end = endOfWeek(end, { locale: ptBR });
+        break;
+      default: // month
+        const monthStart = startOfMonth(currentDate);
+        const monthEnd = endOfMonth(currentDate);
+        start = startOfWeek(monthStart, { locale: ptBR });
+        end = endOfWeek(monthEnd, { locale: ptBR });
+        label = format(currentDate, 'MMMM yyyy', { locale: ptBR });
+    }
+
+    return {
+      days: eachDayOfInterval({ start, end }),
+      periodLabel: label,
+    };
+  }, [currentDate, periodType]);
+
+  const navigate = (direction: 'prev' | 'next') => {
+    const modifier = direction === 'next' ? 1 : -1;
+    switch (periodType) {
+      case 'week':
+        setCurrentDate(direction === 'next' ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
+        break;
+      case 'quarter':
+        setCurrentDate(direction === 'next' ? addQuarters(currentDate, 1) : subQuarters(currentDate, 1));
+        break;
+      default:
+        setCurrentDate(direction === 'next' ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
+    }
+  };
 
   // Helper to parse date without timezone issues
   const parseDateSafe = (dateStr: string): Date => {
@@ -71,44 +124,74 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
     setExpandedDayPlans(dayPlans);
   };
 
+  const isInCurrentPeriod = (day: Date) => {
+    switch (periodType) {
+      case 'week':
+        return true; // All days in week view are current
+      case 'quarter':
+        const quarterStart = startOfQuarter(currentDate);
+        const quarterEnd = endOfQuarter(currentDate);
+        return day >= quarterStart && day <= quarterEnd;
+      default:
+        return isSameMonth(day, currentDate);
+    }
+  };
+
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const cellHeight = periodType === 'week' ? 'min-h-[140px]' : periodType === 'quarter' ? 'min-h-[60px]' : 'min-h-[100px]';
+  const maxPlansToShow = periodType === 'quarter' ? 2 : 3;
 
   return (
     <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
       <CardContent className="p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5 text-muted-foreground" />
             <h3 className="font-semibold font-space capitalize">
-              {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+              {periodLabel}
             </h3>
           </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="bg-background/50"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentMonth(new Date())}
-              className="bg-background/50"
-            >
-              Hoje
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="bg-background/50"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-2">
+            {/* Period Selector */}
+            <Select value={periodType} onValueChange={(v) => setPeriodType(v as PeriodType)}>
+              <SelectTrigger className="w-[130px] bg-background/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border">
+                <SelectItem value="week">Semana</SelectItem>
+                <SelectItem value="month">Mês</SelectItem>
+                <SelectItem value="quarter">Trimestre</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Navigation */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate('prev')}
+                className="bg-background/50"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentDate(new Date())}
+                className="bg-background/50"
+              >
+                Hoje
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate('next')}
+                className="bg-background/50"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -128,7 +211,7 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
         <div className="grid grid-cols-7 gap-1">
           {days.map((day) => {
             const dayPlans = getPlansForDay(day);
-            const isCurrentMonth = isSameMonth(day, currentMonth);
+            const isCurrentPeriod = isInCurrentPeriod(day);
             const isToday = isSameDay(day, new Date());
             const isHovered = hoveredDay && isSameDay(day, hoveredDay);
 
@@ -136,8 +219,9 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
               <div
                 key={day.toISOString()}
                 className={cn(
-                  'min-h-[100px] border rounded-md p-1 transition-all relative group',
-                  !isCurrentMonth && 'bg-muted/30 opacity-50',
+                  cellHeight,
+                  'border rounded-md p-1 transition-all relative group',
+                  !isCurrentPeriod && 'bg-muted/30 opacity-50',
                   isToday && 'border-primary bg-primary/5',
                   isHovered && onCreateWithDate && 'border-primary/50 bg-primary/5'
                 )}
@@ -154,7 +238,7 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
                 </div>
                 
                 {/* Add button on hover */}
-                {onCreateWithDate && isCurrentMonth && (
+                {onCreateWithDate && isCurrentPeriod && (
                   <Button
                     size="icon"
                     variant="ghost"
@@ -172,7 +256,7 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
                 )}
 
                 <div className="space-y-1">
-                  {dayPlans.slice(0, 3).map((plan) => {
+                  {dayPlans.slice(0, maxPlansToShow).map((plan) => {
                     const priorityConfig = PRIORITY_OPTIONS.find(
                       (p) => p.value === plan.priority
                     );
@@ -198,7 +282,7 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
                       </div>
                     );
                   })}
-                  {dayPlans.length > 3 && (
+                  {dayPlans.length > maxPlansToShow && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -207,7 +291,7 @@ export function CalendarView({ plans, onOpen, onCreateWithDate }: CalendarViewPr
                       className="w-full text-xs text-primary hover:text-primary/80 text-center font-medium flex items-center justify-center gap-1 py-0.5 hover:bg-primary/10 rounded transition-colors"
                     >
                       <Maximize2 className="h-3 w-3" />
-                      +{dayPlans.length - 3} mais
+                      +{dayPlans.length - maxPlansToShow} mais
                     </button>
                   )}
                 </div>
