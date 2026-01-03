@@ -15,6 +15,9 @@ import { VendorCard } from '@/components/fornecedores/VendorCard';
 import { VendorForm, VendorFormData } from '@/components/fornecedores/VendorForm';
 import { VendorStats } from '@/components/fornecedores/VendorStats';
 import { VendorDetailSheet } from '@/components/fornecedores/VendorDetailSheet';
+import { StartAssessmentDialog } from '@/components/fornecedores/StartAssessmentDialog';
+import { VendorAssessmentForm } from '@/components/fornecedores/VendorAssessmentForm';
+import { VendorAssessment } from '@/hooks/useVendorAssessments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -60,6 +63,9 @@ export default function Fornecedores() {
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [deleteVendor, setDeleteVendor] = useState<Vendor | null>(null);
   const [detailVendor, setDetailVendor] = useState<Vendor | null>(null);
+  const [assessmentVendor, setAssessmentVendor] = useState<Vendor | null>(null);
+  const [activeAssessment, setActiveAssessment] = useState<VendorAssessment | null>(null);
+  const [assessmentFormVendor, setAssessmentFormVendor] = useState<Vendor | null>(null);
 
   const { toast } = useToast();
   const { data: vendors, isLoading } = useVendors();
@@ -133,10 +139,17 @@ export default function Fornecedores() {
   };
 
   const handleStartAssessment = (vendor: Vendor) => {
-    toast({
-      title: 'Em breve',
-      description: 'O módulo de avaliação será implementado na próxima fase.',
-    });
+    setAssessmentVendor(vendor);
+  };
+
+  const handleAssessmentStarted = (assessment: VendorAssessment) => {
+    setAssessmentFormVendor(assessmentVendor);
+    setActiveAssessment(assessment);
+  };
+
+  const handleContinueAssessment = (assessment: VendorAssessment) => {
+    setAssessmentFormVendor(assessmentVendor);
+    setActiveAssessment(assessment);
   };
 
   const handleExportCSV = () => {
@@ -366,6 +379,32 @@ export default function Fornecedores() {
           handleOpenForm(v);
         }}
         onStartAssessment={handleStartAssessment}
+      />
+
+      {/* Start Assessment Dialog */}
+      <StartAssessmentDialog
+        open={!!assessmentVendor}
+        onOpenChange={(open) => !open && setAssessmentVendor(null)}
+        vendor={assessmentVendor}
+        onAssessmentStarted={handleAssessmentStarted}
+        onContinueAssessment={handleContinueAssessment}
+      />
+
+      {/* Assessment Form */}
+      <VendorAssessmentForm
+        open={!!assessmentFormVendor && !!activeAssessment}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAssessmentFormVendor(null);
+            setActiveAssessment(null);
+          }
+        }}
+        vendor={assessmentFormVendor}
+        assessment={activeAssessment}
+        onComplete={() => {
+          setAssessmentFormVendor(null);
+          setActiveAssessment(null);
+        }}
       />
 
       {/* Delete Confirmation */}
