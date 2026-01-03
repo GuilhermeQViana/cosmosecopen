@@ -818,25 +818,37 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          due_date_reminders: boolean | null
+          email_notifications: boolean | null
           full_name: string | null
           id: string
+          layout_density: string | null
           organization_id: string | null
+          risk_alerts: boolean | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          due_date_reminders?: boolean | null
+          email_notifications?: boolean | null
           full_name?: string | null
           id: string
+          layout_density?: string | null
           organization_id?: string | null
+          risk_alerts?: boolean | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          due_date_reminders?: boolean | null
+          email_notifications?: boolean | null
           full_name?: string | null
           id?: string
+          layout_density?: string | null
           organization_id?: string | null
+          risk_alerts?: boolean | null
           updated_at?: string
         }
         Relationships: [
