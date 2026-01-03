@@ -12,12 +12,19 @@ import {
   ShieldAlert,
   FileText,
   TrendingUp,
-  Calendar
+  Calendar,
+  Settings,
+  Download
 } from 'lucide-react';
 import { useVendors, getRiskLevelFromScore } from '@/hooks/useVendors';
 import { useVendorRequirements } from '@/hooks/useVendorRequirements';
 import { format, addDays, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { VendorComplianceRadar } from '@/components/fornecedores/VendorComplianceRadar';
+import { VendorRiskHeatMap } from '@/components/fornecedores/VendorRiskHeatMap';
+import { VendorTrendChart } from '@/components/fornecedores/VendorTrendChart';
+import { VendorAlerts } from '@/components/fornecedores/VendorAlerts';
+import { VendorComparison } from '@/components/fornecedores/VendorComparison';
 
 export default function FornecedoresDashboard() {
   const navigate = useNavigate();
@@ -42,16 +49,11 @@ export default function FornecedoresDashboard() {
     }).length,
   };
 
-  // Get vendors needing attention
-  const vendorsNeedingAttention = vendors.filter((v) => {
-    const riskLevel = getRiskLevelFromScore(v.last_assessment?.overall_score ?? null);
-    const isHighRisk = riskLevel === 'critico' || riskLevel === 'alto';
-    const needsAssessment = !v.last_assessment;
-    const contractExpiring = v.contract_end && 
-      isBefore(new Date(v.contract_end), addDays(new Date(), 30)) && 
-      isAfter(new Date(v.contract_end), new Date());
-    return isHighRisk || needsAssessment || contractExpiring;
-  }).slice(0, 5);
+  // Calculate average score
+  const vendorsWithScore = vendors.filter(v => v.last_assessment?.overall_score !== null);
+  const averageScore = vendorsWithScore.length > 0
+    ? Math.round(vendorsWithScore.reduce((sum, v) => sum + (v.last_assessment?.overall_score ?? 0), 0) / vendorsWithScore.length)
+    : 0;
 
   const statCards = [
     {
@@ -69,11 +71,11 @@ export default function FornecedoresDashboard() {
       bgColor: 'bg-green-500/10',
     },
     {
-      title: 'Criticidade Alta/Crítica',
-      value: stats.critical,
-      icon: AlertTriangle,
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10',
+      title: 'Score Médio',
+      value: `${averageScore}%`,
+      icon: TrendingUp,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
     },
     {
       title: 'Risco Alto/Crítico',
@@ -93,8 +95,8 @@ export default function FornecedoresDashboard() {
       title: 'Contratos Vencendo',
       value: stats.expiringContracts,
       icon: Calendar,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
+      color: 'text-red-500',
+      bgColor: 'bg-red-500/10',
     },
   ];
 
@@ -111,6 +113,10 @@ export default function FornecedoresDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/vrm/requisitos')}>
+            <Settings className="w-4 h-4 mr-2" />
+            Requisitos
+          </Button>
           <Button onClick={() => navigate('/vrm/fornecedores')} variant="outline">
             Ver Fornecedores
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -141,80 +147,37 @@ export default function FornecedoresDashboard() {
         ))}
       </div>
 
+      {/* Charts Row 1 */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Vendors Needing Attention */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-              Atenção Necessária
-            </CardTitle>
-            <CardDescription>
-              Fornecedores que requerem ação imediata
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {vendorsNeedingAttention.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-green-500/50" />
-                <p>Nenhum fornecedor requer atenção no momento</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {vendorsNeedingAttention.map((vendor) => {
-                  const riskLevel = getRiskLevelFromScore(vendor.last_assessment?.overall_score ?? null);
-                  const needsAssessment = !vendor.last_assessment;
-                  
-                  return (
-                    <div
-                      key={vendor.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                      onClick={() => navigate('/vrm/fornecedores')}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Building className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{vendor.name}</p>
-                          <p className="text-xs text-muted-foreground">{vendor.code}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {needsAssessment && (
-                          <Badge variant="outline" className="text-amber-500 border-amber-500/30">
-                            Sem avaliação
-                          </Badge>
-                        )}
-                        {(riskLevel === 'critico' || riskLevel === 'alto') && (
-                          <Badge variant="destructive" className="text-xs">
-                            Risco {riskLevel}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <VendorComplianceRadar showAllVendors />
+        <VendorRiskHeatMap />
+      </div>
 
-        {/* Quick Actions */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Ações Rápidas
-            </CardTitle>
-            <CardDescription>
-              Principais atividades do módulo VRM
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      {/* Charts Row 2 */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <VendorTrendChart />
+        <VendorAlerts />
+      </div>
+
+      {/* Comparison Chart */}
+      <VendorComparison />
+
+      {/* Quick Actions */}
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            Ações Rápidas
+          </CardTitle>
+          <CardDescription>
+            Principais atividades do módulo VRM
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Button
               variant="outline"
-              className="w-full justify-start h-auto py-4"
+              className="justify-start h-auto py-4"
               onClick={() => navigate('/vrm/fornecedores')}
             >
               <div className="flex items-center gap-4">
@@ -223,14 +186,14 @@ export default function FornecedoresDashboard() {
                 </div>
                 <div className="text-left">
                   <p className="font-medium">Cadastrar Fornecedor</p>
-                  <p className="text-xs text-muted-foreground">Adicionar novo fornecedor ao sistema</p>
+                  <p className="text-xs text-muted-foreground">Adicionar novo fornecedor</p>
                 </div>
               </div>
             </Button>
             
             <Button
               variant="outline"
-              className="w-full justify-start h-auto py-4"
+              className="justify-start h-auto py-4"
               onClick={() => navigate('/vrm/fornecedores')}
             >
               <div className="flex items-center gap-4">
@@ -239,48 +202,26 @@ export default function FornecedoresDashboard() {
                 </div>
                 <div className="text-left">
                   <p className="font-medium">Iniciar Avaliação</p>
-                  <p className="text-xs text-muted-foreground">Avaliar conformidade de um fornecedor</p>
+                  <p className="text-xs text-muted-foreground">Avaliar conformidade</p>
                 </div>
               </div>
             </Button>
             
             <Button
               variant="outline"
-              className="w-full justify-start h-auto py-4"
-              onClick={() => navigate('/vrm/fornecedores')}
+              className="justify-start h-auto py-4"
+              onClick={() => navigate('/vrm/requisitos')}
             >
               <div className="flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <div className="p-2 rounded-lg bg-purple-500/10">
+                  <Settings className="w-5 h-5 text-purple-500" />
                 </div>
                 <div className="text-left">
-                  <p className="font-medium">Ver Pendências</p>
-                  <p className="text-xs text-muted-foreground">{stats.pendingAssessment} fornecedores sem avaliação</p>
+                  <p className="font-medium">Gerenciar Requisitos</p>
+                  <p className="text-xs text-muted-foreground">{requirements.length} requisitos ativos</p>
                 </div>
               </div>
             </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Requirements Summary */}
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Requisitos de Avaliação</CardTitle>
-          <CardDescription>
-            {requirements.length} requisitos configurados para avaliação de fornecedores
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['Segurança da Informação', 'Cyber Security', 'Privacidade', 'Continuidade'].map((domain, index) => (
-              <div key={domain} className="p-4 rounded-lg bg-muted/30 text-center">
-                <p className="text-2xl font-bold font-space text-primary">
-                  {Math.floor(requirements.length / 4) + (index < requirements.length % 4 ? 1 : 0)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{domain}</p>
-              </div>
-            ))}
           </div>
         </CardContent>
       </Card>
