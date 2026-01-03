@@ -794,6 +794,11 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_ends_at: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
@@ -802,6 +807,11 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_ends_at?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -810,6 +820,11 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_ends_at?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1058,6 +1073,7 @@ export type Database = {
     Functions: {
       accept_organization_invite: { Args: { _token: string }; Returns: boolean }
       check_deadline_notifications: { Args: never; Returns: undefined }
+      check_organization_access: { Args: { _org_id: string }; Returns: boolean }
       create_organization_with_admin: {
         Args: { org_description?: string; org_name: string }
         Returns: {
@@ -1066,6 +1082,11 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_ends_at: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
           updated_at: string
         }
         SetofOptions: {
