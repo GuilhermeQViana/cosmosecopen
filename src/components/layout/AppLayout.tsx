@@ -36,6 +36,7 @@ const routeTitles: Record<string, string> = {
   '/plano-acao': 'Plano de Ação',
   '/relatorios': 'Relatórios',
   '/mapeamento': 'Mapeamento de Frameworks',
+  '/fornecedores': 'Gestão de Fornecedores',
   '/equipe': 'Gestão de Equipe',
   '/auditoria': 'Auditoria',
   '/configuracoes': 'Configurações',
