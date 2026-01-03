@@ -69,7 +69,7 @@ export default function Auth() {
         variant: 'destructive',
       });
     } else {
-      navigate('/dashboard');
+      navigate('/selecionar-modulo');
     }
   };
 
@@ -115,7 +115,7 @@ export default function Auth() {
         title: 'Conta criada!',
         description: 'Você foi cadastrado com sucesso.',
       });
-      navigate('/onboarding');
+      navigate('/selecionar-modulo');
     }
   };
 
