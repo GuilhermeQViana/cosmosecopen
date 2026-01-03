@@ -11,13 +11,82 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+import { 
+  Loader2, 
+  Save, 
+  Shield, 
+  Lock, 
+  Key, 
+  FileCheck, 
+  ClipboardCheck, 
+  FileText,
+  BookOpen,
+  Scale,
+  Building2,
+  Landmark,
+  Globe,
+  Server,
+  Database,
+  Cloud,
+  Cpu,
+  Network,
+  Fingerprint,
+  Eye,
+  ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
+  CheckCircle,
+  FileCode,
+  Layers,
+  Box,
+  Settings,
+  Cog,
+  type LucideIcon
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   useCreateCustomFramework, 
   useUpdateCustomFramework,
   CustomFramework 
 } from '@/hooks/useCustomFrameworks';
+
+interface IconOption {
+  name: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+const iconOptions: IconOption[] = [
+  { name: 'shield', icon: Shield, label: 'Escudo' },
+  { name: 'shield-check', icon: ShieldCheck, label: 'Escudo Check' },
+  { name: 'shield-alert', icon: ShieldAlert, label: 'Escudo Alerta' },
+  { name: 'lock', icon: Lock, label: 'Cadeado' },
+  { name: 'key', icon: Key, label: 'Chave' },
+  { name: 'fingerprint', icon: Fingerprint, label: 'Digital' },
+  { name: 'eye', icon: Eye, label: 'Olho' },
+  { name: 'file-check', icon: FileCheck, label: 'Arquivo Check' },
+  { name: 'clipboard-check', icon: ClipboardCheck, label: 'Checklist' },
+  { name: 'file-text', icon: FileText, label: 'Documento' },
+  { name: 'file-code', icon: FileCode, label: 'Código' },
+  { name: 'book-open', icon: BookOpen, label: 'Livro' },
+  { name: 'scale', icon: Scale, label: 'Balança' },
+  { name: 'building', icon: Building2, label: 'Prédio' },
+  { name: 'landmark', icon: Landmark, label: 'Instituição' },
+  { name: 'globe', icon: Globe, label: 'Globo' },
+  { name: 'server', icon: Server, label: 'Servidor' },
+  { name: 'database', icon: Database, label: 'Banco de Dados' },
+  { name: 'cloud', icon: Cloud, label: 'Nuvem' },
+  { name: 'cpu', icon: Cpu, label: 'CPU' },
+  { name: 'network', icon: Network, label: 'Rede' },
+  { name: 'layers', icon: Layers, label: 'Camadas' },
+  { name: 'box', icon: Box, label: 'Caixa' },
+  { name: 'settings', icon: Settings, label: 'Configurações' },
+  { name: 'cog', icon: Cog, label: 'Engrenagem' },
+  { name: 'check-circle', icon: CheckCircle, label: 'Check' },
+  { name: 'alert-triangle', icon: AlertTriangle, label: 'Alerta' },
+];
 
 interface CreateFrameworkDialogProps {
   open: boolean;
@@ -37,6 +106,7 @@ export function CreateFrameworkDialog({
   const [code, setCode] = useState('');
   const [version, setVersion] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('shield');
 
   const isEditing = !!editingFramework;
   const isLoading = createFramework.isPending || updateFramework.isPending;
@@ -47,11 +117,13 @@ export function CreateFrameworkDialog({
       setCode(editingFramework.code);
       setVersion(editingFramework.version || '');
       setDescription(editingFramework.description || '');
+      setSelectedIcon(editingFramework.icon || 'shield');
     } else {
       setName('');
       setCode('');
       setVersion('');
       setDescription('');
+      setSelectedIcon('shield');
     }
   }, [editingFramework, open]);
 
@@ -71,6 +143,7 @@ export function CreateFrameworkDialog({
           code: code.trim().toUpperCase(),
           version: version.trim() || undefined,
           description: description.trim() || undefined,
+          icon: selectedIcon,
         });
         toast.success('Framework atualizado com sucesso');
       } else {
@@ -79,6 +152,7 @@ export function CreateFrameworkDialog({
           code: code.trim().toUpperCase(),
           version: version.trim() || undefined,
           description: description.trim() || undefined,
+          icon: selectedIcon,
         });
         toast.success('Framework criado com sucesso');
       }
@@ -92,11 +166,14 @@ export function CreateFrameworkDialog({
     }
   };
 
+  const SelectedIconComponent = iconOptions.find(i => i.name === selectedIcon)?.icon || Shield;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <SelectedIconComponent className="h-5 w-5 text-primary" />
             {isEditing ? 'Editar Framework' : 'Novo Framework'}
           </DialogTitle>
           <DialogDescription>
@@ -144,6 +221,36 @@ export function CreateFrameworkDialog({
                 onChange={(e) => setVersion(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Ícone</Label>
+            <ScrollArea className="h-32 rounded-md border p-2">
+              <div className="grid grid-cols-9 gap-1">
+                {iconOptions.map((option) => {
+                  const IconComponent = option.icon;
+                  return (
+                    <button
+                      key={option.name}
+                      type="button"
+                      onClick={() => setSelectedIcon(option.name)}
+                      className={cn(
+                        "flex items-center justify-center p-2 rounded-md transition-colors",
+                        selectedIcon === option.name
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      )}
+                      title={option.label}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                    </button>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+            <p className="text-xs text-muted-foreground">
+              Ícone selecionado: {iconOptions.find(i => i.name === selectedIcon)?.label}
+            </p>
           </div>
 
           <div className="space-y-2">

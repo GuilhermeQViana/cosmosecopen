@@ -9,6 +9,7 @@ export interface CustomFramework {
   code: string;
   version: string | null;
   description: string | null;
+  icon: string | null;
   organization_id: string | null;
   is_custom: boolean;
   created_by: string | null;
@@ -21,6 +22,7 @@ export interface CreateFrameworkInput {
   code: string;
   version?: string;
   description?: string;
+  icon?: string;
 }
 
 export interface ControlInput {
@@ -92,6 +94,7 @@ export function useCreateCustomFramework() {
           code: input.code,
           version: input.version || null,
           description: input.description || null,
+          icon: input.icon || 'shield',
           organization_id: organization.id,
           is_custom: true,
           created_by: user.id,
@@ -121,6 +124,7 @@ export function useUpdateCustomFramework() {
           code: input.code,
           version: input.version || null,
           description: input.description || null,
+          icon: input.icon || 'shield',
         })
         .eq('id', id)
         .select()
