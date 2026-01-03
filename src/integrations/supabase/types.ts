@@ -1097,6 +1097,16 @@ export type Database = {
         Returns: boolean
       }
       leave_organization: { Args: { _org_id: string }; Returns: boolean }
+      log_access_event: {
+        Args: {
+          _action: string
+          _details?: Json
+          _entity_id?: string
+          _entity_type?: string
+          _ip_address?: string
+        }
+        Returns: string
+      }
       set_active_organization: { Args: { _org_id: string }; Returns: boolean }
       user_belongs_to_org: {
         Args: { _org_id: string; _user_id: string }
