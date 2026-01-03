@@ -8,20 +8,17 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { StarField } from '@/components/ui/star-field';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
+import { getFrameworkIcon } from '@/lib/framework-icons';
 
-const frameworkIcons: Record<FrameworkCode, React.ReactNode> = {
-  nist_csf: <Shield className="w-8 h-8" />,
-  iso_27001: <Building2 className="w-8 h-8" />,
-  bcb_cmn: <Landmark className="w-8 h-8" />,
-};
-
-const frameworkColors: Record<FrameworkCode, string> = {
+const standardFrameworkColors: Record<string, string> = {
   nist_csf: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
   iso_27001: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
   bcb_cmn: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
 };
 
-const frameworkDescriptions: Record<FrameworkCode, string> = {
+const customFrameworkColor = 'from-purple-500/20 to-purple-500/5 border-purple-500/30 text-purple-500';
+
+const frameworkDescriptions: Record<string, string> = {
   nist_csf: 'Framework de cibersegurança do NIST focado em identificar, proteger, detectar, responder e recuperar.',
   iso_27001: 'Padrão internacional para sistemas de gestão de segurança da informação (SGSI).',
   bcb_cmn: 'Regulamentação do Banco Central do Brasil para instituições financeiras.',
@@ -108,6 +105,9 @@ export default function SelecionarFramework() {
             const code = framework.code as FrameworkCode;
             const isSelected = currentFramework?.code === code;
             const controlCount = controlCounts[framework.id] || 0;
+            const isCustom = framework.is_custom;
+            const colorClass = isCustom ? customFrameworkColor : (standardFrameworkColors[code] || customFrameworkColor);
+            const IconComponent = getFrameworkIcon(isCustom ? framework.icon : code);
 
             return (
               <Card
@@ -130,8 +130,8 @@ export default function SelecionarFramework() {
                   <div className="relative mb-3">
                     <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity rounded-xl blur-lg" 
                          style={{ background: `linear-gradient(135deg, var(--primary) 0%, transparent 100%)` }} />
-                    <div className={`relative inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br border ${frameworkColors[code]}`}>
-                      {frameworkIcons[code]}
+                    <div className={`relative inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br border ${colorClass}`}>
+                      <IconComponent className="w-8 h-8" />
                     </div>
                   </div>
                   <CardTitle className="text-lg flex items-center gap-2 font-space">
@@ -141,9 +141,14 @@ export default function SelecionarFramework() {
                         v{framework.version}
                       </Badge>
                     )}
+                    {isCustom && (
+                      <Badge className="text-xs bg-purple-500/20 text-purple-400 border-purple-500/30">
+                        Custom
+                      </Badge>
+                    )}
                   </CardTitle>
                   <CardDescription className="text-sm min-h-[60px]">
-                    {frameworkDescriptions[code]}
+                    {frameworkDescriptions[code] || framework.description || 'Framework customizado de compliance.'}
                   </CardDescription>
                 </CardHeader>
                 
