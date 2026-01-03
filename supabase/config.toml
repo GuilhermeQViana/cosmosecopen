@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.send-trial-reminder]
 verify_jwt = false
+
+[functions.list-invoices]
+verify_jwt = false
