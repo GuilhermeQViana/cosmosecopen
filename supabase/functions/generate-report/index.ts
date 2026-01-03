@@ -39,6 +39,11 @@ serve(async (req) => {
 
     const { type, frameworkId, organizationId, period = 'current' }: ReportRequest = await req.json();
 
+    // Get client IP for logging
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() 
+      || req.headers.get("x-real-ip") 
+      || "unknown";
+
     console.log(`Generating ${type} report for org ${organizationId}`);
 
     // Fetch organization info
@@ -443,6 +448,29 @@ serve(async (req) => {
 `;
 
     console.log(`Report generated successfully for type: ${type}`);
+
+    // Log the report generation event
+    const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    await supabaseAdmin.from("access_logs").insert({
+      user_id: user.id,
+      organization_id: organizationId,
+      action: "export",
+      entity_type: "report",
+      details: {
+        reportType: type,
+        frameworkId,
+        period,
+        stats: {
+          complianceScore,
+          totalRisks,
+          criticalRisks,
+          totalActions,
+          overdueActions,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      ip_address: clientIP,
+    });
 
     return new Response(
       JSON.stringify({ 

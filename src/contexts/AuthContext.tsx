@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logAccessEvent } from '@/hooks/useAccessLog';
 
 interface AuthContextType {
   user: User | null;
@@ -38,10 +39,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    // Log successful login (deferred to avoid deadlock)
+    if (!error) {
+      setTimeout(() => {
+        logAccessEvent({
+          action: 'login',
+          entityType: 'session',
+          details: { email, timestamp: new Date().toISOString() },
+        });
+      }, 0);
+    }
+    
     return { error };
-  };
+  }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -59,9 +72,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
+    // Log logout before signing out (while we still have the session)
+    await logAccessEvent({
+      action: 'logout',
+      entityType: 'session',
+      details: { timestamp: new Date().toISOString() },
+    });
+    
     await supabase.auth.signOut();
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>

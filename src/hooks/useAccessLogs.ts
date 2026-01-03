@@ -20,6 +20,7 @@ export interface AccessLog {
 export interface AccessLogFilters {
   action?: string;
   entityType?: string;
+  userId?: string;
   search?: string;
   startDate?: Date;
   endDate?: Date;
@@ -54,6 +55,10 @@ export function useAccessLogs(options: UseAccessLogsOptions = {}) {
 
       if (filters.entityType && filters.entityType !== 'all') {
         query = query.eq('entity_type', filters.entityType);
+      }
+
+      if (filters.userId && filters.userId !== 'all') {
+        query = query.eq('user_id', filters.userId);
       }
 
       if (filters.startDate) {

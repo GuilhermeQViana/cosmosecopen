@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useAccessLogs, useAccessLogsStats, type AccessLogFilters } from '@/hooks/useAccessLogs';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useAccessLog } from '@/hooks/useAccessLog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,7 +61,10 @@ import {
   LogOut,
   CheckCircle2,
   X,
+  User,
+  FileUp,
 } from 'lucide-react';
+
 import { toast } from 'sonner';
 
 const actionIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -71,6 +76,7 @@ const actionIcons: Record<string, React.ComponentType<{ className?: string }>> =
   view: Eye,
   export: Download,
   assess: CheckCircle2,
+  import: FileUp,
 };
 
 const actionLabels: Record<string, string> = {
@@ -82,6 +88,7 @@ const actionLabels: Record<string, string> = {
   view: 'Visualização',
   export: 'Exportação',
   assess: 'Avaliação',
+  import: 'Importação',
 };
 
 const actionColors: Record<string, string> = {
@@ -93,25 +100,37 @@ const actionColors: Record<string, string> = {
   view: 'bg-[hsl(var(--chart-6))]/10 text-[hsl(var(--chart-6))]',
   export: 'bg-[hsl(var(--chart-5))]/10 text-[hsl(var(--chart-5))]',
   assess: 'bg-[hsl(var(--chart-2))]/10 text-[hsl(var(--chart-2))]',
+  import: 'bg-primary/10 text-primary',
 };
 
 const entityLabels: Record<string, string> = {
   assessment: 'Avaliação',
+  assessments: 'Avaliação',
   risk: 'Risco',
+  risks: 'Risco',
   evidence: 'Evidência',
+  evidences: 'Evidência',
   action_plan: 'Plano de Ação',
+  action_plans: 'Plano de Ação',
   control: 'Controle',
+  controls: 'Controle',
   user: 'Usuário',
   organization: 'Organização',
+  report: 'Relatório',
+  backup: 'Backup',
+  session: 'Sessão',
 };
 
 export default function Auditoria() {
   const { organization } = useOrganization();
+  const { data: teamMembers } = useTeamMembers();
+  const { logExport } = useAccessLog();
   
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
   const [entityFilter, setEntityFilter] = useState('all');
+  const [userFilter, setUserFilter] = useState('all');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -119,10 +138,11 @@ export default function Auditoria() {
   const filters: AccessLogFilters = useMemo(() => ({
     action: actionFilter,
     entityType: entityFilter,
+    userId: userFilter,
     search: searchTerm,
     startDate,
     endDate,
-  }), [actionFilter, entityFilter, searchTerm, startDate, endDate]);
+  }), [actionFilter, entityFilter, userFilter, searchTerm, startDate, endDate]);
 
   const { data: logsResponse, isLoading } = useAccessLogs({ page, pageSize: 15, filters });
   const { data: stats } = useAccessLogsStats();
@@ -147,12 +167,13 @@ export default function Auditoria() {
     setSearchTerm('');
     setActionFilter('all');
     setEntityFilter('all');
+    setUserFilter('all');
     setStartDate(undefined);
     setEndDate(undefined);
     setPage(1);
   };
 
-  const hasActiveFilters = actionFilter !== 'all' || entityFilter !== 'all' || startDate || endDate;
+  const hasActiveFilters = actionFilter !== 'all' || entityFilter !== 'all' || userFilter !== 'all' || startDate || endDate;
 
   const handleExport = () => {
     if (logs.length === 0) {
@@ -185,6 +206,9 @@ export default function Auditoria() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+
+    // Log the export event
+    logExport('audit_logs', 'csv', logs.length);
 
     toast.success('Logs exportados com sucesso!');
   };
@@ -304,6 +328,8 @@ export default function Auditoria() {
                 <SelectItem value="update">Atualização</SelectItem>
                 <SelectItem value="delete">Exclusão</SelectItem>
                 <SelectItem value="view">Visualização</SelectItem>
+                <SelectItem value="export">Exportação</SelectItem>
+                <SelectItem value="import">Importação</SelectItem>
                 <SelectItem value="login">Login</SelectItem>
                 <SelectItem value="logout">Logout</SelectItem>
               </SelectContent>
@@ -314,11 +340,29 @@ export default function Auditoria() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas Entidades</SelectItem>
-                <SelectItem value="assessment">Avaliação</SelectItem>
-                <SelectItem value="risk">Risco</SelectItem>
-                <SelectItem value="evidence">Evidência</SelectItem>
-                <SelectItem value="action_plan">Plano de Ação</SelectItem>
-                <SelectItem value="user">Usuário</SelectItem>
+                <SelectItem value="assessments">Avaliação</SelectItem>
+                <SelectItem value="risks">Risco</SelectItem>
+                <SelectItem value="evidences">Evidência</SelectItem>
+                <SelectItem value="action_plans">Plano de Ação</SelectItem>
+                <SelectItem value="report">Relatório</SelectItem>
+                <SelectItem value="backup">Backup</SelectItem>
+                <SelectItem value="session">Sessão</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* User Filter */}
+            <Select value={userFilter} onValueChange={(v) => { setUserFilter(v); setPage(1); }}>
+              <SelectTrigger className="w-44">
+                <User className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Usuário" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos Usuários</SelectItem>
+                {teamMembers?.map((member) => (
+                  <SelectItem key={member.id} value={member.user_id}>
+                    {member.profile?.full_name || 'Usuário'}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             

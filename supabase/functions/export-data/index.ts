@@ -56,6 +56,11 @@ serve(async (req) => {
     // Get request body
     const { format = "json" } = await req.json();
 
+    // Get client IP for logging
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() 
+      || req.headers.get("x-real-ip") 
+      || "unknown";
+
     console.log(`Exporting data for organization ${organizationId} in format ${format}`);
 
     // Fetch all data for the organization
@@ -74,6 +79,25 @@ serve(async (req) => {
       supabase.from("action_plans").select("*").eq("organization_id", organizationId),
       supabase.from("organizations").select("*").eq("id", organizationId).single()
     ]);
+
+    // Log the export event
+    await supabase.from("access_logs").insert({
+      user_id: user.id,
+      organization_id: organizationId,
+      action: "export",
+      entity_type: "backup",
+      details: {
+        format,
+        recordCount: {
+          assessments: assessments?.length || 0,
+          risks: risks?.length || 0,
+          evidences: evidences?.length || 0,
+          actionPlans: actionPlans?.length || 0,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      ip_address: clientIP,
+    });
 
     const exportData = {
       exportedAt: new Date().toISOString(),
