@@ -12,6 +12,8 @@ interface SubscriptionState {
   trialEndsAt: string | null;
   subscriptionEndsAt: string | null;
   isLoading: boolean;
+  isCheckoutLoading: boolean;
+  hasPaymentFailed: boolean;
 }
 
 export function useSubscription() {
@@ -25,6 +27,8 @@ export function useSubscription() {
     trialEndsAt: null,
     subscriptionEndsAt: null,
     isLoading: true,
+    isCheckoutLoading: false,
+    hasPaymentFailed: false,
   });
 
   const checkSubscription = useCallback(async () => {
@@ -43,6 +47,15 @@ export function useSubscription() {
 
       if (error) throw error;
 
+      // Check for payment failed notifications
+      const { data: notifications } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('title', 'Falha no pagamento')
+        .eq('read', false)
+        .limit(1);
+
       setState({
         hasAccess: data.has_access,
         subscriptionStatus: data.subscription_status,
@@ -51,6 +64,8 @@ export function useSubscription() {
         trialEndsAt: data.trial_ends_at,
         subscriptionEndsAt: data.subscription_ends_at,
         isLoading: false,
+        isCheckoutLoading: false,
+        hasPaymentFailed: (notifications?.length ?? 0) > 0,
       });
     } catch (error) {
       console.error('Error checking subscription:', error);
@@ -63,6 +78,8 @@ export function useSubscription() {
       toast.error('Organização não encontrada');
       return;
     }
+
+    setState(prev => ({ ...prev, isCheckoutLoading: true }));
 
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -77,6 +94,8 @@ export function useSubscription() {
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast.error('Erro ao iniciar checkout. Tente novamente.');
+    } finally {
+      setState(prev => ({ ...prev, isCheckoutLoading: false }));
     }
   }, [organization]);
 
@@ -95,6 +114,18 @@ export function useSubscription() {
     }
   }, []);
 
+  const dismissPaymentFailed = useCallback(async () => {
+    if (!user) return;
+
+    await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', user.id)
+      .eq('title', 'Falha no pagamento');
+
+    setState(prev => ({ ...prev, hasPaymentFailed: false }));
+  }, [user]);
+
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
@@ -110,5 +141,6 @@ export function useSubscription() {
     checkSubscription,
     createCheckout,
     openCustomerPortal,
+    dismissPaymentFailed,
   };
 }

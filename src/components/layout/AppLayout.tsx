@@ -16,6 +16,7 @@ import { PageTransition } from './PageTransition';
 import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { Button } from '@/components/ui/button';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
+import { PaymentFailedBanner } from '@/components/subscription/PaymentFailedBanner';
 import { SubscriptionRequired } from '@/components/subscription/SubscriptionRequired';
 import { useSubscription } from '@/hooks/useSubscription';
 import {
@@ -96,6 +97,7 @@ export function AppLayout() {
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col">
           <TrialBanner />
+          <PaymentFailedBanner />
           <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4 mx-2" />

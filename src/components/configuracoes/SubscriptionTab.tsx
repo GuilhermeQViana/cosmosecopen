@@ -3,10 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Clock, CreditCard, ExternalLink, Sparkles } from 'lucide-react';
+import { Check, Clock, CreditCard, ExternalLink, Loader2, Sparkles } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const features = [
   'Todos os frameworks disponíveis',
@@ -20,6 +23,7 @@ const features = [
 ];
 
 export function SubscriptionTab() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { 
     subscriptionStatus, 
     isTrialing, 
@@ -27,9 +31,23 @@ export function SubscriptionTab() {
     trialEndsAt,
     subscriptionEndsAt,
     isLoading,
+    isCheckoutLoading,
     createCheckout,
     openCustomerPortal,
   } = useSubscription();
+
+  // Handle checkout canceled
+  useEffect(() => {
+    const checkoutCanceled = searchParams.get('checkout');
+    if (checkoutCanceled === 'canceled') {
+      toast.info('Checkout cancelado', {
+        description: 'Você pode tentar novamente quando quiser.',
+      });
+      // Remove the query param
+      searchParams.delete('checkout');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   if (isLoading) {
     return (
@@ -104,10 +122,23 @@ export function SubscriptionTab() {
 
           <div className="flex flex-wrap gap-3">
             {subscriptionStatus !== 'active' && (
-              <Button onClick={createCheckout} className="gap-2">
-                <CreditCard className="w-4 h-4" />
-                Assinar por R$ 449,90/mês
-                <Sparkles className="w-3 h-3" />
+              <Button 
+                onClick={createCheckout} 
+                className="gap-2"
+                disabled={isCheckoutLoading}
+              >
+                {isCheckoutLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Redirecionando...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" />
+                    Assinar por R$ 449,90/mês
+                    <Sparkles className="w-3 h-3" />
+                  </>
+                )}
               </Button>
             )}
             
