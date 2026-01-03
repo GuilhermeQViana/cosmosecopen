@@ -78,8 +78,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,
-      cancel_url: `${req.headers.get("origin")}/dashboard?checkout=canceled`,
+      success_url: `${req.headers.get("origin")}/checkout-success`,
+      cancel_url: `${req.headers.get("origin")}/configuracoes?checkout=canceled`,
       metadata: {
         organization_id,
         user_id: user.id,

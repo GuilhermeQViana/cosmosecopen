@@ -23,6 +23,7 @@ import Relatorios from "@/pages/Relatorios";
 import Equipe from "@/pages/Equipe";
 import Auditoria from "@/pages/Auditoria";
 import Configuracoes from "@/pages/Configuracoes";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
                   <Route path="/selecionar-framework" element={<SelecionarFramework />} />
+                  <Route path="/checkout-success" element={<CheckoutSuccess />} />
                   <Route element={<AppLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/diagnostico" element={<Diagnostico />} />
