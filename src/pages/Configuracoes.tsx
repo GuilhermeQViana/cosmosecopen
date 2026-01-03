@@ -39,6 +39,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { 
   User, 
@@ -67,7 +73,9 @@ import {
   FileCode2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworksTab';
+import { ChangePasswordDialog } from '@/components/configuracoes/ChangePasswordDialog';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -88,9 +96,11 @@ export default function Configuracoes() {
   const { user } = useAuth();
   const { organization, organizations, refreshOrganization, refreshOrganizations, createOrganization } = useOrganization();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   
   const [profileLoading, setProfileLoading] = useState(false);
   const [orgLoading, setOrgLoading] = useState(false);
+  const [prefsLoading, setPrefsLoading] = useState(false);
   
   // Profile form state
   const [fullName, setFullName] = useState('');
@@ -100,11 +110,14 @@ export default function Configuracoes() {
   const [orgName, setOrgName] = useState(organization?.name || '');
   const [orgDescription, setOrgDescription] = useState(organization?.description || '');
   
-  // Preferences state
+  // Preferences state (persisted)
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [riskAlerts, setRiskAlerts] = useState(true);
   const [dueDateReminders, setDueDateReminders] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [layoutDensity, setLayoutDensity] = useState<'compact' | 'default' | 'comfortable'>('default');
+
+  // Password dialog state
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   // Invite state
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -127,25 +140,34 @@ export default function Configuracoes() {
   const [exportLoading, setExportLoading] = useState(false);
   const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
 
-  // Load profile data
+  // Load profile data and preferences
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
       
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, avatar_url, email_notifications, risk_alerts, due_date_reminders, layout_density')
         .eq('id', user.id)
         .single();
       
       if (profile) {
         setFullName(profile.full_name || '');
         setAvatarUrl(profile.avatar_url || '');
+        setEmailNotifications(profile.email_notifications ?? true);
+        setRiskAlerts(profile.risk_alerts ?? true);
+        setDueDateReminders(profile.due_date_reminders ?? true);
+        setLayoutDensity((profile.layout_density as 'compact' | 'default' | 'comfortable') || 'default');
       }
     };
     
     loadProfile();
   }, [user]);
+
+  // Apply layout density to document
+  useEffect(() => {
+    document.documentElement.dataset.density = layoutDensity;
+  }, [layoutDensity]);
 
   // Update org form when organization changes
   useEffect(() => {
@@ -368,6 +390,36 @@ export default function Configuracoes() {
     }
   };
 
+  const handleUpdatePreference = async (field: string, value: boolean | string) => {
+    if (!user) return;
+    
+    setPrefsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ [field]: value })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      toast.success('Preferência atualizada!');
+    } catch (error) {
+      console.error('Error updating preference:', error);
+      toast.error('Erro ao atualizar preferência');
+    } finally {
+      setPrefsLoading(false);
+    }
+  };
+
+  const handleNotificationChange = (field: string, value: boolean, setter: (v: boolean) => void) => {
+    setter(value);
+    handleUpdatePreference(field, value);
+  };
+
+  const handleLayoutDensityChange = (value: 'compact' | 'default' | 'comfortable') => {
+    setLayoutDensity(value);
+    handleUpdatePreference('layout_density', value);
+  };
+
   const isAdmin = organization?.role === 'admin';
 
   return (
@@ -498,7 +550,9 @@ export default function Configuracoes() {
                     Atualize sua senha de acesso
                   </p>
                 </div>
-                <Button variant="outline">Alterar</Button>
+                <Button variant="outline" onClick={() => setPasswordDialogOpen(true)}>
+                  Alterar
+                </Button>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -508,10 +562,28 @@ export default function Configuracoes() {
                     Adicione uma camada extra de segurança
                   </p>
                 </div>
-                <Button variant="outline">Configurar</Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button variant="outline" disabled>
+                          Configurar
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Em breve: Autenticação de dois fatores</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardContent>
           </Card>
+          
+          <ChangePasswordDialog 
+            open={passwordDialogOpen} 
+            onOpenChange={setPasswordDialogOpen} 
+          />
         </TabsContent>
 
         {/* Organization Tab */}
@@ -923,7 +995,8 @@ export default function Configuracoes() {
                 </div>
                 <Switch
                   checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
+                  onCheckedChange={(v) => handleNotificationChange('email_notifications', v, setEmailNotifications)}
+                  disabled={prefsLoading}
                 />
               </div>
               <Separator />
@@ -936,7 +1009,8 @@ export default function Configuracoes() {
                 </div>
                 <Switch
                   checked={riskAlerts}
-                  onCheckedChange={setRiskAlerts}
+                  onCheckedChange={(v) => handleNotificationChange('risk_alerts', v, setRiskAlerts)}
+                  disabled={prefsLoading}
                 />
               </div>
               <Separator />
@@ -949,7 +1023,8 @@ export default function Configuracoes() {
                 </div>
                 <Switch
                   checked={dueDateReminders}
-                  onCheckedChange={setDueDateReminders}
+                  onCheckedChange={(v) => handleNotificationChange('due_date_reminders', v, setDueDateReminders)}
+                  disabled={prefsLoading}
                 />
               </div>
             </CardContent>
@@ -1062,32 +1137,44 @@ export default function Configuracoes() {
                   </p>
                 </div>
                 <Switch
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
+                  checked={theme === 'dark'}
+                  onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
                 />
               </div>
               <Separator />
               <div>
                 <p className="font-medium mb-3">Densidade do Layout</p>
                 <div className="grid grid-cols-3 gap-4">
-                  <Button variant="outline" className="h-20 flex-col gap-2">
+                  <Button 
+                    variant={layoutDensity === 'compact' ? 'default' : 'outline'} 
+                    className="h-20 flex-col gap-2"
+                    onClick={() => handleLayoutDensityChange('compact')}
+                  >
                     <div className="space-y-1">
-                      <div className="h-1 w-8 bg-muted-foreground/30 rounded" />
-                      <div className="h-1 w-6 bg-muted-foreground/30 rounded" />
+                      <div className={`h-1 w-8 rounded ${layoutDensity === 'compact' ? 'bg-primary-foreground/50' : 'bg-muted-foreground/30'}`} />
+                      <div className={`h-1 w-6 rounded ${layoutDensity === 'compact' ? 'bg-primary-foreground/50' : 'bg-muted-foreground/30'}`} />
                     </div>
                     <span className="text-xs">Compacto</span>
                   </Button>
-                  <Button variant="default" className="h-20 flex-col gap-2">
+                  <Button 
+                    variant={layoutDensity === 'default' ? 'default' : 'outline'} 
+                    className="h-20 flex-col gap-2"
+                    onClick={() => handleLayoutDensityChange('default')}
+                  >
                     <div className="space-y-1.5">
-                      <div className="h-1.5 w-8 bg-primary-foreground/50 rounded" />
-                      <div className="h-1.5 w-6 bg-primary-foreground/50 rounded" />
+                      <div className={`h-1.5 w-8 rounded ${layoutDensity === 'default' ? 'bg-primary-foreground/50' : 'bg-muted-foreground/30'}`} />
+                      <div className={`h-1.5 w-6 rounded ${layoutDensity === 'default' ? 'bg-primary-foreground/50' : 'bg-muted-foreground/30'}`} />
                     </div>
                     <span className="text-xs">Padrão</span>
                   </Button>
-                  <Button variant="outline" className="h-20 flex-col gap-2">
+                  <Button 
+                    variant={layoutDensity === 'comfortable' ? 'default' : 'outline'} 
+                    className="h-20 flex-col gap-2"
+                    onClick={() => handleLayoutDensityChange('comfortable')}
+                  >
                     <div className="space-y-2">
-                      <div className="h-2 w-8 bg-muted-foreground/30 rounded" />
-                      <div className="h-2 w-6 bg-muted-foreground/30 rounded" />
+                      <div className={`h-2 w-8 rounded ${layoutDensity === 'comfortable' ? 'bg-primary-foreground/50' : 'bg-muted-foreground/30'}`} />
+                      <div className={`h-2 w-6 rounded ${layoutDensity === 'comfortable' ? 'bg-primary-foreground/50' : 'bg-muted-foreground/30'}`} />
                     </div>
                     <span className="text-xs">Confortável</span>
                   </Button>
