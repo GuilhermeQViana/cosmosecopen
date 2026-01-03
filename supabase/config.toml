@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.send-deadline-notifications]
 verify_jwt = false
+
+[functions.import-data]
+verify_jwt = false
