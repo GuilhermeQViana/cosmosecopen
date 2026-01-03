@@ -10,6 +10,8 @@ interface FrameworkInfo {
   name: string;
   version: string | null;
   description: string | null;
+  icon: string | null;
+  is_custom: boolean;
 }
 
 interface FrameworkContextType {
