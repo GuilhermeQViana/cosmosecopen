@@ -88,9 +88,9 @@ export default function SelecionarOrganizacao() {
     if (success) {
       toast({
         title: 'Organização selecionada',
-        description: 'Você foi redirecionado para o dashboard.',
+        description: 'Escolha o módulo que deseja acessar.',
       });
-      navigate('/dashboard');
+      navigate('/selecionar-modulo');
     } else {
       toast({
         title: 'Erro',

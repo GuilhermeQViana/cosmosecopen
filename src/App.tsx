@@ -8,10 +8,12 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { FrameworkProvider } from "@/contexts/FrameworkContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { VendorLayout } from "@/components/layout/VendorLayout";
 import Landing from "@/pages/Landing";
 import Auth from "@/pages/Auth";
 import Onboarding from "@/pages/Onboarding";
 import SelecionarOrganizacao from "@/pages/SelecionarOrganizacao";
+import SelecionarModulo from "@/pages/SelecionarModulo";
 import SelecionarFramework from "@/pages/SelecionarFramework";
 import Dashboard from "@/pages/Dashboard";
 import Diagnostico from "@/pages/Diagnostico";
@@ -25,6 +27,7 @@ import Auditoria from "@/pages/Auditoria";
 import Configuracoes from "@/pages/Configuracoes";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import Fornecedores from "@/pages/Fornecedores";
+import FornecedoresDashboard from "@/pages/FornecedoresDashboard";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,8 +47,11 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
+                  <Route path="/selecionar-modulo" element={<SelecionarModulo />} />
                   <Route path="/selecionar-framework" element={<SelecionarFramework />} />
                   <Route path="/checkout-success" element={<CheckoutSuccess />} />
+                  
+                  {/* Módulo Frameworks (GRC) */}
                   <Route element={<AppLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/diagnostico" element={<Diagnostico />} />
@@ -54,11 +60,18 @@ const App = () => (
                     <Route path="/plano-acao" element={<PlanoAcao />} />
                     <Route path="/relatorios" element={<Relatorios />} />
                     <Route path="/mapeamento" element={<Mapeamento />} />
-                    <Route path="/fornecedores" element={<Fornecedores />} />
                     <Route path="/equipe" element={<Equipe />} />
                     <Route path="/auditoria" element={<Auditoria />} />
                     <Route path="/configuracoes" element={<Configuracoes />} />
                   </Route>
+
+                  {/* Módulo Fornecedores (VRM) */}
+                  <Route element={<VendorLayout />}>
+                    <Route path="/vrm" element={<FornecedoresDashboard />} />
+                    <Route path="/vrm/fornecedores" element={<Fornecedores />} />
+                    <Route path="/vrm/configuracoes" element={<Configuracoes />} />
+                  </Route>
+
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </FrameworkProvider>
