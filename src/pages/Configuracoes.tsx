@@ -76,6 +76,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
 import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworksTab';
 import { ChangePasswordDialog } from '@/components/configuracoes/ChangePasswordDialog';
+import { ImageUploadWithCrop } from '@/components/configuracoes/ImageUploadWithCrop';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -476,23 +477,28 @@ export default function Configuracoes() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center gap-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={avatarUrl} />
-                  <AvatarFallback className="text-lg">
-                    {getInitials(fullName || user?.email || 'U')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-2">
-                  <Label htmlFor="avatar">URL do Avatar</Label>
-                  <Input
-                    id="avatar"
-                    placeholder="https://exemplo.com/avatar.jpg"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    className="w-80"
-                  />
-                </div>
+              <div>
+                <Label className="mb-3 block">Foto de Perfil</Label>
+                <ImageUploadWithCrop
+                  currentImageUrl={avatarUrl}
+                  onUploadComplete={async (url) => {
+                    setAvatarUrl(url);
+                    // Auto-save avatar URL to profile
+                    if (user) {
+                      await supabase
+                        .from('profiles')
+                        .update({ avatar_url: url })
+                        .eq('id', user.id);
+                    }
+                  }}
+                  bucket="avatars"
+                  folder={user?.id || ''}
+                  aspectRatio={1}
+                  label="Alterar Foto"
+                  fallbackText={getInitials(fullName || user?.email || 'U')}
+                  size="lg"
+                  shape="circle"
+                />
               </div>
 
               <Separator />
@@ -599,6 +605,37 @@ export default function Configuracoes() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {isAdmin && (
+                <div>
+                  <Label className="mb-3 block">Logo da Organização</Label>
+                  <ImageUploadWithCrop
+                    currentImageUrl={organization?.logo_url || undefined}
+                    onUploadComplete={async (url) => {
+                      if (organization) {
+                        const { error } = await supabase
+                          .from('organizations')
+                          .update({ logo_url: url })
+                          .eq('id', organization.id);
+                        
+                        if (!error) {
+                          await refreshOrganization();
+                          toast.success('Logo atualizado!');
+                        }
+                      }
+                    }}
+                    bucket="logos"
+                    folder={organization?.id || ''}
+                    aspectRatio={1}
+                    label="Alterar Logo"
+                    fallbackText={getInitials(organization?.name || 'ORG')}
+                    size="lg"
+                    shape="square"
+                  />
+                </div>
+              )}
+              
+              {isAdmin && <Separator />}
+              
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="orgName">Nome da Organização</Label>
