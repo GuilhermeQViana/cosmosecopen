@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Shield, Lock, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowRight, Shield, Lock, CheckCircle2, Sparkles, Building2, Users } from 'lucide-react';
 
 export function HeroSection() {
   const trustBadges = [
-    'NIST CSF 2.0',
-    'ISO 27001:2022',
-    'BCB/CMN 4.893',
+    { label: 'NIST CSF 2.0', isNew: false },
+    { label: 'ISO 27001:2022', isNew: false },
+    { label: 'BCB/CMN 4.893', isNew: false },
+    { label: 'VRM', isNew: true },
   ];
 
   return (
@@ -49,25 +50,30 @@ export function HeroSection() {
             <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-8">
               {trustBadges.map((badge) => (
                 <Badge 
-                  key={badge} 
+                  key={badge.label} 
                   variant="secondary" 
-                  className="px-3 py-1 text-xs font-medium bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:border-primary/30"
+                  className={`px-3 py-1 text-xs font-medium border ${
+                    badge.isNew 
+                      ? 'bg-secondary/20 text-secondary border-secondary/30 dark:bg-secondary/30 dark:border-secondary/50' 
+                      : 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:border-primary/30'
+                  }`}
                 >
                   <CheckCircle2 className="w-3 h-3 mr-1" />
-                  {badge}
+                  {badge.label}
+                  {badge.isNew && <span className="ml-1 text-[10px] font-bold">NOVO</span>}
                 </Badge>
               ))}
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6 font-space">
-              Simplifique a{' '}
-              <span className="text-gradient-cosmic">Governança de Segurança</span>{' '}
-              da sua Organização
+              Governança de Segurança e{' '}
+              <span className="text-gradient-cosmic">Gestão de Fornecedores</span>{' '}
+              em uma só plataforma
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
-              Plataforma completa de GRC para conformidade com os principais frameworks de cibersegurança. 
-              Gerencie riscos, controles e evidências em um só lugar.
+              Plataforma completa de GRC para conformidade com frameworks de cibersegurança 
+              e avaliação de riscos de terceiros. Gerencie controles, evidências e fornecedores em um só lugar.
             </p>
 
             {/* CTA Buttons */}
@@ -85,7 +91,7 @@ export function HeroSection() {
                 asChild 
                 className="text-base px-8 border-primary/30 hover:border-secondary/50 hover:bg-secondary/10 dark:border-primary/40 dark:hover:border-secondary/60"
               >
-                <a href="#features">Ver Demonstração</a>
+                <a href="#modules">Ver Módulos</a>
               </Button>
             </div>
 
@@ -95,18 +101,22 @@ export function HeroSection() {
             </p>
 
             {/* Stats with Glow */}
-            <div className="grid grid-cols-3 gap-6 mt-12 pt-8 border-t border-primary/20 dark:border-primary/30">
+            <div className="grid grid-cols-4 gap-4 mt-12 pt-8 border-t border-primary/20 dark:border-primary/30">
               <div className="group">
                 <div className="text-2xl sm:text-3xl font-bold text-gradient-cosmic font-space group-hover:scale-105 transition-transform">70%</div>
-                <div className="text-sm text-muted-foreground">Redução de Riscos</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Redução de Riscos</div>
               </div>
               <div className="group">
                 <div className="text-2xl sm:text-3xl font-bold text-gradient-cosmic font-space group-hover:scale-105 transition-transform">50h</div>
-                <div className="text-sm text-muted-foreground">Economia Mensal</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Economia Mensal</div>
               </div>
               <div className="group">
                 <div className="text-2xl sm:text-3xl font-bold text-gradient-cosmic font-space group-hover:scale-105 transition-transform">100%</div>
-                <div className="text-sm text-muted-foreground">Compliance</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Compliance</div>
+              </div>
+              <div className="group">
+                <div className="text-2xl sm:text-3xl font-bold text-gradient-cosmic font-space group-hover:scale-105 transition-transform">+45</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Requisitos VRM</div>
               </div>
             </div>
           </div>
@@ -170,6 +180,32 @@ export function HeroSection() {
                     />
                   </div>
                 </div>
+
+                {/* VRM Preview */}
+                <div className="mt-6 pt-4 border-t border-primary/10 dark:border-primary/20">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Building2 className="w-4 h-4 text-secondary" />
+                    <span className="text-sm font-medium text-foreground">Fornecedores</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="bg-success/20 rounded-lg p-2 text-center">
+                      <div className="text-lg font-bold text-success">12</div>
+                      <div className="text-[10px] text-muted-foreground">Baixo</div>
+                    </div>
+                    <div className="bg-warning/20 rounded-lg p-2 text-center">
+                      <div className="text-lg font-bold text-warning">8</div>
+                      <div className="text-[10px] text-muted-foreground">Médio</div>
+                    </div>
+                    <div className="bg-destructive/20 rounded-lg p-2 text-center">
+                      <div className="text-lg font-bold text-destructive">3</div>
+                      <div className="text-[10px] text-muted-foreground">Alto</div>
+                    </div>
+                    <div className="bg-primary/20 rounded-lg p-2 text-center">
+                      <div className="text-lg font-bold text-primary">23</div>
+                      <div className="text-[10px] text-muted-foreground">Total</div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Floating Cards with Glow */}
@@ -193,6 +229,19 @@ export function HeroSection() {
                   <div>
                     <div className="text-xs text-muted-foreground">Evidências</div>
                     <div className="font-semibold text-foreground font-space">1.2k+</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* New VRM floating card */}
+              <div className="absolute top-1/2 -right-8 bg-card/90 dark:bg-card/70 backdrop-blur-lg border border-secondary/30 rounded-xl p-3 shadow-lg dark:shadow-glow-nebula animate-float" style={{ animationDelay: '1s' }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 bg-gradient-to-br from-secondary to-primary rounded-lg flex items-center justify-center">
+                    <Users className="w-3.5 h-3.5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-muted-foreground">Avaliações VRM</div>
+                    <div className="font-semibold text-foreground font-space text-sm">45+</div>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { TrendingDown, Clock, Eye, Sparkles, CheckCircle2 } from 'lucide-react';
+import { TrendingDown, Clock, Eye, Sparkles, CheckCircle2, Building2, Bell, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 export function BenefitsSection() {
@@ -18,10 +18,10 @@ export function BenefitsSection() {
       gradient: 'from-primary to-primary/70',
     },
     {
-      icon: Eye,
-      metric: '100%',
-      title: 'Visão Executiva em Tempo Real',
-      description: 'Dashboards interativos e relatórios prontos para apresentação à diretoria.',
+      icon: Building2,
+      metric: '45+',
+      title: 'Avalie Fornecedores',
+      description: 'Requisitos de segurança padrão para due diligence completa de terceiros.',
       gradient: 'from-secondary to-secondary/70',
     },
     {
@@ -35,11 +35,15 @@ export function BenefitsSection() {
 
   const checklistItems = [
     'Conformidade com múltiplos frameworks simultaneamente',
+    'Frameworks customizados com importação CSV',
     'Mapeamento automático entre controles',
     'Gestão centralizada de evidências',
+    'Avaliação de fornecedores em 4 domínios de segurança',
+    'Workflow de aprovação de avaliações VRM',
+    'Notificações automáticas por email',
     'Trilha de auditoria completa',
+    'Relatórios PDF profissionais',
     'Suporte a múltiplas organizações',
-    'Exportação de relatórios em PDF',
   ];
 
   return (
@@ -96,20 +100,20 @@ export function BenefitsSection() {
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
               Uma plataforma completa desenvolvida por especialistas em segurança da informação 
-              e conformidade regulatória, pensada para simplificar seu dia a dia.
+              e conformidade regulatória, pensada para simplificar seu dia a dia e gerenciar riscos de terceiros.
             </p>
 
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               {checklistItems.map((item, index) => (
                 <li 
                   key={index}
                   className="flex items-center gap-3 animate-fade-in group"
                   style={{ animationDelay: `${0.3 + index * 0.05}s` }}
                 >
-                  <div className="w-6 h-6 bg-gradient-to-br from-success to-success/70 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm">
-                    <CheckCircle2 className="w-4 h-4 text-success-foreground" />
+                  <div className="w-5 h-5 bg-gradient-to-br from-success to-success/70 rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-sm">
+                    <CheckCircle2 className="w-3 h-3 text-success-foreground" />
                   </div>
-                  <span className="text-foreground">{item}</span>
+                  <span className="text-sm text-foreground">{item}</span>
                 </li>
               ))}
             </ul>

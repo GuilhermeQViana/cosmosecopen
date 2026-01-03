@@ -5,14 +5,19 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 
 const features = [
-  'Todos os frameworks disponíveis',
+  'Todos os frameworks disponíveis (NIST, ISO, BCB)',
+  'Módulo VRM completo',
   'Usuários ilimitados',
   'Controles ilimitados',
+  'Fornecedores ilimitados',
+  'Frameworks customizados com importação CSV',
   'Matriz de riscos completa',
   'Armazenamento de 50GB para evidências',
   'Mapeamento entre frameworks',
   'Planos de ação com IA',
-  'Relatórios personalizados',
+  'Workflow de aprovação VRM',
+  'Notificações por email',
+  'Relatórios PDF (GRC e Fornecedores)',
   'Trilha de auditoria completa',
   'Suporte prioritário',
 ];
@@ -63,7 +68,7 @@ export function PricingSection() {
             <CardHeader className="text-center pb-8 pt-8">
               <CardTitle className="text-2xl font-bold font-space">Plano Completo</CardTitle>
               <CardDescription className="mt-2">
-                Tudo que você precisa para governança de segurança
+                GRC Frameworks + Gestão de Fornecedores
               </CardDescription>
               <div className="mt-6">
                 <span className="text-5xl font-bold text-gradient-cosmic font-space">R$ 449,90</span>
@@ -75,7 +80,7 @@ export function PricingSection() {
             </CardHeader>
 
             <CardContent className="pb-8">
-              <ul className="space-y-3">
+              <ul className="space-y-2.5">
                 {features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <div className="w-5 h-5 bg-gradient-to-br from-success to-success/70 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
