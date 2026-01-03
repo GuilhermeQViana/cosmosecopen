@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useFrameworkContext, FrameworkCode } from '@/contexts/FrameworkContext';
 import { useMenuBadges } from '@/hooks/useMenuBadges';
+import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
@@ -47,6 +48,7 @@ import {
   Check,
   Landmark,
   Layers,
+  Crown,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
@@ -93,8 +95,10 @@ export function AppSidebar() {
   const { organization, organizations, setActiveOrganization } = useOrganization();
   const { currentFramework, frameworks, setFramework } = useFrameworkContext();
   const { badges } = useMenuBadges();
+  const { subscriptionStatus } = useSubscription();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
+  const isProSubscriber = subscriptionStatus === 'active';
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -126,7 +130,15 @@ export function AppSidebar() {
           <CosmoSecLogo size="sm" showText={false} variant="icon" />
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-semibold text-sidebar-foreground truncate font-space bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">CosmoSec</span>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sidebar-foreground truncate font-space bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">CosmoSec</span>
+                {isProSubscriber && (
+                  <Badge className="h-5 px-1.5 text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/30">
+                    <Crown className="w-3 h-3 mr-0.5" />
+                    Pro
+                  </Badge>
+                )}
+              </div>
               {/* Organization Selector */}
               {organizations.length > 1 ? (
                 <DropdownMenu>
