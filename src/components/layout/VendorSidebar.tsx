@@ -1,11 +1,8 @@
 import { useLocation, NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
-import { useFrameworkContext, FrameworkCode } from '@/contexts/FrameworkContext';
-import { useMenuBadges } from '@/hooks/useMenuBadges';
 import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
-import { getFrameworkIcon } from '@/lib/framework-icons';
 import {
   Sidebar,
   SidebarContent,
@@ -30,27 +27,17 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import {
-  Shield,
   LayoutDashboard,
-  ClipboardCheck,
-  AlertTriangle,
-  FileCheck,
-  ListTodo,
-  FileBarChart,
-  Map,
-  Users,
+  Building,
   Settings,
   LogOut,
   ChevronUp,
   Building2,
-  Activity,
   ChevronDown,
   Plus,
   Check,
-  Landmark,
-  Layers,
   Crown,
-  Building,
+  Shield,
   ArrowLeftRight,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
@@ -60,61 +47,22 @@ type NavItem = {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
-  badgeKey?: 'diagnostico' | 'riscos' | 'planoAcao';
 };
 
 const mainNavItems: NavItem[] = [
-  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Diagnóstico', url: '/diagnostico', icon: ClipboardCheck, badgeKey: 'diagnostico' },
-  { title: 'Riscos', url: '/riscos', icon: AlertTriangle, badgeKey: 'riscos' },
-  { title: 'Evidências', url: '/evidencias', icon: FileCheck },
-  { title: 'Plano de Ação', url: '/plano-acao', icon: ListTodo, badgeKey: 'planoAcao' },
-  { title: 'Relatórios', url: '/relatorios', icon: FileBarChart },
+  { title: 'Dashboard', url: '/vrm', icon: LayoutDashboard },
+  { title: 'Fornecedores', url: '/vrm/fornecedores', icon: Building },
 ];
 
 const configNavItems: NavItem[] = [
-  { title: 'Mapeamento', url: '/mapeamento', icon: Map },
-  { title: 'Equipe', url: '/equipe', icon: Users },
-  { title: 'Auditoria', url: '/auditoria', icon: Activity },
-  { title: 'Configurações', url: '/configuracoes', icon: Settings },
+  { title: 'Configurações', url: '/vrm/configuracoes', icon: Settings },
 ];
 
-// Default icons for standard frameworks (fallback)
-const defaultFrameworkIcons: Record<string, React.ReactNode> = {
-  nist_csf: <Shield className="w-4 h-4" />,
-  iso_27001: <Building2 className="w-4 h-4" />,
-  bcb_cmn: <Landmark className="w-4 h-4" />,
-};
-
-const frameworkColors: Record<string, string> = {
-  nist_csf: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  iso_27001: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  bcb_cmn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-};
-
-// Helper to get framework icon - uses custom icon if available, otherwise falls back to defaults
-function getFrameworkIconElement(framework: { code: string; icon?: string | null; is_custom?: boolean }): React.ReactNode {
-  if (framework.is_custom && framework.icon) {
-    const IconComponent = getFrameworkIcon(framework.icon);
-    return <IconComponent className="w-4 h-4" />;
-  }
-  return defaultFrameworkIcons[framework.code] || <Shield className="w-4 h-4" />;
-}
-
-function getFrameworkColorClass(code: string, isCustom?: boolean): string {
-  if (isCustom) {
-    return 'bg-purple-500/10 text-purple-600 dark:text-purple-400';
-  }
-  return frameworkColors[code] || 'bg-primary/10 text-primary';
-}
-
-export function AppSidebar() {
+export function VendorSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { organization, organizations, setActiveOrganization } = useOrganization();
-  const { currentFramework, frameworks, setFramework } = useFrameworkContext();
-  const { badges } = useMenuBadges();
   const { subscriptionStatus } = useSubscription();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
@@ -135,12 +83,8 @@ export function AppSidebar() {
     
     const success = await setActiveOrganization(orgId);
     if (success) {
-      navigate('/dashboard');
+      navigate('/vrm');
     }
-  };
-
-  const handleSwitchFramework = (code: FrameworkCode) => {
-    setFramework(code);
   };
 
   return (
@@ -151,7 +95,7 @@ export function AppSidebar() {
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sidebar-foreground truncate font-space bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">CosmoSec</span>
+                <span className="font-semibold text-sidebar-foreground truncate font-space bg-gradient-to-r from-purple-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent">VRM</span>
                 {isProSubscriber && (
                   <Badge className="h-5 px-1.5 text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/30">
                     <Crown className="w-3 h-3 mr-0.5" />
@@ -200,61 +144,20 @@ export function AppSidebar() {
                 </DropdownMenu>
               ) : (
                 <span className="text-xs text-sidebar-foreground/60 truncate">
-                  {organization?.name || 'GRC Platform'}
+                  {organization?.name || 'Gestão de Fornecedores'}
                 </span>
               )}
             </div>
           )}
         </div>
 
-        {/* Framework Selector */}
-        {!collapsed && currentFramework && (
+        {/* Module Indicator */}
+        {!collapsed && (
           <div className="mt-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
-                  getFrameworkColorClass(currentFramework.code, currentFramework.is_custom),
-                  "hover:opacity-80"
-                )}>
-                  {getFrameworkIconElement(currentFramework)}
-                  <span className="font-medium truncate flex-1 text-left">{currentFramework.name}</span>
-                  <ChevronDown className="w-4 h-4 flex-shrink-0 opacity-60" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64">
-                <DropdownMenuLabel>Trocar framework</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {frameworks.map((framework) => {
-                  const colorClass = getFrameworkColorClass(framework.code, framework.is_custom);
-                  return (
-                    <DropdownMenuItem
-                      key={framework.id}
-                      onClick={() => handleSwitchFramework(framework.code as FrameworkCode)}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className={cn("w-6 h-6 rounded flex items-center justify-center flex-shrink-0", colorClass)}>
-                          {getFrameworkIconElement(framework)}
-                        </div>
-                        <span className="truncate">{framework.name}</span>
-                        {framework.is_custom && (
-                          <Badge variant="outline" className="text-[10px] px-1 py-0">Custom</Badge>
-                        )}
-                      </div>
-                      {framework.id === currentFramework.id && (
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                      )}
-                    </DropdownMenuItem>
-                  );
-                })}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/selecionar-framework')}>
-                  <Layers className="w-4 h-4 mr-2" />
-                  Ver todos os frameworks
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+              <Building className="w-4 h-4" />
+              <span className="font-medium truncate flex-1 text-left">Gestão de Fornecedores</span>
+            </div>
           </div>
         )}
       </SidebarHeader>
@@ -264,35 +167,20 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-sidebar-foreground/50">Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => {
-                const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
-                const isCritical = item.badgeKey === 'riscos' || item.badgeKey === 'planoAcao';
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname === item.url}
-                      tooltip={item.title}
-                    >
-                      <RouterNavLink to={item.url} className="relative">
-                        <item.icon className="w-4 h-4" />
-                        <span className="flex-1">{item.title}</span>
-                        {badgeCount > 0 && (
-                          <Badge
-                            variant={isCritical ? "destructive" : "secondary"}
-                            className={cn(
-                              "ml-auto h-5 min-w-5 px-1.5 text-[10px] font-medium",
-                              !isCritical && "bg-primary/20 text-primary hover:bg-primary/30"
-                            )}
-                          >
-                            {badgeCount > 99 ? '99+' : badgeCount}
-                          </Badge>
-                        )}
-                      </RouterNavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {mainNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === item.url}
+                    tooltip={item.title}
+                  >
+                    <RouterNavLink to={item.url}>
+                      <item.icon className="w-4 h-4" />
+                      <span className="flex-1">{item.title}</span>
+                    </RouterNavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -319,7 +207,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Switch Module */}
+        {/* Switch to Frameworks Module */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50">Módulos</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -336,12 +224,12 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={() => navigate('/vrm')}
-                  tooltip="Gestão de Fornecedores"
-                  className="text-purple-500 hover:text-purple-600 hover:bg-purple-500/10"
+                  onClick={() => navigate('/selecionar-framework')}
+                  tooltip="GRC Frameworks"
+                  className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
                 >
-                  <Building className="w-4 h-4" />
-                  <span>Fornecedores (VRM)</span>
+                  <Shield className="w-4 h-4" />
+                  <span>GRC Frameworks</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -381,13 +269,13 @@ export function AppSidebar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="start" className="w-56">
                 <DropdownMenuItem asChild>
-                  <RouterNavLink to="/configuracoes" className="cursor-pointer">
+                  <RouterNavLink to="/vrm/configuracoes" className="cursor-pointer">
                     <Settings className="w-4 h-4 mr-2" />
                     Configurações
                   </RouterNavLink>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-              <DropdownMenuItem
+                <DropdownMenuItem
                   onClick={() => signOut()}
                   className="text-destructive focus:text-destructive cursor-pointer"
                 >
