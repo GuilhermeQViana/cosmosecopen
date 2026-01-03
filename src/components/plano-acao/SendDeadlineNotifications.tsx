@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useSendDeadlineNotifications } from '@/hooks/useSendDeadlineNotifications';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { Bell, Loader2, Mail, Clock } from 'lucide-react';
+import { Bell, Loader2, Mail, Clock, AlertTriangle } from 'lucide-react';
 
 export function SendDeadlineNotifications() {
   const { sendNotifications, isLoading } = useSendDeadlineNotifications();
@@ -30,27 +29,30 @@ export function SendDeadlineNotifications() {
           Notificar
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-popover border-border">
+      <DropdownMenuContent align="end" className="w-64 bg-popover border-border">
         <DropdownMenuLabel className="flex items-center gap-2">
           <Mail className="h-4 w-4" />
           Enviar lembretes por email
         </DropdownMenuLabel>
+        <p className="px-2 pb-2 text-xs text-muted-foreground">
+          Inclui planos vencidos automaticamente
+        </p>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => handleSend(0)} disabled={isLoading}>
-          <Clock className="h-4 w-4 mr-2" />
-          Prazos para hoje
+          <AlertTriangle className="h-4 w-4 mr-2 text-destructive" />
+          Vencidos + prazos de hoje
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleSend(1)} disabled={isLoading}>
           <Clock className="h-4 w-4 mr-2" />
-          Prazos para amanhã
+          Vencidos + prazos de amanhã
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleSend(3)} disabled={isLoading}>
           <Clock className="h-4 w-4 mr-2" />
-          Prazos em 3 dias
+          Vencidos + prazos em 3 dias
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleSend(7)} disabled={isLoading}>
           <Clock className="h-4 w-4 mr-2" />
-          Prazos em 7 dias
+          Vencidos + prazos em 7 dias
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
