@@ -4,7 +4,9 @@ import { useOrganization } from '@/contexts/OrganizationContext';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useAccessLog } from '@/hooks/useAccessLog';
 import { AuditCharts } from '@/components/auditoria/AuditCharts';
+import { AuditTimeline } from '@/components/auditoria/AuditTimeline';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +66,8 @@ import {
   X,
   User,
   FileUp,
+  LayoutList,
+  Clock as ClockIcon,
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -135,6 +139,7 @@ export default function Auditoria() {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'table' | 'timeline'>('table');
 
   const filters: AccessLogFilters = useMemo(() => ({
     action: actionFilter,
@@ -422,20 +427,36 @@ export default function Auditoria() {
         </CardContent>
       </Card>
 
-      {/* Logs Table */}
+      {/* Logs Section */}
       <Card>
-        <CardHeader>
-          <CardTitle>Registro de Atividades</CardTitle>
-          <CardDescription>
-            {totalCount} registro{totalCount !== 1 ? 's' : ''} encontrado{totalCount !== 1 ? 's' : ''}
-            {totalPages > 1 && ` • Página ${page} de ${totalPages}`}
-          </CardDescription>
+        <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle>Registro de Atividades</CardTitle>
+            <CardDescription>
+              {totalCount} registro{totalCount !== 1 ? 's' : ''} encontrado{totalCount !== 1 ? 's' : ''}
+              {viewMode === 'table' && totalPages > 1 && ` • Página ${page} de ${totalPages}`}
+            </CardDescription>
+          </div>
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'table' | 'timeline')}>
+            <TabsList className="grid w-[200px] grid-cols-2">
+              <TabsTrigger value="table" className="gap-2">
+                <LayoutList className="h-4 w-4" />
+                Tabela
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="gap-2">
+                <ClockIcon className="h-4 w-4" />
+                Timeline
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : viewMode === 'timeline' ? (
+            <AuditTimeline logs={logs} />
           ) : logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Activity className="h-12 w-12 text-muted-foreground mb-4" />
