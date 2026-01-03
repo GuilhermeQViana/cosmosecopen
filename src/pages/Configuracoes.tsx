@@ -68,6 +68,7 @@ import {
   Clock,
   Database,
   Download,
+  Upload,
   FileJson,
   FileSpreadsheet,
   FileCode2
@@ -77,6 +78,7 @@ import { useTheme } from 'next-themes';
 import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworksTab';
 import { ChangePasswordDialog } from '@/components/configuracoes/ChangePasswordDialog';
 import { ImageUploadWithCrop } from '@/components/configuracoes/ImageUploadWithCrop';
+import { ImportBackupDialog } from '@/components/configuracoes/ImportBackupDialog';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -1151,6 +1153,37 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Import Section */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Restaurar Backup
+                </CardTitle>
+                <CardDescription>
+                  Importe dados de um backup JSON ou CSV exportado anteriormente
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-start gap-4 p-4 border rounded-lg bg-muted/30">
+                  <div className="p-3 rounded-lg bg-secondary/10">
+                    <Upload className="h-6 w-6 text-secondary" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium">Importar Backup</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Restaure avaliações, riscos e planos de ação de um arquivo de backup
+                    </p>
+                    <div className="mt-4">
+                      <ImportBackupDialog />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Appearance Tab */}
