@@ -1,5 +1,6 @@
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
+import { ModulesSection } from '@/components/landing/ModulesSection';
 import { FrameworksSection } from '@/components/landing/FrameworksSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
@@ -15,6 +16,7 @@ export default function Landing() {
       <Navbar />
       <main className="relative z-10">
         <HeroSection />
+        <ModulesSection />
         <FrameworksSection />
         <FeaturesSection />
         <HowItWorksSection />

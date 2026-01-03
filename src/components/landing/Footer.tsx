@@ -8,9 +8,9 @@ export function Footer() {
   const footerLinks = {
     produto: [
       { label: 'Funcionalidades', href: '#features' },
-      { label: 'Frameworks', href: '#frameworks' },
-      { label: 'Como Funciona', href: '#how-it-works' },
-      { label: 'Benefícios', href: '#benefits' },
+      { label: 'GRC Frameworks', href: '#frameworks' },
+      { label: 'Gestão de Fornecedores', href: '#modules' },
+      { label: 'Preços', href: '#pricing' },
       { label: 'Documentação', href: '/documentacao', isRoute: true },
     ],
     empresa: [
@@ -22,7 +22,7 @@ export function Footer() {
     legal: [
       { label: 'Termos de Uso', href: '#' },
       { label: 'Política de Privacidade', href: '#' },
-      { label: 'Segurança', href: '#' },
+      { label: 'LGPD', href: '#' },
     ],
   };
 
@@ -37,8 +37,8 @@ export function Footer() {
               <CosmoSecLogo size="md" />
             </Link>
             <p className="text-muted-foreground text-sm max-w-sm mb-6">
-              Plataforma completa de Governança, Riscos e Conformidade para segurança cibernética. 
-              Simplifique sua jornada de conformidade.
+              Plataforma completa de GRC para governança de segurança da informação 
+              e gestão de riscos de terceiros.
             </p>
             {/* Social Links */}
             <div className="flex items-center gap-4">

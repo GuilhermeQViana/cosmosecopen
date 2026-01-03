@@ -18,10 +18,10 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: '#features', label: 'Funcionalidades' },
+    { href: '#modules', label: 'Módulos' },
     { href: '#frameworks', label: 'Frameworks' },
-    { href: '#how-it-works', label: 'Como Funciona' },
-    { href: '#benefits', label: 'Benefícios' },
+    { href: '#features', label: 'Funcionalidades' },
+    { href: '#pricing', label: 'Preços' },
     { href: '/documentacao', label: 'Documentação', isRoute: true },
   ];
 
