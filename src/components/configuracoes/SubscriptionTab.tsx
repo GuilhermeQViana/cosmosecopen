@@ -3,13 +3,27 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Clock, CreditCard, ExternalLink, Loader2, Sparkles } from 'lucide-react';
+import { Check, Clock, CreditCard, Download, ExternalLink, FileText, Loader2, Sparkles } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Invoice {
+  id: string;
+  number: string | null;
+  status: string | null;
+  amount: number;
+  currency: string;
+  created: number;
+  period_start: number;
+  period_end: number;
+  invoice_pdf: string | null;
+  hosted_invoice_url: string | null;
+}
 
 const features = [
   'Todos os frameworks disponíveis',
@@ -24,6 +38,8 @@ const features = [
 
 export function SubscriptionTab() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
   const { 
     subscriptionStatus, 
     isTrialing, 
@@ -49,6 +65,28 @@ export function SubscriptionTab() {
     }
   }, [searchParams, setSearchParams]);
 
+  // Fetch invoices
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      if (subscriptionStatus !== 'active') return;
+      
+      setInvoicesLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('list-invoices');
+        if (error) throw error;
+        setInvoices(data?.invoices || []);
+      } catch (error) {
+        console.error('Error fetching invoices:', error);
+      } finally {
+        setInvoicesLoading(false);
+      }
+    };
+
+    if (!isLoading) {
+      fetchInvoices();
+    }
+  }, [subscriptionStatus, isLoading]);
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -69,6 +107,28 @@ export function SubscriptionTab() {
       default:
         return <Badge variant="outline">Expirada</Badge>;
     }
+  };
+
+  const getInvoiceStatusBadge = (status: string | null) => {
+    switch (status) {
+      case 'paid':
+        return <Badge className="bg-success/10 text-success border-success/30">Pago</Badge>;
+      case 'open':
+        return <Badge variant="secondary">Em aberto</Badge>;
+      case 'void':
+        return <Badge variant="outline">Cancelado</Badge>;
+      case 'draft':
+        return <Badge variant="outline">Rascunho</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+    }).format(amount);
   };
 
   return (
@@ -151,6 +211,91 @@ export function SubscriptionTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Histórico de Faturas */}
+      {subscriptionStatus === 'active' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Histórico de Faturas
+            </CardTitle>
+            <CardDescription>
+              Visualize e baixe suas faturas anteriores
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {invoicesLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-14 w-full" />
+              </div>
+            ) : invoices.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Nenhuma fatura encontrada.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {invoices.map((invoice) => (
+                  <div
+                    key={invoice.id}
+                    className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <FileText className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm">
+                          {invoice.number || `Fatura ${invoice.id.slice(-8)}`}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(invoice.created * 1000), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="font-semibold text-sm">
+                          {formatCurrency(invoice.amount, invoice.currency)}
+                        </div>
+                        {getInvoiceStatusBadge(invoice.status)}
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {invoice.hosted_invoice_url && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => window.open(invoice.hosted_invoice_url!, '_blank')}
+                            title="Ver fatura"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {invoice.invoice_pdf && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => window.open(invoice.invoice_pdf!, '_blank')}
+                            title="Baixar PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Detalhes do plano */}
       <Card>
