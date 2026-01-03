@@ -63,9 +63,11 @@ import {
   Database,
   Download,
   FileJson,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileCode2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworksTab';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -378,7 +380,7 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:w-[720px]">
+        <TabsList className="grid w-full grid-cols-7 lg:w-[840px]">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Perfil</span>
@@ -390,6 +392,10 @@ export default function Configuracoes() {
           <TabsTrigger value="organizations" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Minhas Orgs</span>
+          </TabsTrigger>
+          <TabsTrigger value="frameworks" className="flex items-center gap-2">
+            <FileCode2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Frameworks</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
@@ -888,6 +894,11 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Frameworks Tab */}
+        <TabsContent value="frameworks" className="space-y-6">
+          <CustomFrameworksTab />
         </TabsContent>
 
         {/* Notifications Tab */}

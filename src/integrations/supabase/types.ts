@@ -657,30 +657,47 @@ export type Database = {
       }
       frameworks: {
         Row: {
-          code: Database["public"]["Enums"]["framework_type"]
+          code: string
           created_at: string
+          created_by: string | null
           description: string | null
           id: string
+          is_custom: boolean
           name: string
+          organization_id: string | null
           version: string | null
         }
         Insert: {
-          code: Database["public"]["Enums"]["framework_type"]
+          code: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
+          is_custom?: boolean
           name: string
+          organization_id?: string | null
           version?: string | null
         }
         Update: {
-          code?: Database["public"]["Enums"]["framework_type"]
+          code?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
+          is_custom?: boolean
           name?: string
+          organization_id?: string | null
           version?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "frameworks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
