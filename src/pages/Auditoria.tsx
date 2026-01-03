@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { useAccessLogs, useAccessLogsStats, type AccessLogFilters } from '@/hooks/useAccessLogs';
+import { useAccessLogs, useAccessLogsStats, useAccessLogsForCharts, type AccessLogFilters } from '@/hooks/useAccessLogs';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useAccessLog } from '@/hooks/useAccessLog';
+import { AuditCharts } from '@/components/auditoria/AuditCharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -146,6 +147,7 @@ export default function Auditoria() {
 
   const { data: logsResponse, isLoading } = useAccessLogs({ page, pageSize: 15, filters });
   const { data: stats } = useAccessLogsStats();
+  const { data: chartLogs, isLoading: isLoadingCharts } = useAccessLogsForCharts();
 
   const logs = logsResponse?.data || [];
   const totalPages = logsResponse?.totalPages || 1;
@@ -301,6 +303,9 @@ export default function Auditoria() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Charts */}
+      <AuditCharts logs={chartLogs || []} isLoading={isLoadingCharts} />
 
       {/* Filters */}
       <Card>

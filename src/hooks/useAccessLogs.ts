@@ -170,3 +170,51 @@ export function useAccessLogsStats() {
     enabled: !!organization?.id,
   });
 }
+
+// Hook for fetching logs for charts (last 7 days, no pagination)
+export function useAccessLogsForCharts() {
+  const { organization } = useOrganization();
+
+  return useQuery({
+    queryKey: ['access-logs-charts', organization?.id],
+    queryFn: async () => {
+      if (!organization?.id) return [];
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
+
+      const { data, error } = await supabase
+        .from('access_logs')
+        .select('id, action, entity_type, user_id, created_at')
+        .eq('organization_id', organization.id)
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error) throw error;
+
+      // Fetch profiles for users
+      const userIds = [...new Set(data?.filter(l => l.user_id).map(l => l.user_id as string) || [])];
+      
+      let logsWithProfiles = data || [];
+
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', userIds);
+
+        const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+        logsWithProfiles = data?.map(log => ({
+          ...log,
+          profile: log.user_id ? profilesMap.get(log.user_id) : null,
+        })) || [];
+      }
+
+      return logsWithProfiles as AccessLog[];
+    },
+    enabled: !!organization?.id,
+  });
+}
