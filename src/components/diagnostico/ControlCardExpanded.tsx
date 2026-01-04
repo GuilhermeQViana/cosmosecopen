@@ -16,6 +16,7 @@ import { ControlEvidencesList } from './ControlEvidencesList';
 import { ControlActionPlans } from './ControlActionPlans';
 import { AssessmentComments } from './AssessmentComments';
 import { ControlIndicators } from './ControlIndicators';
+import { ControlSelectCheckbox } from './BulkEditControls';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
 import {
@@ -53,6 +54,9 @@ interface ControlCardExpandedProps {
   actionPlanCount?: number;
   commentCount?: number;
   isProblematic?: boolean;
+  isSelected?: boolean;
+  onSelectionChange?: (selected: boolean) => void;
+  showSelection?: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
@@ -83,6 +87,9 @@ export function ControlCardExpanded({
   actionPlanCount = 0,
   commentCount = 0,
   isProblematic = false,
+  isSelected = false,
+  onSelectionChange,
+  showSelection = false,
 }: ControlCardExpandedProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
@@ -139,7 +146,8 @@ export function ControlCardExpanded({
       className={cn(
         'transition-all duration-200',
         expanded && 'ring-1 ring-primary/20 shadow-lg',
-        isCriticalRisk && 'border-destructive/30 ring-1 ring-destructive/20'
+        isCriticalRisk && 'border-destructive/30 ring-1 ring-destructive/20',
+        isSelected && 'ring-2 ring-primary'
       )}
     >
       {/* Header */}
@@ -148,6 +156,12 @@ export function ControlCardExpanded({
           <div className="flex-1 min-w-0">
             {/* Badges Row */}
             <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {showSelection && onSelectionChange && (
+                <ControlSelectCheckbox
+                  checked={isSelected}
+                  onCheckedChange={onSelectionChange}
+                />
+              )}
               <code className="text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded font-semibold">
                 {control.code}
               </code>
