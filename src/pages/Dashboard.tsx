@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { ComplianceRadarChart } from '@/components/dashboard/ComplianceRadarChart';
 import { MaturityTrendChart } from '@/components/dashboard/MaturityTrendChart';
+import { MaturityHistoryChart } from '@/components/dashboard/MaturityHistoryChart';
 import { RiskDistributionChart } from '@/components/dashboard/RiskDistributionChart';
 import { ActionPlanStatusChart } from '@/components/dashboard/ActionPlanStatusChart';
 import { ControlsMaturityChart } from '@/components/dashboard/ControlsMaturityChart';
@@ -311,8 +312,17 @@ export default function Dashboard() {
         ))}
       </StaggeredGrid>
 
-      {/* Charts Row 1 */}
+      {/* Charts Row 1 - Maturity History */}
       <AnimatedItem animation="fade-up" delay={200}>
+        <MaturityHistoryChart 
+          assessments={assessments} 
+          frameworkName={currentFramework?.name} 
+          isLoading={assessmentsLoading}
+        />
+      </AnimatedItem>
+
+      {/* Charts Row 1.5 - Maturity Trend (Monthly) */}
+      <AnimatedItem animation="fade-up" delay={220}>
         <MaturityTrendChart 
           assessments={assessments} 
           frameworkName={currentFramework?.name} 
