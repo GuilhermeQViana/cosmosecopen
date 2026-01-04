@@ -47,6 +47,8 @@ import { toast } from 'sonner';
 
 interface AssessmentCommentsProps {
   assessmentId: string | undefined;
+  controlCode?: string;
+  controlName?: string;
 }
 
 // Component for mention suggestions dropdown
@@ -258,7 +260,7 @@ function formatContentWithMentions(content: string) {
   return parts.length > 0 ? parts : content;
 }
 
-export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
+export function AssessmentComments({ assessmentId, controlCode, controlName }: AssessmentCommentsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -302,6 +304,8 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
         content: newComment.trim(),
         parentId: replyingTo || undefined,
         organizationId: organization?.id,
+        controlCode,
+        controlName,
       });
       setNewComment('');
       setReplyingTo(null);

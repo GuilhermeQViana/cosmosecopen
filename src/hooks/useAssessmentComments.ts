@@ -109,11 +109,15 @@ export function useCreateComment() {
       content,
       parentId,
       organizationId,
+      controlCode,
+      controlName,
     }: {
       assessmentId: string;
       content: string;
       parentId?: string;
       organizationId?: string;
+      controlCode?: string;
+      controlName?: string;
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
@@ -166,6 +170,15 @@ export function useCreateComment() {
               )
             );
 
+            // Build link with control code for direct navigation
+            const controlLink = controlCode 
+              ? `/diagnostico?control=${encodeURIComponent(controlCode)}`
+              : '/diagnostico';
+
+            const controlLabel = controlCode && controlName 
+              ? `${controlCode} - ${controlName}`
+              : 'um controle';
+
             // Create notifications for mentioned users (except the author)
             const notificationsToCreate = mentionedUsers
               .filter(mu => mu.id !== user.id)
@@ -173,9 +186,9 @@ export function useCreateComment() {
                 user_id: mu.id,
                 organization_id: organizationId,
                 title: `${authorName} mencionou você`,
-                message: `Você foi mencionado em um comentário no diagnóstico.`,
+                message: `Você foi mencionado em um comentário no controle ${controlLabel}.`,
                 type: 'mention',
-                link: '/diagnostico',
+                link: controlLink,
               }));
 
             if (notificationsToCreate.length > 0) {

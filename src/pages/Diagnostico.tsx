@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { useControls, useControlsByCategory } from '@/hooks/useControls';
 import { useAssessments, useUpsertAssessment, useResetAssessments, useBulkUpsertAssessments } from '@/hooks/useAssessments';
@@ -42,6 +43,7 @@ interface PendingChange {
 
 export default function Diagnostico() {
   const { currentFramework } = useFrameworkContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [savingControlId, setSavingControlId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
@@ -66,6 +68,35 @@ export default function Diagnostico() {
   const upsertAssessment = useUpsertAssessment();
   const resetAssessments = useResetAssessments();
   const bulkUpsert = useBulkUpsertAssessments();
+
+  // Handle URL parameter for direct control navigation
+  useEffect(() => {
+    const controlCode = searchParams.get('control');
+    if (controlCode && controls.length > 0) {
+      // Find the control by code
+      const targetControl = controls.find(c => c.code === controlCode);
+      if (targetControl) {
+        // Clear the URL parameter
+        setSearchParams({});
+        
+        // Set search to find the control
+        setSearchQuery(controlCode);
+        
+        // Scroll to the control after a short delay to allow rendering
+        setTimeout(() => {
+          const element = document.getElementById(`control-${targetControl.id}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add a highlight effect
+            element.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+            setTimeout(() => {
+              element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+            }, 3000);
+          }
+        }, 300);
+      }
+    }
+  }, [searchParams, controls, setSearchParams]);
 
   // Map assessments by control ID for quick lookup
   const assessmentMap = new Map(
