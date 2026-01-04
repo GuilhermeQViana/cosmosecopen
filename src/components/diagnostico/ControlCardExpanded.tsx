@@ -15,6 +15,7 @@ import { RiskScoreBadge } from './RiskScoreBadge';
 import { ControlEvidencesList } from './ControlEvidencesList';
 import { ControlActionPlans } from './ControlActionPlans';
 import { AssessmentComments } from './AssessmentComments';
+import { ControlIndicators } from './ControlIndicators';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
 import {
@@ -48,6 +49,10 @@ interface ControlCardExpandedProps {
     observations?: string;
   }) => Promise<void>;
   isSaving?: boolean;
+  evidenceCount?: number;
+  actionPlanCount?: number;
+  commentCount?: number;
+  isProblematic?: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
@@ -74,6 +79,10 @@ export function ControlCardExpanded({
   assessment,
   onSave,
   isSaving = false,
+  evidenceCount = 0,
+  actionPlanCount = 0,
+  commentCount = 0,
+  isProblematic = false,
 }: ControlCardExpandedProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
@@ -179,6 +188,18 @@ export function ControlCardExpanded({
               )}
               {control.name}
             </h3>
+
+            {/* Indicators Row */}
+            <div className="mt-2">
+              <ControlIndicators
+                evidenceCount={evidenceCount}
+                actionPlanCount={actionPlanCount}
+                commentCount={commentCount}
+                isProblematic={isProblematic}
+                lastAssessedAt={assessment?.assessed_at}
+                compact
+              />
+            </div>
           </div>
 
           <Button
