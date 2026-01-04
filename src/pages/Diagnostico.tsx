@@ -11,10 +11,12 @@ import { StatusFilter, StatusFilterValue } from '@/components/diagnostico/Status
 import { AdvancedFiltersPanel, AdvancedFilters } from '@/components/diagnostico/AdvancedFiltersPanel';
 import { SortDropdown, useSortPreference } from '@/components/diagnostico/SortDropdown';
 import { CategoryProgress } from '@/components/diagnostico/CategoryProgress';
+import { CategoryDashboard } from '@/components/diagnostico/CategoryDashboard';
 import { RiskMethodologyInfo } from '@/components/shared/RiskMethodologyInfo';
 import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { GenerateAIPlansDialog } from '@/components/diagnostico/GenerateAIPlansDialog';
 import { BulkEditToolbar, BulkEditDialog } from '@/components/diagnostico/BulkEditControls';
+import { useDragAndDrop, DragHandle, DraggableControlList, ResetOrderButton } from '@/components/diagnostico/DraggableControlList';
 import { useNonConformingControls } from '@/hooks/useGenerateActionPlans';
 import { useAdvancedControlFilters } from '@/hooks/useControlFilterData';
 import { useSortedControls } from '@/hooks/useSortedControls';
@@ -25,13 +27,14 @@ import {
   useProblematicControls,
 } from '@/hooks/useControlIndicators';
 import { useDiagnosticKeyboardNav } from '@/hooks/useDiagnosticKeyboardNav';
+import { calculateRiskScore } from '@/lib/risk-methodology';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton, SkeletonMetric, SkeletonCard, PageLoader } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, FolderOpen, ClipboardCheck, LayoutGrid, Table2, Calculator } from 'lucide-react';
+import { Search, FolderOpen, ClipboardCheck, LayoutGrid, Table2, Calculator, BarChart3 } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -72,6 +75,7 @@ export default function Diagnostico() {
   const [selectedControlIds, setSelectedControlIds] = useState<Set<string>>(new Set());
   const [bulkEditDialogOpen, setBulkEditDialogOpen] = useState(false);
   const [aiPlansDialogOpen, setAiPlansDialogOpen] = useState(false);
+  const [expandedCategoryDashboard, setExpandedCategoryDashboard] = useState<string | null>(null);
   const [controlsForAIGeneration, setControlsForAIGeneration] = useState<Array<{
     controlId: string;
     assessmentId: string;
@@ -172,6 +176,39 @@ export default function Diagnostico() {
 
   // Group by category
   const categories = useControlsByCategory(sortedControls);
+
+  // Drag and drop for reordering
+  const {
+    hasCustomOrder,
+    handleReorder,
+    handleReset: handleResetOrder,
+    getOrderedIds,
+  } = useDragAndDrop(
+    sortedControls.map(c => c.id),
+    'diagnostic-control-order'
+  );
+
+  // Get category data with risk scores for dashboard
+  const getCategoryControlData = useCallback((categoryControls: typeof controls) => {
+    return categoryControls.map(control => {
+      const assessment = assessmentMap.get(control.id);
+      const maturityLevel = assessment ? parseInt(assessment.maturity_level) : 0;
+      const targetMaturity = assessment ? parseInt(assessment.target_maturity) : 3;
+      const weight = control.weight || 1;
+      const riskScore = calculateRiskScore(maturityLevel, targetMaturity, weight);
+
+      return {
+        id: control.id,
+        code: control.code,
+        name: control.name,
+        weight,
+        maturity_level: assessment?.maturity_level || '0',
+        target_maturity: assessment?.target_maturity || '3',
+        status: assessment?.status || 'nao_conforme',
+        riskScore,
+      };
+    });
+  }, [assessmentMap]);
 
   const handleSaveAssessment = async ({
     controlId,
@@ -649,50 +686,104 @@ export default function Diagnostico() {
           {/* Cards View - Controls by category */}
           {viewMode === 'cards' && categories.length > 0 && (
             <StaggeredList staggerDelay={75} initialDelay={250} animation="fade-up" className="space-y-4">
+              {/* Reset Order Button */}
+              {hasCustomOrder && (
+                <div className="flex justify-end">
+                  <ResetOrderButton hasCustomOrder={hasCustomOrder} onReset={handleResetOrder} />
+                </div>
+              )}
               <Accordion type="multiple" defaultValue={categories.map((c) => c.name)} className="space-y-4">
-                {categories.map((category, categoryIndex) => (
-                  <AccordionItem
-                    key={category.name}
-                    value={category.name}
-                    className="border rounded-lg bg-card/80 backdrop-blur-sm"
-                  >
-                    <AccordionTrigger className="px-4 hover:no-underline">
-                      <div className="flex items-center gap-3 flex-1">
-                        <FolderOpen className="w-4 h-4 text-primary" />
-                        <span className="font-semibold">{category.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          ({category.controls.length} controles)
-                        </span>
-                        <CategoryProgress
-                          category={category.name}
-                          controls={controls}
-                          assessments={assessments}
-                        />
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
-                      <StaggeredList staggerDelay={50} animation="scale-in" className="grid gap-4 md:grid-cols-2">
-                        {category.controls.map((control) => (
-                          <div key={control.id} id={`control-${control.id}`}>
-                            <ControlCardExpanded
-                              control={control}
-                              assessment={assessmentMap.get(control.id)}
-                              onSave={handleSaveAssessment}
-                              isSaving={savingControlId === control.id}
-                              evidenceCount={evidenceCounts[assessmentMap.get(control.id)?.id || ''] || 0}
-                              actionPlanCount={actionPlanCounts[assessmentMap.get(control.id)?.id || ''] || 0}
-                              commentCount={commentCounts[assessmentMap.get(control.id)?.id || ''] || 0}
-                              isProblematic={problematicControlIds.has(control.id)}
-                              showSelection={true}
-                              isSelected={selectedControlIds.has(control.id)}
-                              onSelectionChange={(selected) => handleToggleSelection(control.id, selected)}
+                {categories.map((category, categoryIndex) => {
+                  const categoryControlData = getCategoryControlData(category.controls);
+                  const orderedControlIds = getOrderedIds(category.controls.map(c => c.id));
+                  const orderedControls = orderedControlIds
+                    .map(id => category.controls.find(c => c.id === id))
+                    .filter(Boolean) as typeof category.controls;
+
+                  return (
+                    <AccordionItem
+                      key={category.name}
+                      value={category.name}
+                      className="border rounded-lg bg-card/80 backdrop-blur-sm"
+                    >
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex items-center gap-3 flex-1">
+                          <FolderOpen className="w-4 h-4 text-primary" />
+                          <span className="font-semibold">{category.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            ({category.controls.length} controles)
+                          </span>
+                          <CategoryProgress
+                            category={category.name}
+                            controls={controls}
+                            assessments={assessments}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-auto mr-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedCategoryDashboard(
+                                expandedCategoryDashboard === category.name ? null : category.name
+                              );
+                            }}
+                          >
+                            <BarChart3 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        {/* Category Dashboard */}
+                        {expandedCategoryDashboard === category.name && (
+                          <div className="mb-4">
+                            <CategoryDashboard
+                              categoryName={category.name}
+                              controls={categoryControlData}
+                              onControlClick={(controlId) => {
+                                const element = document.getElementById(`control-${controlId}`);
+                                if (element) {
+                                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                              }}
                             />
                           </div>
-                        ))}
-                      </StaggeredList>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
+                        )}
+                        <StaggeredList staggerDelay={50} animation="scale-in" className="grid gap-4 md:grid-cols-2">
+                          {orderedControls.map((control) => (
+                            <div key={control.id} id={`control-${control.id}`} className="flex gap-2">
+                              <DragHandle
+                                controlId={control.id}
+                                dragHandlers={DraggableControlList({
+                                  controlIds: orderedControlIds,
+                                  onReorder: handleReorder,
+                                  onReset: handleResetOrder,
+                                  hasCustomOrder,
+                                })}
+                                className="mt-4"
+                              />
+                              <div className="flex-1">
+                                <ControlCardExpanded
+                                  control={control}
+                                  assessment={assessmentMap.get(control.id)}
+                                  onSave={handleSaveAssessment}
+                                  isSaving={savingControlId === control.id}
+                                  evidenceCount={evidenceCounts[assessmentMap.get(control.id)?.id || ''] || 0}
+                                  actionPlanCount={actionPlanCounts[assessmentMap.get(control.id)?.id || ''] || 0}
+                                  commentCount={commentCounts[assessmentMap.get(control.id)?.id || ''] || 0}
+                                  isProblematic={problematicControlIds.has(control.id)}
+                                  showSelection={true}
+                                  isSelected={selectedControlIds.has(control.id)}
+                                  onSelectionChange={(selected) => handleToggleSelection(control.id, selected)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </StaggeredList>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
               </Accordion>
             </StaggeredList>
           )}
