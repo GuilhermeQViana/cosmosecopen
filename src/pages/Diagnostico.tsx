@@ -14,6 +14,7 @@ import { CategoryProgress } from '@/components/diagnostico/CategoryProgress';
 import { RiskMethodologyInfo } from '@/components/shared/RiskMethodologyInfo';
 import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { GenerateAIPlansDialog } from '@/components/diagnostico/GenerateAIPlansDialog';
+import { BulkEditToolbar, BulkEditDialog } from '@/components/diagnostico/BulkEditControls';
 import { useNonConformingControls } from '@/hooks/useGenerateActionPlans';
 import { useAdvancedControlFilters } from '@/hooks/useControlFilterData';
 import { useSortedControls } from '@/hooks/useSortedControls';
@@ -23,6 +24,7 @@ import {
   useCommentCountsByAssessment,
   useProblematicControls,
 } from '@/hooks/useControlIndicators';
+import { useDiagnosticKeyboardNav } from '@/hooks/useDiagnosticKeyboardNav';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -67,6 +69,8 @@ export default function Diagnostico() {
   const [sortOption, setSortOption] = useSortPreference();
   const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map());
   const [isBulkSaving, setIsBulkSaving] = useState(false);
+  const [selectedControlIds, setSelectedControlIds] = useState<Set<string>>(new Set());
+  const [bulkEditDialogOpen, setBulkEditDialogOpen] = useState(false);
   const [aiPlansDialogOpen, setAiPlansDialogOpen] = useState(false);
   const [controlsForAIGeneration, setControlsForAIGeneration] = useState<Array<{
     controlId: string;
@@ -299,6 +303,122 @@ export default function Diagnostico() {
     }
   }, [bulkUpsert]);
 
+  // Bulk selection handlers
+  const handleToggleSelection = useCallback((controlId: string, selected: boolean) => {
+    setSelectedControlIds(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(controlId);
+      } else {
+        newSet.delete(controlId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedControlIds(new Set(sortedControls.map(c => c.id)));
+  }, [sortedControls]);
+
+  const handleDeselectAll = useCallback(() => {
+    setSelectedControlIds(new Set());
+  }, []);
+
+  const handleBulkEditApply = useCallback(async (data: {
+    maturityLevel?: MaturityLevel;
+    observations?: string;
+    appendObservations?: boolean;
+  }) => {
+    if (selectedControlIds.size === 0) return;
+
+    const selectedControls = controls.filter(c => selectedControlIds.has(c.id));
+    const changes = selectedControls.map(control => {
+      const existingAssessment = assessmentMap.get(control.id);
+      let newObservations = data.observations;
+      
+      if (data.observations && data.appendObservations && existingAssessment?.observations) {
+        newObservations = `${existingAssessment.observations}\n\n${data.observations}`;
+      }
+
+      return {
+        control_id: control.id,
+        maturity_level: data.maturityLevel || existingAssessment?.maturity_level || '0' as MaturityLevel,
+        observations: newObservations || existingAssessment?.observations || undefined,
+      };
+    });
+
+    setIsBulkSaving(true);
+    try {
+      await bulkUpsert.mutateAsync(changes);
+      toast.success(`${changes.length} controles atualizados com sucesso`);
+      setSelectedControlIds(new Set());
+      setBulkEditDialogOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao aplicar alterações em lote');
+    } finally {
+      setIsBulkSaving(false);
+    }
+  }, [selectedControlIds, controls, assessmentMap, bulkUpsert]);
+
+  // Keyboard navigation
+  const searchInputRef = useCallback((node: HTMLInputElement | null) => {
+    if (node) {
+      (window as any).__diagnosticSearchInput = node;
+    }
+  }, []);
+
+  const { focusedControlId } = useDiagnosticKeyboardNav({
+    controlIds: sortedControls.map(c => c.id),
+    onNavigate: (controlId) => {
+      const element = document.getElementById(`control-${controlId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    },
+    onExpandToggle: (controlId) => {
+      // Trigger click on the control card to expand/collapse
+      const element = document.getElementById(`control-${controlId}`);
+      const button = element?.querySelector('button[aria-expanded], button:has(svg)');
+      if (button) {
+        (button as HTMLButtonElement).click();
+      }
+    },
+    onMaturityChange: (controlId, level) => {
+      // Update maturity for the focused control
+      const control = controls.find(c => c.id === controlId);
+      if (control) {
+        handleSaveAssessment({
+          controlId,
+          maturityLevel: level.toString() as MaturityLevel,
+        });
+      }
+    },
+    onSave: (controlId) => {
+      // Trigger save for the focused control
+      toast.info('Pressione o botão Salvar no card do controle');
+    },
+    onNextPending: () => {
+      // Find next pending control
+      const pendingControl = sortedControls.find(c => !assessmentMap.has(c.id));
+      if (pendingControl) {
+        const element = document.getElementById(`control-${pendingControl.id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          toast.info(`Navegando para: ${pendingControl.code}`);
+        }
+      } else {
+        toast.info('Não há controles pendentes');
+      }
+    },
+    onFocusSearch: () => {
+      const searchInput = (window as any).__diagnosticSearchInput;
+      if (searchInput) {
+        searchInput.focus();
+      }
+    },
+    enabled: viewMode === 'cards',
+  });
+
   const isLoading = loadingControls || loadingAssessments;
 
   return (
@@ -450,7 +570,8 @@ export default function Diagnostico() {
                 <div className="relative w-full md:w-80">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar controles..."
+                    ref={searchInputRef}
+                    placeholder="Buscar controles... (pressione /)"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -562,6 +683,9 @@ export default function Diagnostico() {
                               actionPlanCount={actionPlanCounts[assessmentMap.get(control.id)?.id || ''] || 0}
                               commentCount={commentCounts[assessmentMap.get(control.id)?.id || ''] || 0}
                               isProblematic={problematicControlIds.has(control.id)}
+                              showSelection={true}
+                              isSelected={selectedControlIds.has(control.id)}
+                              onSelectionChange={(selected) => handleToggleSelection(control.id, selected)}
                             />
                           </div>
                         ))}
@@ -574,6 +698,25 @@ export default function Diagnostico() {
           )}
         </>
       )}
+
+      {/* Bulk Edit Toolbar */}
+      <BulkEditToolbar
+        selectedCount={selectedControlIds.size}
+        totalCount={sortedControls.length}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
+        onBulkEdit={() => setBulkEditDialogOpen(true)}
+        isAllSelected={selectedControlIds.size === sortedControls.length && sortedControls.length > 0}
+      />
+
+      {/* Bulk Edit Dialog */}
+      <BulkEditDialog
+        open={bulkEditDialogOpen}
+        onOpenChange={setBulkEditDialogOpen}
+        selectedCount={selectedControlIds.size}
+        onApply={handleBulkEditApply}
+        isApplying={isBulkSaving}
+      />
 
       {/* AI Plans Generation Dialog */}
       <GenerateAIPlansDialog

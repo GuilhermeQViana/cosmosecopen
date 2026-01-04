@@ -33,19 +33,21 @@ const shortcutGroups: ShortcutGroup[] = [
     ],
   },
   {
-    title: 'Ações Rápidas',
+    title: 'Diagnóstico de Controles',
     shortcuts: [
-      { keys: ['N'], description: 'Criar novo item (contextual)' },
-      { keys: ['Esc'], description: 'Fechar diálogo/modal' },
-      { keys: ['Enter'], description: 'Confirmar ação' },
+      { keys: ['J', '↓'], description: 'Próximo controle' },
+      { keys: ['K', '↑'], description: 'Controle anterior' },
+      { keys: ['Enter'], description: 'Expandir/recolher controle' },
+      { keys: ['0-5'], description: 'Definir nível de maturidade' },
+      { keys: ['⌘', 'S'], description: 'Salvar controle atual' },
+      { keys: ['N'], description: 'Ir para próximo pendente' },
+      { keys: ['/'], description: 'Focar na busca' },
     ],
   },
   {
-    title: 'Navegação em Tabelas',
+    title: 'Ações Rápidas',
     shortcuts: [
-      { keys: ['↑', '↓'], description: 'Navegar entre linhas' },
-      { keys: ['Enter'], description: 'Abrir item selecionado' },
-      { keys: ['Delete'], description: 'Excluir item selecionado' },
+      { keys: ['Esc'], description: 'Fechar diálogo/limpar foco' },
     ],
   },
 ];
