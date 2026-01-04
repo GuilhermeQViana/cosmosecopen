@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ import {
   AssessmentComment,
 } from '@/hooks/useAssessmentComments';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
 import {
   MessageSquare,
   ChevronDown,
@@ -47,20 +48,209 @@ interface AssessmentCommentsProps {
   assessmentId: string | undefined;
 }
 
+// Component for mention suggestions dropdown
+function MentionSuggestions({
+  suggestions,
+  onSelect,
+  selectedIndex,
+  position,
+}: {
+  suggestions: { id: string; name: string; avatar?: string }[];
+  onSelect: (name: string) => void;
+  selectedIndex: number;
+  position: { top: number; left: number };
+}) {
+  if (suggestions.length === 0) return null;
+
+  return (
+    <div
+      className="absolute z-50 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto"
+      style={{ top: position.top, left: position.left }}
+    >
+      {suggestions.map((user, index) => {
+        const initials = user.name
+          ?.split(' ')
+          .map((n) => n[0])
+          .join('')
+          .slice(0, 2) || '??';
+
+        return (
+          <button
+            key={user.id}
+            type="button"
+            className={cn(
+              'flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-accent transition-colors',
+              index === selectedIndex && 'bg-accent'
+            )}
+            onClick={() => onSelect(user.name)}
+          >
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={user.avatar || ''} />
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+            <span>{user.name}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Hook for mention functionality
+function useMentions(teamMembers: { id: string; full_name: string | null; avatar_url: string | null }[]) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mentionStartIndex, setMentionStartIndex] = useState(-1);
+
+  const suggestions = teamMembers
+    .filter((m) => m.full_name)
+    .map((m) => ({
+      id: m.id,
+      name: m.full_name!,
+      avatar: m.avatar_url || undefined,
+    }))
+    .filter((m) =>
+      mentionQuery
+        ? m.name.toLowerCase().includes(mentionQuery.toLowerCase())
+        : true
+    )
+    .slice(0, 5);
+
+  const handleInputChange = (
+    value: string,
+    cursorPosition: number,
+    onChange: (value: string) => void
+  ) => {
+    onChange(value);
+
+    // Find if we're in a mention context
+    const textBeforeCursor = value.slice(0, cursorPosition);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+      // Check if there's a space after @, which means the mention is complete
+      if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
+        setShowSuggestions(true);
+        setMentionQuery(textAfterAt);
+        setMentionStartIndex(lastAtIndex);
+        setSelectedIndex(0);
+        return;
+      }
+    }
+
+    setShowSuggestions(false);
+    setMentionQuery('');
+    setMentionStartIndex(-1);
+  };
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent,
+    value: string,
+    onChange: (value: string) => void,
+    onSubmit?: () => void
+  ) => {
+    if (!showSuggestions) {
+      if (e.key === 'Enter' && !e.shiftKey && onSubmit) {
+        e.preventDefault();
+        onSubmit();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      if (suggestions[selectedIndex]) {
+        selectMention(suggestions[selectedIndex].name, value, onChange);
+      }
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectMention = (
+    name: string,
+    currentValue: string,
+    onChange: (value: string) => void
+  ) => {
+    if (mentionStartIndex === -1) return;
+
+    const beforeMention = currentValue.slice(0, mentionStartIndex);
+    const afterMention = currentValue.slice(
+      mentionStartIndex + 1 + mentionQuery.length
+    );
+    const newValue = `${beforeMention}@${name} ${afterMention}`;
+
+    onChange(newValue);
+    setShowSuggestions(false);
+    setMentionQuery('');
+    setMentionStartIndex(-1);
+  };
+
+  return {
+    showSuggestions,
+    suggestions,
+    selectedIndex,
+    handleInputChange,
+    handleKeyDown,
+    selectMention,
+    closeSuggestions: () => setShowSuggestions(false),
+  };
+}
+
+// Format comment content to highlight mentions
+function formatContentWithMentions(content: string) {
+  const mentionRegex = /@(\w+(?:\s+\w+)*)/g;
+  const parts = content.split(mentionRegex);
+
+  return parts.map((part, index) => {
+    // Every odd index is a mention (captured group)
+    if (index % 2 === 1) {
+      return (
+        <span key={index} className="text-primary font-medium">
+          @{part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
 export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { user } = useAuth();
   const { data: comments = [], isLoading } = useAssessmentComments(assessmentId);
+  const { data: teamMembers = [] } = useTeamMembers();
   const createComment = useCreateComment();
   const updateComment = useUpdateComment();
   const deleteComment = useDeleteComment();
   const pinComment = usePinComment();
   const toggleReaction = useToggleReaction();
+
+  const teamMembersForMention = teamMembers.map((m) => ({
+    id: m.user_id,
+    full_name: m.profile?.full_name || null,
+    avatar_url: m.profile?.avatar_url || null,
+  }));
+
+  const mainMentions = useMentions(teamMembersForMention);
+  const replyMentions = useMentions(teamMembersForMention);
+  const editMentions = useMentions(teamMembersForMention);
 
   const totalComments = comments.reduce(
     (acc, c) => acc + 1 + (c.replies?.length || 0),
@@ -208,13 +398,35 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
             </div>
 
             {isEditing ? (
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <Textarea
+                  ref={editTextareaRef}
                   value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
+                  onChange={(e) => {
+                    const cursorPosition = e.target.selectionStart;
+                    editMentions.handleInputChange(
+                      e.target.value,
+                      cursorPosition,
+                      setEditContent
+                    );
+                  }}
+                  onKeyDown={(e) =>
+                    editMentions.handleKeyDown(e, editContent, setEditContent)
+                  }
+                  onBlur={() => setTimeout(() => editMentions.closeSuggestions(), 200)}
                   rows={2}
                   className="resize-none"
                 />
+                {editMentions.showSuggestions && (
+                  <MentionSuggestions
+                    suggestions={editMentions.suggestions}
+                    onSelect={(name) =>
+                      editMentions.selectMention(name, editContent, setEditContent)
+                    }
+                    selectedIndex={editMentions.selectedIndex}
+                    position={{ top: -8, left: 0 }}
+                  />
+                )}
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -236,7 +448,7 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
                 </div>
               </div>
             ) : (
-              <p className="text-sm">{comment.content}</p>
+              <p className="text-sm">{formatContentWithMentions(comment.content)}</p>
             )}
 
             {!isEditing && (
@@ -335,31 +547,60 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
 
             {/* Reply input */}
             {replyingTo === comment.id && (
-              <div className="flex gap-2 mt-2">
-                <Textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Escreva sua resposta..."
-                  rows={1}
-                  className="resize-none flex-1"
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSubmit}
-                  disabled={createComment.isPending}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setReplyingTo(null);
-                    setNewComment('');
-                  }}
-                >
-                  Cancelar
-                </Button>
+              <div className="relative mt-2">
+                <div className="flex gap-2">
+                  <Textarea
+                    ref={replyTextareaRef}
+                    value={newComment}
+                    onChange={(e) => {
+                      const cursorPosition = e.target.selectionStart;
+                      replyMentions.handleInputChange(
+                        e.target.value,
+                        cursorPosition,
+                        setNewComment
+                      );
+                    }}
+                    onKeyDown={(e) =>
+                      replyMentions.handleKeyDown(
+                        e,
+                        newComment,
+                        setNewComment,
+                        handleSubmit
+                      )
+                    }
+                    onBlur={() => setTimeout(() => replyMentions.closeSuggestions(), 200)}
+                    placeholder="Escreva sua resposta... Use @ para mencionar"
+                    rows={1}
+                    className="resize-none flex-1"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSubmit}
+                    disabled={createComment.isPending}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setReplyingTo(null);
+                      setNewComment('');
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+                {replyMentions.showSuggestions && (
+                  <MentionSuggestions
+                    suggestions={replyMentions.suggestions}
+                    onSelect={(name) =>
+                      replyMentions.selectMention(name, newComment, setNewComment)
+                    }
+                    selectedIndex={replyMentions.selectedIndex}
+                    position={{ top: -160, left: 0 }}
+                  />
+                )}
               </div>
             )}
 
@@ -419,20 +660,49 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
 
         {/* New comment input */}
         {!replyingTo && (
-          <div className="flex gap-2">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Adicione um comentário... Use @ para mencionar"
-              rows={1}
-              className="resize-none flex-1"
-            />
-            <Button
-              onClick={handleSubmit}
-              disabled={!newComment.trim() || createComment.isPending}
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+          <div className="relative">
+            <div className="flex gap-2">
+              <Textarea
+                ref={textareaRef}
+                value={newComment}
+                onChange={(e) => {
+                  const cursorPosition = e.target.selectionStart;
+                  mainMentions.handleInputChange(
+                    e.target.value,
+                    cursorPosition,
+                    setNewComment
+                  );
+                }}
+                onKeyDown={(e) =>
+                  mainMentions.handleKeyDown(
+                    e,
+                    newComment,
+                    setNewComment,
+                    handleSubmit
+                  )
+                }
+                onBlur={() => setTimeout(() => mainMentions.closeSuggestions(), 200)}
+                placeholder="Adicione um comentário... Use @ para mencionar"
+                rows={1}
+                className="resize-none flex-1"
+              />
+              <Button
+                onClick={handleSubmit}
+                disabled={!newComment.trim() || createComment.isPending}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            {mainMentions.showSuggestions && (
+              <MentionSuggestions
+                suggestions={mainMentions.suggestions}
+                onSelect={(name) =>
+                  mainMentions.selectMention(name, newComment, setNewComment)
+                }
+                selectedIndex={mainMentions.selectedIndex}
+                position={{ top: -160, left: 0 }}
+              />
+            )}
           </div>
         )}
       </CollapsibleContent>
