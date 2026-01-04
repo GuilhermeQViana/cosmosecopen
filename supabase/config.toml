@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.list-invoices]
 verify_jwt = false
+
+[functions.generate-vendor-report]
+verify_jwt = false
+
+[functions.generate-implementation-guide]
+verify_jwt = false
