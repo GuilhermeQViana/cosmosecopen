@@ -228,8 +228,8 @@ export function LinkControlsDialog({ open, onOpenChange, risk }: LinkControlsDia
             </div>
           )}
 
-          {/* Controls list grouped by category */}
-          <ScrollArea className="flex-1 border rounded-md">
+          {/* Controls list grouped by category - with fixed height for scroll */}
+          <ScrollArea className="h-[350px] border rounded-md">
             {isLoadingControls || loadingLinked ? (
               <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
