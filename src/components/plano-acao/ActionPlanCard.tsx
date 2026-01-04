@@ -15,9 +15,15 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { GripVertical, Calendar, Sparkles, Edit, Trash2, ChevronDown, CheckSquare, Clock, AlertCircle } from 'lucide-react';
+
+// Helper to parse YYYY-MM-DD string to Date without timezone shift
+function parseDateSafe(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
 import { useToast } from '@/hooks/use-toast';
 
 interface ActionPlanCardProps {
@@ -47,10 +53,11 @@ export function ActionPlanCard({ plan, onEdit, onDelete, onOpen, isDragging }: A
       .slice(0, 2);
   };
 
-  const isOverdue = plan.due_date && new Date(plan.due_date) < new Date() && plan.status !== 'done';
+  const today = startOfDay(new Date());
+  const isOverdue = plan.due_date && parseDateSafe(plan.due_date) < today && plan.status !== 'done';
   
   // Check if deadline is approaching (within 7 days)
-  const daysUntilDue = plan.due_date ? differenceInDays(new Date(plan.due_date), new Date()) : null;
+  const daysUntilDue = plan.due_date ? differenceInDays(parseDateSafe(plan.due_date), today) : null;
   const isApproaching = daysUntilDue !== null && daysUntilDue >= 0 && daysUntilDue <= 7 && plan.status !== 'done';
 
   // Calculate subtasks progress
@@ -195,7 +202,7 @@ export function ActionPlanCard({ plan, onEdit, onDelete, onOpen, isDragging }: A
               )}
             >
               <Calendar className="h-3 w-3" />
-              {format(new Date(plan.due_date), 'dd MMM', { locale: ptBR })}
+              {format(parseDateSafe(plan.due_date), 'dd MMM', { locale: ptBR })}
             </div>
           )}
           
