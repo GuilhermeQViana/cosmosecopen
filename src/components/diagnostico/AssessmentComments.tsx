@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ import {
 } from '@/hooks/useAssessmentComments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import {
   MessageSquare,
   ChevronDown,
@@ -53,19 +54,41 @@ function MentionSuggestions({
   suggestions,
   onSelect,
   selectedIndex,
-  position,
+  textareaRef,
 }: {
   suggestions: { id: string; name: string; avatar?: string }[];
   onSelect: (name: string) => void;
   selectedIndex: number;
-  position: { top: number; left: number };
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
 }) {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      const textarea = textareaRef.current;
+      const rect = textarea.getBoundingClientRect();
+      const parentRect = textarea.offsetParent?.getBoundingClientRect() || rect;
+      
+      // Position above the textarea
+      setPosition({
+        top: rect.top - parentRect.top - (dropdownRef.current?.offsetHeight || 200) - 8,
+        left: 0,
+      });
+    }
+  }, [textareaRef, suggestions.length]);
+
   if (suggestions.length === 0) return null;
 
   return (
     <div
-      className="absolute z-50 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto"
-      style={{ top: position.top, left: position.left }}
+      ref={dropdownRef}
+      className="absolute z-50 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto min-w-[200px]"
+      style={{ 
+        bottom: '100%',
+        left: 0,
+        marginBottom: '8px',
+      }}
     >
       {suggestions.map((user, index) => {
         const initials = user.name
@@ -83,6 +106,7 @@ function MentionSuggestions({
               index === selectedIndex && 'bg-accent'
             )}
             onClick={() => onSelect(user.name)}
+            onMouseDown={(e) => e.preventDefault()} // Prevent blur on click
           >
             <Avatar className="h-6 w-6">
               <AvatarImage src={user.avatar || ''} />
@@ -207,20 +231,31 @@ function useMentions(teamMembers: { id: string; full_name: string | null; avatar
 
 // Format comment content to highlight mentions
 function formatContentWithMentions(content: string) {
-  const mentionRegex = /@(\w+(?:\s+\w+)*)/g;
-  const parts = content.split(mentionRegex);
+  const mentionRegex = /@([A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+)*)/g;
+  const parts: (string | JSX.Element)[] = [];
+  let lastIndex = 0;
+  let match;
 
-  return parts.map((part, index) => {
-    // Every odd index is a mention (captured group)
-    if (index % 2 === 1) {
-      return (
-        <span key={index} className="text-primary font-medium">
-          @{part}
-        </span>
-      );
+  while ((match = mentionRegex.exec(content)) !== null) {
+    // Add text before mention
+    if (match.index > lastIndex) {
+      parts.push(content.slice(lastIndex, match.index));
     }
-    return part;
-  });
+    // Add highlighted mention
+    parts.push(
+      <span key={match.index} className="text-primary font-medium">
+        @{match[1]}
+      </span>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < content.length) {
+    parts.push(content.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : content;
 }
 
 export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
@@ -234,6 +269,7 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { user } = useAuth();
+  const { organization } = useOrganization();
   const { data: comments = [], isLoading } = useAssessmentComments(assessmentId);
   const { data: teamMembers = [] } = useTeamMembers();
   const createComment = useCreateComment();
@@ -265,6 +301,7 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
         assessmentId,
         content: newComment.trim(),
         parentId: replyingTo || undefined,
+        organizationId: organization?.id,
       });
       setNewComment('');
       setReplyingTo(null);
@@ -424,7 +461,7 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
                       editMentions.selectMention(name, editContent, setEditContent)
                     }
                     selectedIndex={editMentions.selectedIndex}
-                    position={{ top: -8, left: 0 }}
+                    textareaRef={editTextareaRef}
                   />
                 )}
                 <div className="flex gap-2">
@@ -548,6 +585,16 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
             {/* Reply input */}
             {replyingTo === comment.id && (
               <div className="relative mt-2">
+                {replyMentions.showSuggestions && (
+                  <MentionSuggestions
+                    suggestions={replyMentions.suggestions}
+                    onSelect={(name) =>
+                      replyMentions.selectMention(name, newComment, setNewComment)
+                    }
+                    selectedIndex={replyMentions.selectedIndex}
+                    textareaRef={replyTextareaRef}
+                  />
+                )}
                 <div className="flex gap-2">
                   <Textarea
                     ref={replyTextareaRef}
@@ -591,16 +638,6 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
                     Cancelar
                   </Button>
                 </div>
-                {replyMentions.showSuggestions && (
-                  <MentionSuggestions
-                    suggestions={replyMentions.suggestions}
-                    onSelect={(name) =>
-                      replyMentions.selectMention(name, newComment, setNewComment)
-                    }
-                    selectedIndex={replyMentions.selectedIndex}
-                    position={{ top: -160, left: 0 }}
-                  />
-                )}
               </div>
             )}
 
@@ -661,6 +698,16 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
         {/* New comment input */}
         {!replyingTo && (
           <div className="relative">
+            {mainMentions.showSuggestions && (
+              <MentionSuggestions
+                suggestions={mainMentions.suggestions}
+                onSelect={(name) =>
+                  mainMentions.selectMention(name, newComment, setNewComment)
+                }
+                selectedIndex={mainMentions.selectedIndex}
+                textareaRef={textareaRef}
+              />
+            )}
             <div className="flex gap-2">
               <Textarea
                 ref={textareaRef}
@@ -693,16 +740,6 @@ export function AssessmentComments({ assessmentId }: AssessmentCommentsProps) {
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-            {mainMentions.showSuggestions && (
-              <MentionSuggestions
-                suggestions={mainMentions.suggestions}
-                onSelect={(name) =>
-                  mainMentions.selectMention(name, newComment, setNewComment)
-                }
-                selectedIndex={mainMentions.selectedIndex}
-                position={{ top: -160, left: 0 }}
-              />
-            )}
           </div>
         )}
       </CollapsibleContent>

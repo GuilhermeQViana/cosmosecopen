@@ -88,6 +88,17 @@ export function useAssessmentComments(assessmentId: string | undefined) {
   });
 }
 
+// Helper function to extract mentioned usernames from content
+function extractMentions(content: string): string[] {
+  const mentionRegex = /@([A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+)*)/g;
+  const mentions: string[] = [];
+  let match;
+  while ((match = mentionRegex.exec(content)) !== null) {
+    mentions.push(match[1].trim());
+  }
+  return [...new Set(mentions)]; // Remove duplicates
+}
+
 export function useCreateComment() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -97,10 +108,12 @@ export function useCreateComment() {
       assessmentId,
       content,
       parentId,
+      organizationId,
     }: {
       assessmentId: string;
       content: string;
       parentId?: string;
+      organizationId?: string;
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
@@ -116,6 +129,62 @@ export function useCreateComment() {
         .single();
 
       if (error) throw error;
+
+      // Extract mentions and create notifications
+      const mentionedNames = extractMentions(content);
+      
+      if (mentionedNames.length > 0 && organizationId) {
+        // Get user's name for notification
+        const { data: currentUserProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        const authorName = currentUserProfile?.full_name || 'Alguém';
+
+        // Find mentioned users by name in the organization
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('organization_id', organizationId);
+
+        if (userRoles && userRoles.length > 0) {
+          const userIds = userRoles.map(ur => ur.user_id);
+          
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', userIds);
+
+          if (profiles) {
+            // Find users whose names match the mentions
+            const mentionedUsers = profiles.filter(p => 
+              p.full_name && mentionedNames.some(mention => 
+                p.full_name!.toLowerCase().includes(mention.toLowerCase()) ||
+                mention.toLowerCase().includes(p.full_name!.toLowerCase())
+              )
+            );
+
+            // Create notifications for mentioned users (except the author)
+            const notificationsToCreate = mentionedUsers
+              .filter(mu => mu.id !== user.id)
+              .map(mu => ({
+                user_id: mu.id,
+                organization_id: organizationId,
+                title: `${authorName} mencionou você`,
+                message: `Você foi mencionado em um comentário no diagnóstico.`,
+                type: 'mention',
+                link: '/diagnostico',
+              }));
+
+            if (notificationsToCreate.length > 0) {
+              await supabase.from('notifications').insert(notificationsToCreate);
+            }
+          }
+        }
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
