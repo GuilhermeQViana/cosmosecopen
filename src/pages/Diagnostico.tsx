@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { useControls, useControlsByCategory } from '@/hooks/useControls';
@@ -8,11 +8,21 @@ import { ControlsTable } from '@/components/diagnostico/ControlsTable';
 import { DiagnosticStats } from '@/components/diagnostico/DiagnosticStats';
 import { DiagnosticActionBar } from '@/components/diagnostico/DiagnosticActionBar';
 import { StatusFilter, StatusFilterValue } from '@/components/diagnostico/StatusFilter';
+import { AdvancedFiltersPanel, AdvancedFilters } from '@/components/diagnostico/AdvancedFiltersPanel';
+import { SortDropdown, useSortPreference } from '@/components/diagnostico/SortDropdown';
 import { CategoryProgress } from '@/components/diagnostico/CategoryProgress';
 import { RiskMethodologyInfo } from '@/components/shared/RiskMethodologyInfo';
 import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { GenerateAIPlansDialog } from '@/components/diagnostico/GenerateAIPlansDialog';
 import { useNonConformingControls } from '@/hooks/useGenerateActionPlans';
+import { useAdvancedControlFilters } from '@/hooks/useControlFilterData';
+import { useSortedControls } from '@/hooks/useSortedControls';
+import {
+  useEvidenceCountsByAssessment,
+  useActionPlanCountsByAssessment,
+  useCommentCountsByAssessment,
+  useProblematicControls,
+} from '@/hooks/useControlIndicators';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -48,6 +58,13 @@ export default function Diagnostico() {
   const [savingControlId, setSavingControlId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('all');
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
+    riskScore: [],
+    weight: [],
+    hasEvidence: null,
+    hasActionPlan: null,
+  });
+  const [sortOption, setSortOption] = useSortPreference();
   const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map());
   const [isBulkSaving, setIsBulkSaving] = useState(false);
   const [aiPlansDialogOpen, setAiPlansDialogOpen] = useState(false);
@@ -68,6 +85,12 @@ export default function Diagnostico() {
   const upsertAssessment = useUpsertAssessment();
   const resetAssessments = useResetAssessments();
   const bulkUpsert = useBulkUpsertAssessments();
+
+  // Indicator counts
+  const { data: evidenceCounts = {} } = useEvidenceCountsByAssessment();
+  const actionPlanCounts = useActionPlanCountsByAssessment();
+  const { data: commentCounts = {} } = useCommentCountsByAssessment();
+  const problematicControlIds = useProblematicControls(assessments);
 
   // Handle URL parameter for direct control navigation
   useEffect(() => {
@@ -99,8 +122,16 @@ export default function Diagnostico() {
   }, [searchParams, controls, setSearchParams]);
 
   // Map assessments by control ID for quick lookup
-  const assessmentMap = new Map(
-    assessments.map((a) => [a.control_id, a])
+  const assessmentMap = useMemo(() => 
+    new Map(assessments.map((a) => [a.control_id, a])),
+    [assessments]
+  );
+
+  // Apply advanced filters
+  const { filteredControls: advancedFilteredControls, filterMetrics } = useAdvancedControlFilters(
+    controls,
+    assessments,
+    advancedFilters
   );
 
   // Calculate filter counts
@@ -112,8 +143,8 @@ export default function Diagnostico() {
     pending: controls.filter((c) => !assessmentMap.has(c.id)).length,
   };
 
-  // Filter controls by search query
-  let filteredControls = controls.filter(
+  // Filter controls by search query (on top of advanced filters)
+  let filteredControls = advancedFilteredControls.filter(
     (control) =>
       control.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       control.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -132,8 +163,11 @@ export default function Diagnostico() {
     }
   }
 
+  // Apply sorting
+  const sortedControls = useSortedControls(filteredControls, assessments, sortOption);
+
   // Group by category
-  const categories = useControlsByCategory(filteredControls);
+  const categories = useControlsByCategory(sortedControls);
 
   const handleSaveAssessment = async ({
     controlId,
@@ -403,23 +437,36 @@ export default function Diagnostico() {
 
           {/* Filters Row */}
           <AnimatedItem animation="fade-up" delay={200}>
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              {/* Status Filter */}
-              <StatusFilter
-                value={statusFilter}
-                onChange={setStatusFilter}
-                counts={filterCounts}
-              />
-
-              {/* Search */}
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar controles..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+            <div className="space-y-3">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                {/* Status Filter */}
+                <StatusFilter
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  counts={filterCounts}
                 />
+
+                {/* Search */}
+                <div className="relative w-full md:w-80">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar controles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Advanced Filters and Sort */}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <AdvancedFiltersPanel
+                  filters={advancedFilters}
+                  onChange={setAdvancedFilters}
+                  evidenceCounts={filterMetrics.evidenceCounts}
+                  actionPlanCounts={filterMetrics.actionPlanCounts}
+                />
+                <SortDropdown value={sortOption} onChange={setSortOption} />
               </div>
             </div>
           </AnimatedItem>
@@ -453,6 +500,12 @@ export default function Diagnostico() {
                   onClick={() => {
                     setSearchQuery('');
                     setStatusFilter('all');
+                    setAdvancedFilters({
+                      riskScore: [],
+                      weight: [],
+                      hasEvidence: null,
+                      hasActionPlan: null,
+                    });
                   }}
                 >
                   Limpar filtros
@@ -462,10 +515,10 @@ export default function Diagnostico() {
           )}
 
           {/* Table View */}
-          {viewMode === 'table' && filteredControls.length > 0 && (
+          {viewMode === 'table' && sortedControls.length > 0 && (
             <AnimatedItem animation="fade-up" delay={250}>
               <ControlsTable
-                controls={filteredControls}
+                controls={sortedControls}
                 assessments={assessments}
                 onEditControl={handleEditControl}
               />
@@ -505,6 +558,10 @@ export default function Diagnostico() {
                               assessment={assessmentMap.get(control.id)}
                               onSave={handleSaveAssessment}
                               isSaving={savingControlId === control.id}
+                              evidenceCount={evidenceCounts[assessmentMap.get(control.id)?.id || ''] || 0}
+                              actionPlanCount={actionPlanCounts[assessmentMap.get(control.id)?.id || ''] || 0}
+                              commentCount={commentCounts[assessmentMap.get(control.id)?.id || ''] || 0}
+                              isProblematic={problematicControlIds.has(control.id)}
                             />
                           </div>
                         ))}
