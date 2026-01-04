@@ -6,6 +6,7 @@ import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { BenefitsSection } from '@/components/landing/BenefitsSection';
 import { PricingSection } from '@/components/landing/PricingSection';
+import { FAQSection } from '@/components/landing/FAQSection';
 import { Footer } from '@/components/landing/Footer';
 import { StarField } from '@/components/ui/star-field';
 
@@ -22,6 +23,7 @@ export default function Landing() {
         <HowItWorksSection />
         <BenefitsSection />
         <PricingSection />
+        <FAQSection />
       </main>
       <Footer />
     </div>
