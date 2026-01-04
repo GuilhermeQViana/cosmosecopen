@@ -19,6 +19,8 @@ import { AssessmentComments } from './AssessmentComments';
 import { ControlIndicators } from './ControlIndicators';
 import { ControlSelectCheckbox } from './BulkEditControls';
 import { ControlEvolutionTimeline, useControlEvolution } from './ControlEvolutionTimeline';
+import { ImplementationAssistant } from './ImplementationAssistant';
+import { SuggestedTargetBadge, useSuggestedTarget } from './SuggestedTargetBadge';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
 import { useDiagnosticSnapshots } from '@/hooks/useDiagnosticSnapshots';
@@ -145,6 +147,9 @@ export function ControlCardExpanded({
   const riskClassification = getRiskScoreClassification(riskScore);
   const isCriticalRisk = riskClassification.level === 'CRITICAL';
   const isHighRisk = riskClassification.level === 'HIGH';
+  
+  // Suggested target from AI logic
+  const suggestedTarget = useSuggestedTarget(weight, maturityLevel, targetMaturity);
 
   return (
     <Card
@@ -271,6 +276,13 @@ export function ControlCardExpanded({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Nível de Maturidade</span>
+            <SuggestedTargetBadge
+              currentTarget={targetMaturity}
+              suggestedTarget={suggestedTarget}
+              weight={weight}
+              currentMaturity={maturityLevel}
+              compact
+            />
           </div>
           
           <MaturitySlider
@@ -302,6 +314,20 @@ export function ControlCardExpanded({
                 weight={weight}
               />
             </div>
+          </div>
+        )}
+
+        {/* Implementation Assistant Button */}
+        {expanded && (
+          <div className="flex justify-end">
+            <ImplementationAssistant
+              controlCode={control.code}
+              controlName={control.name}
+              controlDescription={control.description}
+              currentMaturity={maturityLevel}
+              targetMaturity={targetMaturity}
+              weight={weight}
+            />
           </div>
         )}
 
