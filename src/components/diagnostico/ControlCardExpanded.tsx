@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Tooltip,
   TooltipContent,
@@ -17,8 +18,10 @@ import { ControlActionPlans } from './ControlActionPlans';
 import { AssessmentComments } from './AssessmentComments';
 import { ControlIndicators } from './ControlIndicators';
 import { ControlSelectCheckbox } from './BulkEditControls';
+import { ControlEvolutionTimeline, useControlEvolution } from './ControlEvolutionTimeline';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
+import { useDiagnosticSnapshots } from '@/hooks/useDiagnosticSnapshots';
 import {
   MATURITY_LEVELS,
   getControlWeightInfo,
@@ -35,6 +38,8 @@ import {
   Zap,
   Info,
   Scale,
+  History,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Database } from '@/integrations/supabase/types';
@@ -301,80 +306,155 @@ export function ControlCardExpanded({
         )}
 
         {/* Expanded Content */}
-        {expanded && (
-          <div className="space-y-4 animate-fade-in">
-            {/* Description */}
-            {control.description && (
-              <p className="text-sm text-muted-foreground">
-                {control.description}
-              </p>
-            )}
-
-            {/* Observations */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <MessageSquare className="w-4 h-4" />
-                Observações
-              </label>
-              <Textarea
-                value={observations}
-                onChange={(e) => handleObservationsChange(e.target.value)}
-                placeholder="Adicione observações sobre o controle..."
-                rows={3}
-                className="resize-none"
-              />
-            </div>
-
-            <Separator />
-
-            {/* Evidences Section */}
-            <ControlEvidencesList
-              assessmentId={assessment?.id}
-              controlCode={control.code}
-            />
-
-            <Separator />
-
-            {/* Action Plans Section */}
-            <ControlActionPlans
-              assessmentId={assessment?.id}
-              controlCode={control.code}
-              controlName={control.name}
-            />
-
-            <Separator />
-
-            {/* Comments Section */}
-            <AssessmentComments 
-              assessmentId={assessment?.id} 
-              controlCode={control.code}
-              controlName={control.name}
-            />
-
-            {/* Save Button */}
-            {hasChanges && (
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                size="sm"
-                className="w-full"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Salvar Avaliação
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        )}
+        <ExpandedContent
+          expanded={expanded}
+          control={control}
+          assessment={assessment}
+          observations={observations}
+          onObservationsChange={handleObservationsChange}
+          hasChanges={hasChanges}
+          onSave={handleSave}
+          isSaving={isSaving}
+        />
       </CardContent>
     </Card>
+  );
+}
+
+// Extracted expanded content component for better organization
+interface ExpandedContentProps {
+  expanded: boolean;
+  control: Control;
+  assessment?: Assessment;
+  observations: string;
+  onObservationsChange: (value: string) => void;
+  hasChanges: boolean;
+  onSave: () => Promise<void>;
+  isSaving: boolean;
+}
+
+function ExpandedContent({
+  expanded,
+  control,
+  assessment,
+  observations,
+  onObservationsChange,
+  hasChanges,
+  onSave,
+  isSaving,
+}: ExpandedContentProps) {
+  const { data: snapshots = [], isLoading: loadingSnapshots } = useDiagnosticSnapshots();
+  const evolutionData = useControlEvolution(
+    control.id,
+    snapshots.map(s => ({
+      id: s.id,
+      name: s.name,
+      created_at: s.created_at,
+      snapshot_data: s.snapshot_data as any,
+    }))
+  );
+
+  if (!expanded) return null;
+
+  return (
+    <div className="space-y-4 animate-fade-in">
+      {/* Description */}
+      {control.description && (
+        <p className="text-sm text-muted-foreground">
+          {control.description}
+        </p>
+      )}
+
+      {/* Observations */}
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <MessageSquare className="w-4 h-4" />
+          Observações
+        </label>
+        <Textarea
+          value={observations}
+          onChange={(e) => onObservationsChange(e.target.value)}
+          placeholder="Adicione observações sobre o controle..."
+          rows={3}
+          className="resize-none"
+        />
+      </div>
+
+      <Separator />
+
+      {/* Tabbed Content */}
+      <Tabs defaultValue="evidences" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="evidences" className="text-xs">
+            <ClipboardList className="w-3 h-3 mr-1" />
+            Evidências
+          </TabsTrigger>
+          <TabsTrigger value="plans" className="text-xs">
+            Planos
+          </TabsTrigger>
+          <TabsTrigger value="comments" className="text-xs">
+            Discussão
+          </TabsTrigger>
+          <TabsTrigger value="history" className="text-xs">
+            <History className="w-3 h-3 mr-1" />
+            Evolução
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="evidences" className="mt-4">
+          <ControlEvidencesList
+            assessmentId={assessment?.id}
+            controlCode={control.code}
+          />
+        </TabsContent>
+
+        <TabsContent value="plans" className="mt-4">
+          <ControlActionPlans
+            assessmentId={assessment?.id}
+            controlCode={control.code}
+            controlName={control.name}
+          />
+        </TabsContent>
+
+        <TabsContent value="comments" className="mt-4">
+          <AssessmentComments 
+            assessmentId={assessment?.id} 
+            controlCode={control.code}
+            controlName={control.name}
+          />
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4">
+          <ControlEvolutionTimeline
+            controlId={control.id}
+            snapshots={evolutionData}
+            currentMaturity={assessment?.maturity_level || '0'}
+            isLoading={loadingSnapshots}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Save Button */}
+      {hasChanges && (
+        <Button
+          onClick={onSave}
+          disabled={isSaving}
+          size="sm"
+          className="w-full"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              Salvando...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Salvar Avaliação
+            </>
+          )}
+        </Button>
+      )}
+    </div>
   );
 }
