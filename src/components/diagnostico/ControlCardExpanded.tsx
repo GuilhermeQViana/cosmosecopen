@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -372,17 +372,23 @@ function ExpandedContent({
   onSave,
   isSaving,
 }: ExpandedContentProps) {
+  // Always call hooks unconditionally at the top level
   const { data: snapshots = [], isLoading: loadingSnapshots } = useDiagnosticSnapshots();
-  const evolutionData = useControlEvolution(
-    control.id,
+  
+  // Memoize the processed snapshots to avoid recalculating on every render
+  const processedSnapshots = useMemo(() => 
     snapshots.map(s => ({
       id: s.id,
       name: s.name,
       created_at: s.created_at,
       snapshot_data: s.snapshot_data as any,
-    }))
+    })),
+    [snapshots]
   );
+  
+  const evolutionData = useControlEvolution(control.id, processedSnapshots);
 
+  // Early return AFTER all hooks have been called
   if (!expanded) return null;
 
   return (
