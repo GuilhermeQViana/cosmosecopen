@@ -17,6 +17,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import {
   useAssessmentComments,
   useCreateComment,
   useUpdateComment,
@@ -41,6 +46,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   MoreHorizontal,
+  Mail,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -231,8 +238,70 @@ function useMentions(teamMembers: { id: string; full_name: string | null; avatar
   };
 }
 
-// Format comment content to highlight mentions
-function formatContentWithMentions(content: string) {
+// Mention Profile Card Component
+function MentionProfileCard({ 
+  name, 
+  teamMembers 
+}: { 
+  name: string; 
+  teamMembers: { id: string; full_name: string | null; avatar_url: string | null }[];
+}) {
+  // Find the user by name
+  const user = teamMembers.find(
+    m => m.full_name?.toLowerCase().includes(name.toLowerCase()) ||
+         name.toLowerCase().includes(m.full_name?.toLowerCase() || '')
+  );
+
+  if (!user) {
+    return (
+      <span className="text-primary font-medium cursor-default">
+        @{name}
+      </span>
+    );
+  }
+
+  const initials = user.full_name
+    ?.split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2) || '??';
+
+  return (
+    <HoverCard openDelay={200} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <span className="text-primary font-medium cursor-pointer hover:underline">
+          @{name}
+        </span>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-64" align="start">
+        <div className="flex gap-3">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={user.avatar_url || ''} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold flex items-center gap-1">
+              <User className="h-3 w-3" />
+              {user.full_name}
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Membro da equipe
+            </p>
+          </div>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+// Format comment content to highlight mentions with profile cards
+function FormatContentWithMentions({ 
+  content, 
+  teamMembers 
+}: { 
+  content: string; 
+  teamMembers: { id: string; full_name: string | null; avatar_url: string | null }[];
+}) {
   const mentionRegex = /@([A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+)*)/g;
   const parts: (string | JSX.Element)[] = [];
   let lastIndex = 0;
@@ -243,11 +312,13 @@ function formatContentWithMentions(content: string) {
     if (match.index > lastIndex) {
       parts.push(content.slice(lastIndex, match.index));
     }
-    // Add highlighted mention
+    // Add mention with profile card
     parts.push(
-      <span key={match.index} className="text-primary font-medium">
-        @{match[1]}
-      </span>
+      <MentionProfileCard 
+        key={match.index} 
+        name={match[1]} 
+        teamMembers={teamMembers} 
+      />
     );
     lastIndex = match.index + match[0].length;
   }
@@ -257,7 +328,7 @@ function formatContentWithMentions(content: string) {
     parts.push(content.slice(lastIndex));
   }
 
-  return parts.length > 0 ? parts : content;
+  return <>{parts.length > 0 ? parts : content}</>;
 }
 
 export function AssessmentComments({ assessmentId, controlCode, controlName }: AssessmentCommentsProps) {
@@ -489,7 +560,9 @@ export function AssessmentComments({ assessmentId, controlCode, controlName }: A
                 </div>
               </div>
             ) : (
-              <p className="text-sm">{formatContentWithMentions(comment.content)}</p>
+              <p className="text-sm">
+                <FormatContentWithMentions content={comment.content} teamMembers={teamMembersForMention} />
+              </p>
             )}
 
             {!isEditing && (
