@@ -419,22 +419,22 @@ function ExpandedContent({
 
       {/* Tabbed Content */}
       <Tabs defaultValue="evidences" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="evidences" className="text-xs">
+        <TabsList className="grid w-full grid-cols-5 relative z-10">
+          <TabsTrigger value="evidences" className="text-xs cursor-pointer">
             <ClipboardList className="w-3 h-3 mr-1" />
             Evidências
           </TabsTrigger>
-          <TabsTrigger value="plans" className="text-xs">
+          <TabsTrigger value="plans" className="text-xs cursor-pointer">
             Planos
           </TabsTrigger>
-          <TabsTrigger value="risks" className="text-xs">
+          <TabsTrigger value="risks" className="text-xs cursor-pointer">
             <AlertTriangle className="w-3 h-3 mr-1" />
             Riscos
           </TabsTrigger>
-          <TabsTrigger value="comments" className="text-xs">
+          <TabsTrigger value="comments" className="text-xs cursor-pointer">
             Discussão
           </TabsTrigger>
-          <TabsTrigger value="history" className="text-xs">
+          <TabsTrigger value="history" className="text-xs cursor-pointer">
             <History className="w-3 h-3 mr-1" />
             Evolução
           </TabsTrigger>
