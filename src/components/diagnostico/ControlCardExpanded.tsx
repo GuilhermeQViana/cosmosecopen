@@ -21,6 +21,7 @@ import { ControlSelectCheckbox } from './BulkEditControls';
 import { ControlEvolutionTimeline, useControlEvolution } from './ControlEvolutionTimeline';
 import { ImplementationAssistant } from './ImplementationAssistant';
 import { SuggestedTargetBadge, useSuggestedTarget } from './SuggestedTargetBadge';
+import { ControlRisksList } from './ControlRisksList';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
 import { useDiagnosticSnapshots } from '@/hooks/useDiagnosticSnapshots';
@@ -64,6 +65,7 @@ interface ControlCardExpandedProps {
   isSelected?: boolean;
   onSelectionChange?: (selected: boolean) => void;
   showSelection?: boolean;
+  isReadOnly?: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
@@ -97,6 +99,7 @@ export function ControlCardExpanded({
   isSelected = false,
   onSelectionChange,
   showSelection = false,
+  isReadOnly = false,
 }: ControlCardExpandedProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
@@ -410,13 +413,17 @@ function ExpandedContent({
 
       {/* Tabbed Content */}
       <Tabs defaultValue="evidences" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="evidences" className="text-xs">
             <ClipboardList className="w-3 h-3 mr-1" />
             Evidências
           </TabsTrigger>
           <TabsTrigger value="plans" className="text-xs">
             Planos
+          </TabsTrigger>
+          <TabsTrigger value="risks" className="text-xs">
+            <AlertTriangle className="w-3 h-3 mr-1" />
+            Riscos
           </TabsTrigger>
           <TabsTrigger value="comments" className="text-xs">
             Discussão
@@ -437,6 +444,14 @@ function ExpandedContent({
         <TabsContent value="plans" className="mt-4">
           <ControlActionPlans
             assessmentId={assessment?.id}
+            controlCode={control.code}
+            controlName={control.name}
+          />
+        </TabsContent>
+
+        <TabsContent value="risks" className="mt-4">
+          <ControlRisksList
+            controlId={control.id}
             controlCode={control.code}
             controlName={control.name}
           />

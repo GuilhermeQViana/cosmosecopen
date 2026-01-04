@@ -17,6 +17,8 @@ import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { GenerateAIPlansDialog } from '@/components/diagnostico/GenerateAIPlansDialog';
 import { BulkEditToolbar, BulkEditDialog } from '@/components/diagnostico/BulkEditControls';
 import { useDragAndDrop, DragHandle, DraggableControlList, ResetOrderButton } from '@/components/diagnostico/DraggableControlList';
+import { AssessmentWizard } from '@/components/diagnostico/AssessmentWizard';
+import { AuditModeToggle } from '@/components/diagnostico/AuditModeToggle';
 import { useNonConformingControls } from '@/hooks/useGenerateActionPlans';
 import { useAdvancedControlFilters } from '@/hooks/useControlFilterData';
 import { useSortedControls } from '@/hooks/useSortedControls';
@@ -76,6 +78,7 @@ export default function Diagnostico() {
   const [bulkEditDialogOpen, setBulkEditDialogOpen] = useState(false);
   const [aiPlansDialogOpen, setAiPlansDialogOpen] = useState(false);
   const [expandedCategoryDashboard, setExpandedCategoryDashboard] = useState<string | null>(null);
+  const [isAuditMode, setIsAuditMode] = useState(false);
   const [controlsForAIGeneration, setControlsForAIGeneration] = useState<Array<{
     controlId: string;
     assessmentId: string;
@@ -485,6 +488,20 @@ export default function Diagnostico() {
                 {currentFramework.version && ` v${currentFramework.version}`}
               </Badge>
             )}
+            {/* Audit Mode Toggle & Report */}
+            <AuditModeToggle
+              controls={controls}
+              assessments={assessments}
+              isAuditMode={isAuditMode}
+              onToggleAuditMode={setIsAuditMode}
+            />
+            {/* Assessment Wizard */}
+            <AssessmentWizard
+              controls={controls}
+              assessments={assessments}
+              onSave={handleSaveAssessment}
+              onComplete={() => toast.success('Avaliação guiada concluída!')}
+            />
             {/* Risk Methodology Info */}
             <RiskMethodologyInfo
               trigger={
@@ -772,9 +789,10 @@ export default function Diagnostico() {
                                   actionPlanCount={actionPlanCounts[assessmentMap.get(control.id)?.id || ''] || 0}
                                   commentCount={commentCounts[assessmentMap.get(control.id)?.id || ''] || 0}
                                   isProblematic={problematicControlIds.has(control.id)}
-                                  showSelection={true}
+                                  showSelection={!isAuditMode}
                                   isSelected={selectedControlIds.has(control.id)}
                                   onSelectionChange={(selected) => handleToggleSelection(control.id, selected)}
+                                  isReadOnly={isAuditMode}
                                 />
                               </div>
                             </div>
