@@ -310,7 +310,11 @@ export function ControlCardExpanded({
             <Separator />
 
             {/* Comments Section */}
-            <AssessmentComments assessmentId={assessment?.id} />
+            <AssessmentComments 
+              assessmentId={assessment?.id} 
+              controlCode={control.code}
+              controlName={control.name}
+            />
 
             {/* Save Button */}
             {hasChanges && (
