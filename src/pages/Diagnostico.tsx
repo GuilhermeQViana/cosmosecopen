@@ -15,6 +15,7 @@ import { CategoryDashboard } from '@/components/diagnostico/CategoryDashboard';
 import { RiskMethodologyInfo } from '@/components/shared/RiskMethodologyInfo';
 import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { GenerateAIPlansDialog } from '@/components/diagnostico/GenerateAIPlansDialog';
+import { GenerateRisksFromControls } from '@/components/diagnostico/GenerateRisksFromControls';
 import { BulkEditToolbar, BulkEditDialog } from '@/components/diagnostico/BulkEditControls';
 import { useDragAndDrop, DragHandle, DraggableControlList, ResetOrderButton } from '@/components/diagnostico/DraggableControlList';
 import { AssessmentWizard } from '@/components/diagnostico/AssessmentWizard';
@@ -595,13 +596,19 @@ export default function Diagnostico() {
             />
           </AnimatedItem>
 
-          {/* Critical Risk Alert */}
+          {/* Critical Risk Alert and Generate Risks */}
           <AnimatedItem animation="fade-up" delay={100}>
-            <CriticalRiskAlert 
-              controls={controls} 
-              assessments={assessments}
-              onFilterCritical={() => setStatusFilter('nao_conforme')}
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <CriticalRiskAlert 
+                controls={controls} 
+                assessments={assessments}
+                onFilterCritical={() => setStatusFilter('nao_conforme')}
+              />
+              <GenerateRisksFromControls
+                controls={controls}
+                assessments={assessments}
+              />
+            </div>
           </AnimatedItem>
 
           {/* Stats */}
