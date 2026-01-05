@@ -11,10 +11,6 @@ interface RemediationMetricsProps {
 }
 
 export function RemediationMetrics({ actionPlans, isLoading }: RemediationMetricsProps) {
-  if (isLoading) {
-    return <ChartSkeleton type="custom" height={200} />;
-  }
-
   const metrics = useMemo(() => {
     const now = new Date();
     
@@ -68,6 +64,10 @@ export function RemediationMetrics({ actionPlans, isLoading }: RemediationMetric
   const completionRate = metrics.total > 0 
     ? Math.round((metrics.completed / metrics.total) * 100) 
     : 0;
+
+  if (isLoading) {
+    return <ChartSkeleton type="custom" height={200} />;
+  }
 
   return (
     <Card>
