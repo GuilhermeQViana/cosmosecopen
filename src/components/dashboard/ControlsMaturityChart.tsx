@@ -40,10 +40,6 @@ const MATURITY_LABELS = [
 export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturityChartProps) {
   const navigate = useNavigate();
 
-  if (isLoading) {
-    return <ChartSkeleton type="bar" height={250} description />;
-  }
-
   const data = useMemo(() => {
     const levelCounts = [0, 0, 0, 0, 0, 0];
     
@@ -71,6 +67,10 @@ export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturi
       navigate(`/diagnostico?maturity=${level}`);
     }
   };
+
+  if (isLoading) {
+    return <ChartSkeleton type="bar" height={250} description />;
+  }
 
   if (totalAssessed === 0) {
     return (
