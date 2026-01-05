@@ -54,6 +54,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.3.8",
+    "react-grid-layout": "^1.4.4",
     "react-hook-form": "^7.61.1",
     "react-image-crop": "^11.0.10",
     "react-resizable-panels": "^2.1.9",
