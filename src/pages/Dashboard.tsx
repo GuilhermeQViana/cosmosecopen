@@ -35,6 +35,15 @@ import { PeriodFilter, Period, getPeriodDates, getPreviousPeriodDates } from '@/
 import { MetricComparison } from '@/components/dashboard/MetricComparison';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 
+// New Executive Components
+import { ExecutiveSummaryCard } from '@/components/dashboard/ExecutiveSummaryCard';
+import { SecurityPostureScore } from '@/components/dashboard/SecurityPostureScore';
+import { RiskHeatmapMatrix } from '@/components/dashboard/RiskHeatmapMatrix';
+import { RemediationMetrics } from '@/components/dashboard/RemediationMetrics';
+import { TopThreatsWidget } from '@/components/dashboard/TopThreatsWidget';
+import { ComplianceTrendChart } from '@/components/dashboard/ComplianceTrendChart';
+import { ComplianceCoverageChart } from '@/components/dashboard/ComplianceCoverageChart';
+
 export default function Dashboard() {
   const { organization } = useOrganization();
   const { currentFramework } = useFrameworkContext();
@@ -253,6 +262,17 @@ export default function Dashboard() {
         <OnboardingChecklist />
       </AnimatedItem>
 
+      {/* Executive Summary Card */}
+      <AnimatedItem animation="fade-up" delay={75}>
+        <ExecutiveSummaryCard 
+          assessments={assessments}
+          risks={risks}
+          actionPlans={actionPlans}
+          controls={controls}
+          isLoading={isChartsLoading}
+        />
+      </AnimatedItem>
+
       {/* Attention Section */}
       <AnimatedItem animation="fade-up" delay={100}>
         <AttentionSection
@@ -263,6 +283,21 @@ export default function Dashboard() {
           isLoading={isChartsLoading}
         />
       </AnimatedItem>
+
+      {/* Executive Section: Security Posture + Risk Heatmap */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <AnimatedItem animation="fade-up" delay={120}>
+          <SecurityPostureScore 
+            assessments={assessments}
+            risks={risks}
+            controls={controls}
+            isLoading={isChartsLoading}
+          />
+        </AnimatedItem>
+        <AnimatedItem animation="fade-up" delay={140}>
+          <RiskHeatmapMatrix risks={risks} isLoading={risksLoading} />
+        </AnimatedItem>
+      </div>
 
       {/* Metrics Grid */}
       <StaggeredGrid columns={4} staggerDelay={80} animation="scale-in">
@@ -312,8 +347,18 @@ export default function Dashboard() {
         ))}
       </StaggeredGrid>
 
-      {/* Charts Row 1 - Maturity History */}
+      {/* Remediation Metrics */}
+      <AnimatedItem animation="fade-up" delay={180}>
+        <RemediationMetrics actionPlans={actionPlans} isLoading={actionPlansLoading} />
+      </AnimatedItem>
+
+      {/* Charts Row 1 - Compliance Trend */}
       <AnimatedItem animation="fade-up" delay={200}>
+        <ComplianceTrendChart assessments={assessments} isLoading={assessmentsLoading} />
+      </AnimatedItem>
+
+      {/* Charts Row 1.5 - Maturity History */}
+      <AnimatedItem animation="fade-up" delay={220}>
         <MaturityHistoryChart 
           assessments={assessments} 
           frameworkName={currentFramework?.name} 
@@ -321,8 +366,8 @@ export default function Dashboard() {
         />
       </AnimatedItem>
 
-      {/* Charts Row 1.5 - Maturity Trend (Monthly) */}
-      <AnimatedItem animation="fade-up" delay={220}>
+      {/* Charts Row 2 - Maturity Trend (Monthly) */}
+      <AnimatedItem animation="fade-up" delay={240}>
         <MaturityTrendChart 
           assessments={assessments} 
           frameworkName={currentFramework?.name} 
@@ -330,16 +375,16 @@ export default function Dashboard() {
         />
       </AnimatedItem>
 
-      {/* Charts Row 2 */}
+      {/* Charts Row 3 */}
       <StaggeredGrid columns={3} staggerDelay={100} animation="fade-up">
         <ComplianceRadarChart controls={controls} assessments={assessments} isLoading={isChartsLoading} />
         <RiskDistributionChart risks={risks} isLoading={risksLoading} />
         <ActionPlanStatusChart actionPlans={actionPlans} isLoading={actionPlansLoading} />
       </StaggeredGrid>
 
-      {/* Charts Row 3 */}
+      {/* Charts Row 4 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AnimatedItem animation="fade-up" delay={250}>
+        <AnimatedItem animation="fade-up" delay={280}>
           <RiskScoreMetrics controls={controls} assessments={assessments} isLoading={isChartsLoading} />
         </AnimatedItem>
         <AnimatedItem animation="fade-up" delay={300}>
@@ -347,9 +392,19 @@ export default function Dashboard() {
         </AnimatedItem>
       </div>
 
-      {/* Charts Row 4 */}
+      {/* Charts Row 5 - Coverage + Top Threats */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <AnimatedItem animation="fade-up" delay={320}>
+          <ComplianceCoverageChart isLoading={isChartsLoading} />
+        </AnimatedItem>
+        <AnimatedItem animation="fade-up" delay={340}>
+          <TopThreatsWidget risks={risks} isLoading={risksLoading} />
+        </AnimatedItem>
+      </div>
+
+      {/* Charts Row 6 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <AnimatedItem animation="fade-up" delay={350}>
+        <AnimatedItem animation="fade-up" delay={360}>
           <NextStepsWidget
             controls={controls}
             assessments={assessments}
@@ -360,10 +415,10 @@ export default function Dashboard() {
           />
         </AnimatedItem>
         <div className="lg:col-span-2 space-y-4">
-          <AnimatedItem animation="fade-up" delay={400}>
+          <AnimatedItem animation="fade-up" delay={380}>
             <RecentActivity />
           </AnimatedItem>
-          <AnimatedItem animation="fade-up" delay={450}>
+          <AnimatedItem animation="fade-up" delay={400}>
             <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />
           </AnimatedItem>
         </div>
@@ -371,7 +426,7 @@ export default function Dashboard() {
 
       {/* Top Gaps */}
       {recentGaps.length > 0 && (
-        <AnimatedItem animation="fade-up" delay={500}>
+        <AnimatedItem animation="fade-up" delay={420}>
           <Card className="border-border/50 hover:border-primary/30 transition-all duration-300">
             <CardHeader>
               <CardTitle className="font-space">Top Gaps de Controles</CardTitle>
