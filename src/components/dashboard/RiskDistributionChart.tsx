@@ -35,10 +35,6 @@ const LEVEL_LABELS: Record<string, string> = {
 export function RiskDistributionChart({ risks, isLoading }: RiskDistributionChartProps) {
   const navigate = useNavigate();
 
-  if (isLoading) {
-    return <ChartSkeleton type="pie" height={250} />;
-  }
-
   const data = useMemo(() => {
     const counts = { critical: 0, high: 0, medium: 0, low: 0 };
 
@@ -60,6 +56,10 @@ export function RiskDistributionChart({ risks, isLoading }: RiskDistributionChar
       navigate(`/riscos?level=${data.level}`);
     }
   };
+
+  if (isLoading) {
+    return <ChartSkeleton type="pie" height={250} />;
+  }
 
   if (risks.length === 0) {
     return (

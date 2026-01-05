@@ -30,10 +30,6 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 export function ActionPlanStatusChart({ actionPlans, isLoading }: ActionPlanStatusChartProps) {
   const navigate = useNavigate();
 
-  if (isLoading) {
-    return <ChartSkeleton type="bar" height={250} />;
-  }
-
   const data = useMemo(() => {
     const counts: Record<string, number> = {
       backlog: 0,
@@ -63,6 +59,10 @@ export function ActionPlanStatusChart({ actionPlans, isLoading }: ActionPlanStat
       navigate(`/plano-acao?status=${status}`);
     }
   };
+
+  if (isLoading) {
+    return <ChartSkeleton type="bar" height={250} />;
+  }
 
   if (actionPlans.length === 0) {
     return (
