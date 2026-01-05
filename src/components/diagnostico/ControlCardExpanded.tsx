@@ -25,6 +25,7 @@ import { ControlRisksList } from './ControlRisksList';
 import { Control } from '@/hooks/useControls';
 import { Assessment } from '@/hooks/useAssessments';
 import { useDiagnosticSnapshots } from '@/hooks/useDiagnosticSnapshots';
+import { useControlTabCounts } from '@/hooks/useControlTabCounts';
 import {
   MATURITY_LEVELS,
   getControlWeightInfo,
@@ -375,6 +376,9 @@ function ExpandedContent({
   // Always call hooks unconditionally at the top level
   const { data: snapshots = [], isLoading: loadingSnapshots } = useDiagnosticSnapshots();
   
+  // Tab counts for badges
+  const tabCounts = useControlTabCounts(control.id, assessment?.id, control.code);
+  
   // Memoize the processed snapshots to avoid recalculating on every render
   const processedSnapshots = useMemo(() => 
     snapshots.map(s => ({
@@ -420,22 +424,42 @@ function ExpandedContent({
       {/* Tabbed Content */}
       <Tabs defaultValue="evidences" className="w-full">
         <TabsList className="grid w-full grid-cols-5 relative z-10">
-          <TabsTrigger value="evidences" className="text-xs cursor-pointer">
-            <ClipboardList className="w-3 h-3 mr-1" />
+          <TabsTrigger value="evidences" className="text-xs cursor-pointer gap-1">
+            <ClipboardList className="w-3 h-3" />
             Evidências
+            {tabCounts.evidences > 0 && (
+              <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-1">
+                {tabCounts.evidences}
+              </Badge>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="plans" className="text-xs cursor-pointer">
+          <TabsTrigger value="plans" className="text-xs cursor-pointer gap-1">
             Planos
+            {tabCounts.plans > 0 && (
+              <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-1">
+                {tabCounts.plans}
+              </Badge>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="risks" className="text-xs cursor-pointer">
-            <AlertTriangle className="w-3 h-3 mr-1" />
+          <TabsTrigger value="risks" className="text-xs cursor-pointer gap-1">
+            <AlertTriangle className="w-3 h-3" />
             Riscos
+            {tabCounts.risks > 0 && (
+              <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-1">
+                {tabCounts.risks}
+              </Badge>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="comments" className="text-xs cursor-pointer">
+          <TabsTrigger value="comments" className="text-xs cursor-pointer gap-1">
             Discussão
+            {tabCounts.comments > 0 && (
+              <Badge variant="secondary" className="h-4 px-1 text-[10px] ml-1">
+                {tabCounts.comments}
+              </Badge>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="history" className="text-xs cursor-pointer">
-            <History className="w-3 h-3 mr-1" />
+          <TabsTrigger value="history" className="text-xs cursor-pointer gap-1">
+            <History className="w-3 h-3" />
             Evolução
           </TabsTrigger>
         </TabsList>
