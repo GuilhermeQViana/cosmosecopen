@@ -21,10 +21,6 @@ export function SecurityPostureScore({
   previousScore,
   isLoading 
 }: SecurityPostureScoreProps) {
-  if (isLoading) {
-    return <ChartSkeleton type="custom" height={280} />;
-  }
-
   const { score, breakdown, status, statusColor } = useMemo(() => {
     // Calculate compliance score (40% weight)
     const conformeCount = assessments.filter(a => a.status === 'conforme').length;
@@ -92,6 +88,10 @@ export function SecurityPostureScore({
   // Calculate stroke dasharray for circular progress
   const circumference = 2 * Math.PI * 80;
   const strokeDashoffset = circumference - (score / 100) * circumference;
+
+  if (isLoading) {
+    return <ChartSkeleton type="custom" height={280} />;
+  }
 
   return (
     <Card className="relative overflow-hidden">
