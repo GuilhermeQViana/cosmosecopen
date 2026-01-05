@@ -9,7 +9,7 @@ import { useActionPlans } from '@/hooks/useActionPlans';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { StaggeredGrid, AnimatedItem } from '@/components/ui/staggered-list';
+import { AnimatedItem } from '@/components/ui/staggered-list';
 import {
   Shield,
   AlertTriangle,
@@ -34,6 +34,7 @@ import { NextStepsWidget } from '@/components/dashboard/NextStepsWidget';
 import { PeriodFilter, Period, getPeriodDates, getPreviousPeriodDates } from '@/components/dashboard/PeriodFilter';
 import { MetricComparison } from '@/components/dashboard/MetricComparison';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
+import { ResizableDashboardGrid, DashboardWidget } from '@/components/dashboard/ResizableDashboardGrid';
 
 // New Executive Components
 import { ExecutiveSummaryCard } from '@/components/dashboard/ExecutiveSummaryCard';
@@ -227,6 +228,122 @@ export default function Dashboard() {
     });
   }, [assessments, controls, currentFramework]);
 
+  // Define dashboard widgets for resizable grid
+  const dashboardWidgets: DashboardWidget[] = useMemo(() => [
+    {
+      id: 'security-posture',
+      component: (
+        <SecurityPostureScore 
+          assessments={assessments}
+          risks={risks}
+          controls={controls}
+          isLoading={isChartsLoading}
+        />
+      ),
+      defaultW: 6,
+      defaultH: 4,
+      minW: 4,
+      minH: 3,
+    },
+    {
+      id: 'risk-heatmap',
+      component: <RiskHeatmapMatrix risks={risks} isLoading={risksLoading} />,
+      defaultW: 6,
+      defaultH: 4,
+      minW: 4,
+      minH: 3,
+    },
+    {
+      id: 'compliance-radar',
+      component: <ComplianceRadarChart controls={controls} assessments={assessments} isLoading={isChartsLoading} />,
+      defaultW: 4,
+      defaultH: 4,
+      minW: 3,
+      minH: 3,
+    },
+    {
+      id: 'risk-distribution',
+      component: <RiskDistributionChart risks={risks} isLoading={risksLoading} />,
+      defaultW: 4,
+      defaultH: 4,
+      minW: 3,
+      minH: 3,
+    },
+    {
+      id: 'action-plan-status',
+      component: <ActionPlanStatusChart actionPlans={actionPlans} isLoading={actionPlansLoading} />,
+      defaultW: 4,
+      defaultH: 4,
+      minW: 3,
+      minH: 3,
+    },
+    {
+      id: 'risk-score-metrics',
+      component: <RiskScoreMetrics controls={controls} assessments={assessments} isLoading={isChartsLoading} />,
+      defaultW: 6,
+      defaultH: 4,
+      minW: 4,
+      minH: 3,
+    },
+    {
+      id: 'controls-maturity',
+      component: <ControlsMaturityChart assessments={assessments} isLoading={assessmentsLoading} />,
+      defaultW: 6,
+      defaultH: 4,
+      minW: 4,
+      minH: 3,
+    },
+    {
+      id: 'compliance-coverage',
+      component: <ComplianceCoverageChart isLoading={isChartsLoading} />,
+      defaultW: 6,
+      defaultH: 4,
+      minW: 4,
+      minH: 3,
+    },
+    {
+      id: 'top-threats',
+      component: <TopThreatsWidget risks={risks} isLoading={risksLoading} />,
+      defaultW: 6,
+      defaultH: 4,
+      minW: 4,
+      minH: 3,
+    },
+    {
+      id: 'next-steps',
+      component: (
+        <NextStepsWidget
+          controls={controls}
+          assessments={assessments}
+          risks={risks}
+          actionPlans={actionPlans}
+          evidences={evidences}
+          isLoading={isChartsLoading}
+        />
+      ),
+      defaultW: 4,
+      defaultH: 4,
+      minW: 3,
+      minH: 3,
+    },
+    {
+      id: 'recent-activity',
+      component: <RecentActivity />,
+      defaultW: 4,
+      defaultH: 4,
+      minW: 3,
+      minH: 3,
+    },
+    {
+      id: 'upcoming-deadlines',
+      component: <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />,
+      defaultW: 4,
+      defaultH: 4,
+      minW: 3,
+      minH: 3,
+    },
+  ], [controls, assessments, risks, actionPlans, evidences, isChartsLoading, risksLoading, assessmentsLoading, actionPlansLoading]);
+
   return (
     <div className="space-y-6 relative">
       {/* Subtle cosmic background effects */}
@@ -284,81 +401,70 @@ export default function Dashboard() {
         />
       </AnimatedItem>
 
-      {/* Executive Section: Security Posture + Risk Heatmap */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AnimatedItem animation="fade-up" delay={120}>
-          <SecurityPostureScore 
-            assessments={assessments}
-            risks={risks}
-            controls={controls}
-            isLoading={isChartsLoading}
-          />
-        </AnimatedItem>
-        <AnimatedItem animation="fade-up" delay={140}>
-          <RiskHeatmapMatrix risks={risks} isLoading={risksLoading} />
-        </AnimatedItem>
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {metrics.map((metric) => (
+          <AnimatedItem key={metric.title} animation="scale-in" delay={120}>
+            <Card className="card-metric group hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {metric.title}
+                </CardTitle>
+                <div className={`p-2 rounded-lg ${metric.bgColor} group-hover:scale-110 transition-transform`}>
+                  <metric.icon className={`w-4 h-4 ${metric.color}`} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold font-space">{metric.value}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
+                {metric.previousValue > 0 && (
+                  <div className="mt-2">
+                    <MetricComparison
+                      current={metric.numericValue}
+                      previous={metric.previousValue}
+                      higherIsBetter={metric.higherIsBetter}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </AnimatedItem>
+        ))}
       </div>
 
-      {/* Metrics Grid */}
-      <StaggeredGrid columns={4} staggerDelay={80} animation="scale-in">
-        {metrics.map((metric) => (
-          <Card key={metric.title} className="card-metric group hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {metric.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${metric.bgColor} group-hover:scale-110 transition-transform`}>
-                <metric.icon className={`w-4 h-4 ${metric.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold font-space">{metric.value}</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
-              {metric.previousValue > 0 && (
-                <div className="mt-2">
-                  <MetricComparison
-                    current={metric.numericValue}
-                    previous={metric.previousValue}
-                    higherIsBetter={metric.higherIsBetter}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </StaggeredGrid>
-
       {/* KPIs */}
-      <StaggeredGrid columns={4} staggerDelay={60} animation="fade-up">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
-          <Card key={kpi.label} className="p-4 group hover:border-primary/30 transition-all duration-300">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">{kpi.label}</span>
-              <Target className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            </div>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-2xl font-bold font-space">{kpi.value}</span>
-              <span className="text-sm text-muted-foreground">/ {kpi.total}</span>
-            </div>
-            <Progress value={kpi.percent} className="h-1.5" />
-          </Card>
+          <AnimatedItem key={kpi.label} animation="fade-up" delay={140}>
+            <Card className="p-4 group hover:border-primary/30 transition-all duration-300">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">{kpi.label}</span>
+                <Target className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-2xl font-bold font-space">{kpi.value}</span>
+                <span className="text-sm text-muted-foreground">/ {kpi.total}</span>
+              </div>
+              <Progress value={kpi.percent} className="h-1.5" />
+            </Card>
+          </AnimatedItem>
         ))}
-      </StaggeredGrid>
+      </div>
 
       {/* Remediation Metrics */}
-      <AnimatedItem animation="fade-up" delay={180}>
+      <AnimatedItem animation="fade-up" delay={160}>
         <RemediationMetrics actionPlans={actionPlans} isLoading={actionPlansLoading} />
       </AnimatedItem>
 
-      {/* Charts Row 1 - Compliance Trend */}
-      <AnimatedItem animation="fade-up" delay={200}>
+      {/* Compliance Trend Chart */}
+      <AnimatedItem animation="fade-up" delay={180}>
         <ComplianceTrendChart assessments={assessments} isLoading={assessmentsLoading} />
       </AnimatedItem>
 
-      {/* Charts Row 1.5 - Maturity History */}
-      <AnimatedItem animation="fade-up" delay={220}>
+      {/* Maturity History Chart */}
+      <AnimatedItem animation="fade-up" delay={200}>
         <MaturityHistoryChart 
           assessments={assessments} 
           frameworkName={currentFramework?.name} 
@@ -366,8 +472,8 @@ export default function Dashboard() {
         />
       </AnimatedItem>
 
-      {/* Charts Row 2 - Maturity Trend (Monthly) */}
-      <AnimatedItem animation="fade-up" delay={240}>
+      {/* Maturity Trend Chart */}
+      <AnimatedItem animation="fade-up" delay={220}>
         <MaturityTrendChart 
           assessments={assessments} 
           frameworkName={currentFramework?.name} 
@@ -375,58 +481,25 @@ export default function Dashboard() {
         />
       </AnimatedItem>
 
-      {/* Charts Row 3 */}
-      <StaggeredGrid columns={3} staggerDelay={100} animation="fade-up">
-        <ComplianceRadarChart controls={controls} assessments={assessments} isLoading={isChartsLoading} />
-        <RiskDistributionChart risks={risks} isLoading={risksLoading} />
-        <ActionPlanStatusChart actionPlans={actionPlans} isLoading={actionPlansLoading} />
-      </StaggeredGrid>
-
-      {/* Charts Row 4 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AnimatedItem animation="fade-up" delay={280}>
-          <RiskScoreMetrics controls={controls} assessments={assessments} isLoading={isChartsLoading} />
-        </AnimatedItem>
-        <AnimatedItem animation="fade-up" delay={300}>
-          <ControlsMaturityChart assessments={assessments} isLoading={assessmentsLoading} />
-        </AnimatedItem>
-      </div>
-
-      {/* Charts Row 5 - Coverage + Top Threats */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AnimatedItem animation="fade-up" delay={320}>
-          <ComplianceCoverageChart isLoading={isChartsLoading} />
-        </AnimatedItem>
-        <AnimatedItem animation="fade-up" delay={340}>
-          <TopThreatsWidget risks={risks} isLoading={risksLoading} />
-        </AnimatedItem>
-      </div>
-
-      {/* Charts Row 6 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <AnimatedItem animation="fade-up" delay={360}>
-          <NextStepsWidget
-            controls={controls}
-            assessments={assessments}
-            risks={risks}
-            actionPlans={actionPlans}
-            evidences={evidences}
-            isLoading={isChartsLoading}
-          />
-        </AnimatedItem>
-        <div className="lg:col-span-2 space-y-4">
-          <AnimatedItem animation="fade-up" delay={380}>
-            <RecentActivity />
-          </AnimatedItem>
-          <AnimatedItem animation="fade-up" delay={400}>
-            <UpcomingDeadlines actionPlans={actionPlans} isLoading={actionPlansLoading} />
-          </AnimatedItem>
+      {/* Resizable Dashboard Grid */}
+      <AnimatedItem animation="fade-up" delay={240}>
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold text-foreground">Indicadores Personalizáveis</h2>
+          <p className="text-sm text-muted-foreground">
+            Clique em "Editar Layout" para reorganizar e redimensionar os indicadores
+          </p>
         </div>
-      </div>
+        <ResizableDashboardGrid 
+          widgets={dashboardWidgets}
+          columns={12}
+          rowHeight={80}
+          storageKey="executive-dashboard"
+        />
+      </AnimatedItem>
 
       {/* Top Gaps */}
       {recentGaps.length > 0 && (
-        <AnimatedItem animation="fade-up" delay={420}>
+        <AnimatedItem animation="fade-up" delay={260}>
           <Card className="border-border/50 hover:border-primary/30 transition-all duration-300">
             <CardHeader>
               <CardTitle className="font-space">Top Gaps de Controles</CardTitle>
