@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ChartSkeletonProps {
-  type?: 'bar' | 'pie' | 'radar' | 'area' | 'list';
+  type?: 'bar' | 'pie' | 'radar' | 'area' | 'list' | 'custom';
   height?: number;
   title?: boolean;
   description?: boolean;
@@ -52,6 +52,11 @@ export function ChartSkeleton({
               <Skeleton className="w-full h-12 rounded-lg" />
               <Skeleton className="w-full h-12 rounded-lg" />
               <Skeleton className="w-full h-12 rounded-lg" />
+            </div>
+          )}
+          {type === 'custom' && (
+            <div className="w-full h-full flex items-center justify-center">
+              <Skeleton className="w-32 h-32 rounded-full" />
             </div>
           )}
         </div>

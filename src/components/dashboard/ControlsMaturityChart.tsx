@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartSkeleton } from './ChartSkeleton';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Assessment } from '@/hooks/useAssessments';
 
 interface ControlsMaturityChartProps {
@@ -27,10 +28,22 @@ const MATURITY_COLORS = [
   'hsl(var(--maturity-5))',
 ];
 
+const MATURITY_LABELS = [
+  'Inexistente',
+  'Inicial',
+  'Repetível',
+  'Definido',
+  'Gerenciado',
+  'Otimizado',
+];
+
 export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturityChartProps) {
+  const navigate = useNavigate();
+
   if (isLoading) {
     return <ChartSkeleton type="bar" height={250} description />;
   }
+
   const data = useMemo(() => {
     const levelCounts = [0, 0, 0, 0, 0, 0];
     
@@ -43,12 +56,21 @@ export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturi
 
     return levelCounts.map((count, index) => ({
       level: `Nível ${index}`,
+      fullLabel: `${index} - ${MATURITY_LABELS[index]}`,
       count,
       fill: MATURITY_COLORS[index],
+      maturityLevel: index.toString(),
     }));
   }, [assessments]);
 
   const totalAssessed = assessments.length;
+
+  const handleClick = (data: any) => {
+    if (data?.activePayload?.[0]?.payload?.maturityLevel !== undefined) {
+      const level = data.activePayload[0].payload.maturityLevel;
+      navigate(`/diagnostico?maturity=${level}`);
+    }
+  };
 
   if (totalAssessed === 0) {
     return (
@@ -67,6 +89,24 @@ export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturi
     );
   }
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const item = payload[0]?.payload;
+    const percentage = totalAssessed > 0 ? Math.round((item.count / totalAssessed) * 100) : 0;
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-3 h-3 rounded" style={{ backgroundColor: item.fill }} />
+          <span className="font-medium">{item.fullLabel}</span>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {item.count} controles ({percentage}%)
+        </div>
+        <p className="text-xs text-primary mt-2">Clique para filtrar</p>
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -75,7 +115,7 @@ export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturi
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={data}>
+          <BarChart data={data} onClick={handleClick} style={{ cursor: 'pointer' }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis
               dataKey="level"
@@ -86,17 +126,14 @@ export function ControlsMaturityChart({ assessments, isLoading }: ControlsMaturi
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px',
-              }}
-              formatter={(value: number) => [`${value} controles`, 'Quantidade']}
-            />
+            <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="count" radius={[4, 4, 0, 0]}>
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.fill}
+                  className="transition-all duration-200 hover:opacity-80"
+                />
               ))}
             </Bar>
           </BarChart>
