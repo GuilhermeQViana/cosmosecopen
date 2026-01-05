@@ -34,10 +34,6 @@ function maturityToPercent(level: string): number {
 export function ComplianceRadarChart({ controls, assessments, isLoading }: ComplianceRadarChartProps) {
   const navigate = useNavigate();
 
-  if (isLoading) {
-    return <ChartSkeleton type="radar" height={300} />;
-  }
-
   const data = useMemo(() => {
     // Group controls by category
     const categoryMap = new Map<string, { controlIds: Set<string>; fullName: string }>();
@@ -79,6 +75,10 @@ export function ComplianceRadarChart({ controls, assessments, isLoading }: Compl
       navigate(`/diagnostico?category=${encodeURIComponent(category)}`);
     }
   };
+
+  if (isLoading) {
+    return <ChartSkeleton type="radar" height={300} />;
+  }
 
   if (data.length === 0) {
     return (
