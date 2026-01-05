@@ -17,7 +17,7 @@ import { CriticalRiskAlert } from '@/components/diagnostico/CriticalRiskAlert';
 import { GenerateAIPlansDialog } from '@/components/diagnostico/GenerateAIPlansDialog';
 import { GenerateRisksFromControls } from '@/components/diagnostico/GenerateRisksFromControls';
 import { BulkEditToolbar, BulkEditDialog } from '@/components/diagnostico/BulkEditControls';
-import { useDragAndDrop, DragHandle, DraggableControlList, ResetOrderButton } from '@/components/diagnostico/DraggableControlList';
+import { useDragAndDrop, DragHandle, useDraggableControlList, ResetOrderButton } from '@/components/diagnostico/DraggableControlList';
 import { AssessmentWizard } from '@/components/diagnostico/AssessmentWizard';
 import { AuditModeToggle } from '@/components/diagnostico/AuditModeToggle';
 import { useNonConformingControls } from '@/hooks/useGenerateActionPlans';
@@ -191,6 +191,15 @@ export default function Diagnostico() {
     sortedControls.map(c => c.id),
     'diagnostic-control-order'
   );
+
+  // Initialize drag handlers for all controls (must be called at top level, not inside map)
+  const orderedControlIdsForDrag = getOrderedIds(sortedControls.map(c => c.id));
+  const dragHandlers = useDraggableControlList({
+    controlIds: orderedControlIdsForDrag,
+    onReorder: handleReorder,
+    onReset: handleResetOrder,
+    hasCustomOrder,
+  });
 
   // Get category data with risk scores for dashboard
   const getCategoryControlData = useCallback((categoryControls: typeof controls) => {
@@ -778,12 +787,7 @@ export default function Diagnostico() {
                             <div key={control.id} id={`control-${control.id}`} className="flex gap-2">
                               <DragHandle
                                 controlId={control.id}
-                                dragHandlers={DraggableControlList({
-                                  controlIds: orderedControlIds,
-                                  onReorder: handleReorder,
-                                  onReset: handleResetOrder,
-                                  hasCustomOrder,
-                                })}
+                                dragHandlers={dragHandlers}
                                 className="mt-4"
                               />
                               <div className="flex-1">

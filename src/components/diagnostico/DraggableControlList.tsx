@@ -10,7 +10,7 @@ interface DraggableControlListProps {
   hasCustomOrder: boolean;
 }
 
-export function DraggableControlList({
+export function useDraggableControlList({
   controlIds,
   onReorder,
   onReset,
@@ -78,7 +78,7 @@ export function DraggableControlList({
 
 interface DragHandleProps {
   controlId: string;
-  dragHandlers: ReturnType<typeof DraggableControlList>;
+  dragHandlers: ReturnType<typeof useDraggableControlList>;
   className?: string;
 }
 
