@@ -1,19 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { 
+  authenticate, 
+  handleCors, 
+  isAuthError, 
+  errorResponse, 
+  jsonResponse 
+} from "../_shared/auth.ts";
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
+    // Authenticate user
+    const auth = await authenticate(req);
+    if (isAuthError(auth)) return auth;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      return errorResponse("LOVABLE_API_KEY is not configured", 500);
     }
 
     const { controlCode, controlName, controlDescription, currentMaturity, targetMaturity, weight } = await req.json();
@@ -122,16 +128,10 @@ Gere um guia estruturado com:
       console.error("[Implementation Guide] AI error:", response.status, errorText);
       
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return errorResponse("Limite de requisições excedido. Tente novamente em alguns segundos.", 429);
       }
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos de IA insuficientes. Adicione créditos ao workspace." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return errorResponse("Créditos de IA insuficientes. Adicione créditos ao workspace.", 402);
       }
       
       throw new Error(`AI gateway error: ${response.status}`);
@@ -149,16 +149,10 @@ Gere um guia estruturado com:
     const guide = JSON.parse(toolCall.function.arguments);
     console.log("[Implementation Guide] Guide generated successfully");
 
-    return new Response(
-      JSON.stringify({ guide }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  } catch (error: unknown) {
+    return jsonResponse({ guide });
+  } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Erro ao gerar guia";
     console.error("[Implementation Guide] Error:", errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return errorResponse(errorMessage, 500);
   }
 });

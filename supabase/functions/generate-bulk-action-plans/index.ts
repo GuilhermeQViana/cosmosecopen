@@ -1,9 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { 
+  authenticate, 
+  handleCors, 
+  isAuthError, 
+  errorResponse, 
+  jsonResponse 
+} from "../_shared/auth.ts";
 
 interface ControlInput {
   controlId: string;
@@ -206,28 +208,25 @@ async function processInBatches(
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
+    // Authenticate user
+    const auth = await authenticate(req);
+    if (isAuthError(auth)) return auth;
+
     const { controls, framework } = await req.json() as GenerateBulkRequest;
 
     if (!controls || !Array.isArray(controls) || controls.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Nenhum controle fornecido' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse('Nenhum controle fornecido', 400);
     }
 
     const apiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!apiKey) {
       console.error('LOVABLE_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'Configuração de API incompleta' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse('Configuração de API incompleta', 500);
     }
 
     console.log(`Starting bulk generation for ${controls.length} controls (framework: ${framework})`);
@@ -236,15 +235,10 @@ serve(async (req) => {
 
     console.log(`Bulk generation complete: ${result.success.length} success, ${result.failed.length} failed`);
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse(result);
   } catch (error) {
     console.error('Error in generate-bulk-action-plans:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(errorMessage, 500);
   }
 });

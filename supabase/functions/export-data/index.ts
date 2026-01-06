@@ -1,57 +1,31 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { 
+  authenticate, 
+  handleCors, 
+  isAuthError, 
+  errorResponse, 
+  jsonResponse,
+  getUserOrganization,
+  corsHeaders
+} from "../_shared/auth.ts";
 
 serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
-    // Verify user
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Authenticate user
+    const auth = await authenticate(req);
+    if (isAuthError(auth)) return auth;
     
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { user, supabase } = auth;
 
     // Get user's organization
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("organization_id")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile?.organization_id) {
-      return new Response(JSON.stringify({ error: "No organization found" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const organizationId = await getUserOrganization(supabase, user.id);
+    if (!organizationId) {
+      return errorResponse("No organization found", 400);
     }
-
-    const organizationId = profile.organization_id;
 
     // Get request body
     const { format = "json" } = await req.json();
@@ -128,21 +102,21 @@ serve(async (req) => {
       // Risks CSV
       if (risks && risks.length > 0) {
         const riskHeaders = ["code", "title", "description", "category", "treatment", "inherent_probability", "inherent_impact", "residual_probability", "residual_impact", "created_at"];
-        const riskRows = risks.map(r => riskHeaders.map(h => `"${(r as any)[h] || ''}"`).join(","));
+        const riskRows = risks.map(r => riskHeaders.map(h => `"${(r as Record<string, unknown>)[h] || ''}"`).join(","));
         csvSections.push(`=== RISCOS ===\n${riskHeaders.join(",")}\n${riskRows.join("\n")}`);
       }
 
       // Action Plans CSV
       if (actionPlans && actionPlans.length > 0) {
         const planHeaders = ["title", "description", "status", "priority", "due_date", "created_at"];
-        const planRows = actionPlans.map(p => planHeaders.map(h => `"${(p as any)[h] || ''}"`).join(","));
+        const planRows = actionPlans.map(p => planHeaders.map(h => `"${(p as Record<string, unknown>)[h] || ''}"`).join(","));
         csvSections.push(`=== PLANOS DE AÇÃO ===\n${planHeaders.join(",")}\n${planRows.join("\n")}`);
       }
 
       // Evidences CSV
       if (evidences && evidences.length > 0) {
         const evHeaders = ["name", "description", "classification", "file_type", "file_size", "created_at"];
-        const evRows = evidences.map(e => evHeaders.map(h => `"${(e as any)[h] || ''}"`).join(","));
+        const evRows = evidences.map(e => evHeaders.map(h => `"${(e as Record<string, unknown>)[h] || ''}"`).join(","));
         csvSections.push(`=== EVIDÊNCIAS ===\n${evHeaders.join(",")}\n${evRows.join("\n")}`);
       }
 
@@ -166,11 +140,9 @@ serve(async (req) => {
       },
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error exporting data:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return errorResponse(errorMessage, 500);
   }
 });
