@@ -53,6 +53,7 @@ import {
   Building,
   ArrowLeftRight,
   HelpCircle,
+  MessageSquare,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
@@ -363,6 +364,18 @@ export function AppSidebar() {
                     <HelpCircle className="w-4 h-4" />
                     <span>Ajuda</span>
                   </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === '/feedbacks'}
+                  tooltip="Feedbacks"
+                >
+                  <RouterNavLink to="/feedbacks">
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Feedbacks</span>
+                  </RouterNavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

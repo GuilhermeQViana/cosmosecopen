@@ -616,6 +616,47 @@ export type Database = {
           },
         ]
       }
+      feedbacks: {
+        Row: {
+          created_at: string | null
+          id: string
+          liked: string | null
+          module: string
+          organization_id: string | null
+          rating: number | null
+          suggestions: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          liked?: string | null
+          module: string
+          organization_id?: string | null
+          rating?: number | null
+          suggestions?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          liked?: string | null
+          module?: string
+          organization_id?: string | null
+          rating?: number | null
+          suggestions?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedbacks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       framework_mappings: {
         Row: {
           created_at: string
@@ -1036,6 +1077,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      super_admins: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -1533,6 +1592,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: { check_user_id: string }; Returns: boolean }
       leave_organization: { Args: { _org_id: string }; Returns: boolean }
       log_access_event: {
         Args: {
