@@ -1,10 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, CreditCard, Lock, Shield, Sparkles } from 'lucide-react';
+import { Check, CreditCard, Lock, Shield, Sparkles, LogOut, Loader2 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useAuth } from '@/contexts/AuthContext';
 import { StarField } from '@/components/ui/star-field';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const features = [
   'Todos os frameworks disponíveis',
@@ -20,7 +23,18 @@ const features = [
 ];
 
 export function SubscriptionRequired() {
-  const { createCheckout } = useSubscription();
+  const { createCheckout, isCheckoutLoading, trialEndsAt } = useSubscription();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const formattedTrialEnd = trialEndsAt 
+    ? format(new Date(trialEndsAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+    : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
@@ -49,6 +63,9 @@ export function SubscriptionRequired() {
             Seu período de teste expirou
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
+            {formattedTrialEnd 
+              ? `Seu trial expirou em ${formattedTrialEnd}. `
+              : ''}
             Para continuar usando a plataforma e manter sua organização em conformidade, 
             assine o plano completo.
           </p>
@@ -86,10 +103,20 @@ export function SubscriptionRequired() {
               variant="cosmic"
               className="w-full text-base gap-2"
               onClick={createCheckout}
+              disabled={isCheckoutLoading}
             >
-              <CreditCard className="w-5 h-5" />
-              Assinar Agora
-              <Sparkles className="w-4 h-4" />
+              {isCheckoutLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Redirecionando...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5" />
+                  Assinar Agora
+                  <Sparkles className="w-4 h-4" />
+                </>
+              )}
             </Button>
             <p className="text-xs text-center text-muted-foreground">
               Cancele a qualquer momento. Sem taxa de cancelamento.
@@ -97,13 +124,22 @@ export function SubscriptionRequired() {
           </CardFooter>
         </Card>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 flex flex-col items-center gap-3">
           <Link 
             to="/configuracoes" 
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             Acessar configurações da conta
           </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair da conta
+          </Button>
         </div>
       </div>
     </div>

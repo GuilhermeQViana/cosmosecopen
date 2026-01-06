@@ -89,7 +89,8 @@ export function useSubscription() {
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        // Redirect in same tab for better UX
+        window.location.href = data.url;
       }
     } catch (error) {
       console.error('Error creating checkout:', error);
