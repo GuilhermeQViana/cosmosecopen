@@ -1,10 +1,12 @@
-import { Clock, CreditCard, Sparkles, Crown } from 'lucide-react';
+import { Clock, CreditCard, Sparkles, Crown, CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSubscription';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function TrialBanner() {
-  const { isTrialing, daysRemaining, subscriptionStatus, createCheckout, isLoading, openCustomerPortal } = useSubscription();
+  const { isTrialing, daysRemaining, daysUntilRenewal, subscriptionStatus, subscriptionEndsAt, createCheckout, isLoading, openCustomerPortal } = useSubscription();
 
   if (isLoading) {
     return null;
@@ -12,8 +14,17 @@ export function TrialBanner() {
 
   // Show Pro banner for active subscribers
   if (subscriptionStatus === 'active') {
+    const isRenewalSoon = daysUntilRenewal !== null && daysUntilRenewal <= 3;
+    const formattedDate = subscriptionEndsAt 
+      ? format(new Date(subscriptionEndsAt), "dd 'de' MMM", { locale: ptBR })
+      : null;
+
     return (
-      <div className="flex items-center justify-between gap-4 px-4 py-2 border-b bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border-amber-500/30">
+      <div className={`flex items-center justify-between gap-4 px-4 py-2 border-b ${
+        isRenewalSoon 
+          ? 'bg-amber-500/20 border-amber-500/40' 
+          : 'bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border-amber-500/30'
+      }`}>
         <div className="flex items-center gap-3">
           <Badge 
             variant="outline" 
@@ -23,7 +34,22 @@ export function TrialBanner() {
             Pro
           </Badge>
           <span className="text-sm text-muted-foreground">
-            Você é um assinante Pro! Aproveite todos os recursos.
+            {isRenewalSoon ? (
+              <>
+                <CalendarClock className="w-3.5 h-3.5 inline mr-1 text-amber-600 dark:text-amber-400" />
+                <span className="text-amber-600 dark:text-amber-400 font-medium">
+                  Renovação em {daysUntilRenewal} {daysUntilRenewal === 1 ? 'dia' : 'dias'}
+                </span>
+                {formattedDate && <span className="text-muted-foreground"> ({formattedDate})</span>}
+              </>
+            ) : daysUntilRenewal !== null ? (
+              <>
+                Assinatura ativa • Renova em {daysUntilRenewal} dias
+                {formattedDate && <span className="text-muted-foreground/70"> ({formattedDate})</span>}
+              </>
+            ) : (
+              'Assinatura ativa'
+            )}
           </span>
         </div>
         <Button

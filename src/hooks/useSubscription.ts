@@ -9,6 +9,7 @@ interface SubscriptionState {
   subscriptionStatus: 'trialing' | 'active' | 'expired' | 'canceled';
   isTrialing: boolean;
   daysRemaining: number | null;
+  daysUntilRenewal: number | null;
   trialEndsAt: string | null;
   subscriptionEndsAt: string | null;
   isLoading: boolean;
@@ -24,6 +25,7 @@ export function useSubscription() {
     subscriptionStatus: 'trialing',
     isTrialing: true,
     daysRemaining: 7,
+    daysUntilRenewal: null,
     trialEndsAt: null,
     subscriptionEndsAt: null,
     isLoading: true,
@@ -56,11 +58,19 @@ export function useSubscription() {
         .eq('read', false)
         .limit(1);
 
+      // Calculate days until renewal for active subscriptions
+      let daysUntilRenewal: number | null = null;
+      if (data.subscription_status === 'active' && data.subscription_ends_at) {
+        const subscriptionEndsAtDate = new Date(data.subscription_ends_at);
+        daysUntilRenewal = Math.ceil((subscriptionEndsAtDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      }
+
       setState({
         hasAccess: data.has_access,
         subscriptionStatus: data.subscription_status,
         isTrialing: data.is_trialing,
         daysRemaining: data.days_remaining,
+        daysUntilRenewal,
         trialEndsAt: data.trial_ends_at,
         subscriptionEndsAt: data.subscription_ends_at,
         isLoading: false,
