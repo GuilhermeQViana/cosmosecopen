@@ -79,6 +79,9 @@ export default function SelecionarOrganizacao() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingOrg, setDeletingOrg] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  
+  // Logout confirmation state
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const handleSelectOrganization = async (orgId: string) => {
     setSelecting(orgId);
@@ -463,10 +466,7 @@ export default function SelecionarOrganizacao() {
         <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
           <Button 
             variant="ghost" 
-            onClick={async () => {
-              await signOut();
-              navigate('/');
-            }} 
+            onClick={() => setLogoutDialogOpen(true)} 
             className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 transition-colors"
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -474,6 +474,33 @@ export default function SelecionarOrganizacao() {
           </Button>
         </div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <AlertDialogContent className="bg-card/95 backdrop-blur-xl border-border/50">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-destructive" />
+              Sair da conta
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja sair da sua conta? Você precisará fazer login novamente para acessar suas organizações.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                await signOut();
+                navigate('/');
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
