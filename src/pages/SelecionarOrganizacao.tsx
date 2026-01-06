@@ -463,7 +463,10 @@ export default function SelecionarOrganizacao() {
         <div className="flex justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
           <Button 
             variant="ghost" 
-            onClick={() => signOut()} 
+            onClick={async () => {
+              await signOut();
+              navigate('/');
+            }} 
             className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 transition-colors"
           >
             <LogOut className="w-4 h-4 mr-2" />
