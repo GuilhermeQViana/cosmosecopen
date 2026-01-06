@@ -31,15 +31,36 @@ serve(async (req) => {
     logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) {
+      // Return 401 for missing auth - not an error
+      return new Response(JSON.stringify({ 
+        error: "No authorization header provided",
+        has_access: false,
+        subscription_status: 'expired',
+        is_trialing: false,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError || !userData.user?.email) {
+      // Return 401 for invalid auth - not an error
+      return new Response(JSON.stringify({ 
+        error: userError?.message || "User not authenticated",
+        has_access: false,
+        subscription_status: 'expired',
+        is_trialing: false,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     // Get organization_id from request body
