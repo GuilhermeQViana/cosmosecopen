@@ -31,6 +31,7 @@ import FornecedoresDashboard from "@/pages/FornecedoresDashboard";
 import VendorRequisitos from "@/pages/VendorRequisitos";
 import VendorAgenda from "@/pages/VendorAgenda";
 import Documentacao from "@/pages/Documentacao";
+import Feedbacks from "@/pages/Feedbacks";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const App = () => (
                     <Route path="/equipe" element={<Equipe />} />
                     <Route path="/auditoria" element={<Auditoria />} />
                     <Route path="/configuracoes" element={<Configuracoes />} />
+                    <Route path="/feedbacks" element={<Feedbacks />} />
                   </Route>
 
                   {/* Módulo Fornecedores (VRM) */}
