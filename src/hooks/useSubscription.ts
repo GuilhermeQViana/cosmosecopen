@@ -41,11 +41,20 @@ export function useSubscription() {
 
     try {
       const { data: session } = await supabase.auth.getSession();
-      if (!session.session) return;
+      if (!session.session) {
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
 
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         body: { organization_id: organization.id },
       });
+
+      // Handle 401 gracefully - user not authenticated
+      if (error && error.message?.includes('401')) {
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
 
       if (error) throw error;
 
