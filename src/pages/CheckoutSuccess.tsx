@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Confetti from 'react-confetti';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Rocket, Shield, Sparkles, ArrowRight } from 'lucide-react';
+import { Check, Rocket, Shield, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
 import { StarField } from '@/components/ui/star-field';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -20,8 +20,10 @@ const benefits = [
 export default function CheckoutSuccess() {
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [showConfetti, setShowConfetti] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const { organization } = useOrganization();
-  const { checkSubscription } = useSubscription();
+  const { checkSubscription, hasAccess, subscriptionStatus } = useSubscription();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -33,15 +35,32 @@ export default function CheckoutSuccess() {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Refresh subscription status after successful checkout
+  // Refresh subscription status after successful checkout with retry logic
+  const verifySubscription = useCallback(async () => {
+    // Wait for webhook to process
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await checkSubscription();
+    
+    // Check if subscription is now active
+    if (subscriptionStatus === 'active') {
+      setIsVerifying(false);
+    } else if (retryCount < 5) {
+      // Retry up to 5 times (10 seconds total)
+      setRetryCount(prev => prev + 1);
+    } else {
+      // Stop verifying after max retries
+      setIsVerifying(false);
+    }
+  }, [checkSubscription, subscriptionStatus, retryCount]);
+
   useEffect(() => {
-    const refreshSubscription = async () => {
-      // Small delay to allow webhook to process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      await checkSubscription();
-    };
-    refreshSubscription();
-  }, [checkSubscription]);
+    verifySubscription();
+  }, [retryCount]); // Re-run when retryCount changes
+
+  // Initial verification
+  useEffect(() => {
+    verifySubscription();
+  }, []);
 
   // Stop confetti after 8 seconds
   useEffect(() => {
@@ -81,12 +100,16 @@ export default function CheckoutSuccess() {
       <div className="relative z-10 w-full max-w-2xl mx-auto px-4 py-8">
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-success to-success/70 mb-6 shadow-glow-md animate-scale-in">
-            <Check className="w-10 h-10 text-success-foreground" />
+            {isVerifying ? (
+              <Loader2 className="w-10 h-10 text-success-foreground animate-spin" />
+            ) : (
+              <Check className="w-10 h-10 text-success-foreground" />
+            )}
           </div>
           
           <Badge className="mb-4 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
             <Sparkles className="w-3 h-3 mr-1" />
-            Assinatura Ativada
+            {isVerifying ? 'Processando...' : 'Assinatura Ativada'}
           </Badge>
           
           <h1 className="text-4xl font-bold text-foreground mb-3 font-space">

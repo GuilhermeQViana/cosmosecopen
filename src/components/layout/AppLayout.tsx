@@ -50,7 +50,7 @@ export function AppLayout() {
   const breadcrumbItems = useBreadcrumb();
 
   // Allowed routes even when subscription expired
-  const allowedWithoutSubscription = ['/configuracoes', '/selecionar-organizacao', '/selecionar-framework'];
+  const allowedWithoutSubscription = ['/configuracoes', '/selecionar-organizacao', '/selecionar-framework', '/checkout-success'];
 
   if (authLoading || orgLoading || frameworkLoading || subscriptionLoading) {
     return (
