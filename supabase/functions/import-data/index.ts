@@ -1,9 +1,11 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { 
+  authenticate, 
+  handleCors, 
+  isAuthError, 
+  errorResponse, 
+  jsonResponse,
+  getUserOrganization
+} from "../_shared/auth.ts";
 
 interface ImportData {
   metadata?: {
@@ -41,58 +43,25 @@ interface ImportData {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    // Authenticate user
+    const auth = await authenticate(req);
+    if (isAuthError(auth)) return auth;
     
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Create client with user's JWT for RLS
-    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    // Get user from JWT
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (userError || !user) {
-      console.error('Auth error:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { user, supabase } = auth;
 
     // Get user's organization
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('organization_id')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile?.organization_id) {
-      return new Response(
-        JSON.stringify({ error: 'User has no organization' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const organizationId = await getUserOrganization(supabase, user.id);
+    if (!organizationId) {
+      return errorResponse("User has no organization", 400);
     }
 
-    const organizationId = profile.organization_id;
-
     // Check if user is admin
-    const { data: userRole } = await supabaseClient
+    const { data: userRole } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -100,10 +69,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (userRole?.role !== 'admin') {
-      return new Response(
-        JSON.stringify({ error: 'Only admins can import data' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse("Only admins can import data", 403);
     }
 
     const body = await req.json();
@@ -113,10 +79,7 @@ Deno.serve(async (req) => {
 
     // Validate data structure
     if (!data || typeof data !== 'object') {
-      return new Response(
-        JSON.stringify({ error: 'Invalid data format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse("Invalid data format", 400);
     }
 
     const results = {
@@ -126,11 +89,11 @@ Deno.serve(async (req) => {
     };
 
     // Get all frameworks and controls for mapping
-    const { data: frameworks } = await supabaseClient
+    const { data: frameworks } = await supabase
       .from('frameworks')
       .select('id, code');
 
-    const { data: controls } = await supabaseClient
+    const { data: controls } = await supabase
       .from('controls')
       .select('id, code, framework_id');
 
@@ -156,7 +119,7 @@ Deno.serve(async (req) => {
 
         if (mode === 'import') {
           // Check if assessment exists
-          const { data: existing } = await supabaseClient
+          const { data: existing } = await supabase
             .from('assessments')
             .select('id')
             .eq('organization_id', organizationId)
@@ -165,7 +128,7 @@ Deno.serve(async (req) => {
 
           if (existing) {
             // Update existing
-            const { error } = await supabaseClient
+            const { error } = await supabase
               .from('assessments')
               .update({
                 maturity_level: assessment.maturity_level,
@@ -183,7 +146,7 @@ Deno.serve(async (req) => {
             }
           } else {
             // Insert new
-            const { error } = await supabaseClient
+            const { error } = await supabase
               .from('assessments')
               .insert({
                 organization_id: organizationId,
@@ -219,7 +182,7 @@ Deno.serve(async (req) => {
 
         if (mode === 'import') {
           // Check if risk exists by code
-          const { data: existing } = await supabaseClient
+          const { data: existing } = await supabase
             .from('risks')
             .select('id')
             .eq('organization_id', organizationId)
@@ -228,7 +191,7 @@ Deno.serve(async (req) => {
 
           if (existing) {
             // Update existing
-            const { error } = await supabaseClient
+            const { error } = await supabase
               .from('risks')
               .update({
                 title: risk.title,
@@ -249,7 +212,7 @@ Deno.serve(async (req) => {
             }
           } else {
             // Insert new
-            const { error } = await supabaseClient
+            const { error } = await supabase
               .from('risks')
               .insert({
                 organization_id: organizationId,
@@ -289,7 +252,7 @@ Deno.serve(async (req) => {
 
         if (mode === 'import') {
           // Check if plan exists by title (exact match)
-          const { data: existing } = await supabaseClient
+          const { data: existing } = await supabase
             .from('action_plans')
             .select('id')
             .eq('organization_id', organizationId)
@@ -298,7 +261,7 @@ Deno.serve(async (req) => {
 
           if (existing) {
             // Update existing
-            const { error } = await supabaseClient
+            const { error } = await supabase
               .from('action_plans')
               .update({
                 description: plan.description,
@@ -314,7 +277,7 @@ Deno.serve(async (req) => {
             }
           } else {
             // Insert new
-            const { error } = await supabaseClient
+            const { error } = await supabase
               .from('action_plans')
               .insert({
                 organization_id: organizationId,
@@ -339,22 +302,16 @@ Deno.serve(async (req) => {
 
     console.log('Import results:', results);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        mode,
-        metadata: data.metadata,
-        results,
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonResponse({
+      success: true,
+      mode,
+      metadata: data.metadata,
+      results,
+    });
 
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     console.error('Import error:', error);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(errorMessage, 500);
   }
 });

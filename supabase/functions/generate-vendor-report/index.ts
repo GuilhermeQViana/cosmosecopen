@@ -1,35 +1,27 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { 
+  authenticate, 
+  handleCors, 
+  isAuthError, 
+  errorResponse, 
+  htmlResponse
+} from "../_shared/auth.ts";
 
 interface AssessmentReportData {
   assessmentId: string;
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Authenticate user
+    const auth = await authenticate(req);
+    if (isAuthError(auth)) return auth;
+    
+    const { supabase } = auth;
 
     const { assessmentId } = await req.json() as AssessmentReportData;
 
@@ -44,10 +36,7 @@ serve(async (req) => {
       .single();
 
     if (assessmentError || !assessment) {
-      return new Response(JSON.stringify({ error: "Assessment not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return errorResponse("Assessment not found", 404);
     }
 
     // Fetch responses
@@ -74,8 +63,8 @@ serve(async (req) => {
       .single();
 
     // Group responses by domain
-    const responsesByDomain: Record<string, any[]> = {};
-    responses?.forEach((response: any) => {
+    const responsesByDomain: Record<string, unknown[]> = {};
+    responses?.forEach((response: { requirement?: { domain?: { name?: string } } }) => {
       const domainName = response.requirement?.domain?.name || "Outros";
       if (!responsesByDomain[domainName]) {
         responsesByDomain[domainName] = [];
@@ -86,7 +75,7 @@ serve(async (req) => {
     // Calculate domain scores
     const domainScores: Record<string, number> = {};
     Object.entries(responsesByDomain).forEach(([domain, domainResponses]) => {
-      const avg = domainResponses.reduce((sum, r) => sum + (r.compliance_level / 5) * 100, 0) / domainResponses.length;
+      const avg = (domainResponses as Array<{ compliance_level: number }>).reduce((sum, r) => sum + (r.compliance_level / 5) * 100, 0) / domainResponses.length;
       domainScores[domain] = Math.round(avg);
     });
 
@@ -301,7 +290,7 @@ serve(async (req) => {
       ${Object.entries(responsesByDomain).map(([domain, domainResponses]) => `
         <div class="domain-card">
           <div class="domain-name" style="margin-bottom: 15px;">${domain}</div>
-          ${domainResponses.map((r: any) => `
+          ${(domainResponses as Array<{ requirement?: { code?: string; name?: string }; compliance_level: number }>).map((r) => `
             <div class="requirement-row">
               <span class="requirement-code">${r.requirement?.code}</span>
               <span class="requirement-name">${r.requirement?.name}</span>
@@ -330,17 +319,10 @@ serve(async (req) => {
 </html>
     `.trim();
 
-    return new Response(html, {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "text/html; charset=utf-8",
-      },
-    });
-  } catch (error: any) {
+    return htmlResponse(html);
+  } catch (error) {
     console.error("Error generating report:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return errorResponse(errorMessage, 500);
   }
 });

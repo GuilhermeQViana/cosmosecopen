@@ -1,9 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { 
+  authenticate, 
+  handleCors, 
+  isAuthError, 
+  errorResponse, 
+  jsonResponse 
+} from "../_shared/auth.ts";
 
 interface GenerateActionPlanRequest {
   controlCode: string;
@@ -15,12 +17,15 @@ interface GenerateActionPlanRequest {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
+    // Authenticate user
+    const auth = await authenticate(req);
+    if (isAuthError(auth)) return auth;
+
     const { controlCode, controlName, controlDescription, currentMaturity, targetMaturity, framework } = await req.json() as GenerateActionPlanRequest;
 
     console.log('Generating action plan for:', { controlCode, controlName, currentMaturity, targetMaturity });
@@ -109,18 +114,10 @@ Responda APENAS em formato JSON válido, sem texto adicional:
       };
     }
 
-    return new Response(JSON.stringify(actionPlan), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse(actionPlan);
   } catch (error) {
     console.error('Error generating action plan:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    return errorResponse(errorMessage, 500);
   }
 });
