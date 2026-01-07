@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useEvidences } from '@/hooks/useEvidences';
-import { Paperclip, Plus, FileText, ExternalLink } from 'lucide-react';
+import { UploadEvidenceDialog } from '@/components/evidencias/UploadEvidenceDialog';
+import { Paperclip, Plus, FileText, ExternalLink, Upload } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ControlEvidencesListProps {
@@ -22,6 +22,7 @@ export function ControlEvidencesList({
   controlCode,
 }: ControlEvidencesListProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const { data: allEvidences = [] } = useEvidences();
 
   // For now, filter evidences by tags containing control code
@@ -48,10 +49,26 @@ export function ControlEvidencesList({
             <DialogHeader>
               <DialogTitle>Vincular Evidência</DialogTitle>
             </DialogHeader>
+            
+            {/* Botão para nova evidência */}
+            <div className="flex items-center justify-between pb-2 border-b">
+              <p className="text-sm text-muted-foreground">
+                Selecione uma existente ou crie nova
+              </p>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => setUploadDialogOpen(true)}
+              >
+                <Upload className="w-4 h-4 mr-1" />
+                Nova Evidência
+              </Button>
+            </div>
+
             <ScrollArea className="max-h-80">
               {allEvidences.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Nenhuma evidência disponível. Faça upload na seção de Evidências.
+                  Nenhuma evidência disponível.
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -110,6 +127,17 @@ export function ControlEvidencesList({
           ))}
         </div>
       )}
+
+      {/* Diálogo de upload de nova evidência */}
+      <UploadEvidenceDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+        defaultTags={[controlCode]}
+        onSuccess={() => {
+          setUploadDialogOpen(false);
+          setDialogOpen(false);
+        }}
+      />
     </div>
   );
 }

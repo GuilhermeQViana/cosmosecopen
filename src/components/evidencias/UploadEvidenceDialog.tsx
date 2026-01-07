@@ -30,16 +30,23 @@ type EvidenceClassification = Database['public']['Enums']['evidence_classificati
 interface UploadEvidenceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultTags?: string[];
+  onSuccess?: () => void;
 }
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
-export function UploadEvidenceDialog({ open, onOpenChange }: UploadEvidenceDialogProps) {
+export function UploadEvidenceDialog({ 
+  open, 
+  onOpenChange, 
+  defaultTags = [],
+  onSuccess 
+}: UploadEvidenceDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [classification, setClassification] = useState<EvidenceClassification>('interno');
-  const [tags, setTags] = useState('');
+  const [tags, setTags] = useState(defaultTags.join(', '));
   const [expiresAt, setExpiresAt] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -99,6 +106,7 @@ export function UploadEvidenceDialog({ open, onOpenChange }: UploadEvidenceDialo
       toast({ title: 'Evidência enviada com sucesso' });
       resetForm();
       onOpenChange(false);
+      onSuccess?.();
     } catch (error) {
       toast({
         title: 'Erro ao enviar',
@@ -114,7 +122,7 @@ export function UploadEvidenceDialog({ open, onOpenChange }: UploadEvidenceDialo
     setName('');
     setDescription('');
     setClassification('interno');
-    setTags('');
+    setTags(defaultTags.join(', '));
     setExpiresAt('');
     setUploadProgress(0);
   };
