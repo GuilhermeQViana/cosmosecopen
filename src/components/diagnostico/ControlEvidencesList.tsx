@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -17,12 +18,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useEvidences, useUpdateEvidence, useDownloadEvidence, Evidence } from '@/hooks/useEvidences';
 import { UploadEvidenceDialog } from '@/components/evidencias/UploadEvidenceDialog';
 import { EvidencePreviewDialog } from '@/components/evidencias/EvidencePreviewDialog';
-import { Paperclip, Plus, FileText, Eye, Upload, X, Loader2 } from 'lucide-react';
+import { Paperclip, Plus, FileText, Upload, X, Loader2, Download, ChevronRight, FolderOpen } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface ControlEvidencesListProps {
   assessmentId: string | undefined;
@@ -36,11 +43,11 @@ export function ControlEvidencesList({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [previewEvidence, setPreviewEvidence] = useState<Evidence | null>(null);
-  const [unlinkEvidence, setUnlinkEvidence] = useState<Evidence | null>(null);
+  const [evidenceToUnlink, setEvidenceToUnlink] = useState<Evidence | null>(null);
   
   const { data: allEvidences = [] } = useEvidences();
   const updateEvidence = useUpdateEvidence();
-  const downloadEvidence = useDownloadEvidence();
+  const { mutate: downloadEvidence, isPending: isDownloading } = useDownloadEvidence();
   const { toast } = useToast();
 
   // Filter evidences by tags containing control code
@@ -49,13 +56,13 @@ export function ControlEvidencesList({
   );
 
   const handleUnlink = async () => {
-    if (!unlinkEvidence) return;
+    if (!evidenceToUnlink) return;
     
-    const newTags = (unlinkEvidence.tags || []).filter(t => t !== controlCode);
+    const newTags = (evidenceToUnlink.tags || []).filter(t => t !== controlCode);
     
     try {
       await updateEvidence.mutateAsync({
-        id: unlinkEvidence.id,
+        id: evidenceToUnlink.id,
         tags: newTags.length > 0 ? newTags : null,
       });
       toast({ title: 'Evidência desvinculada com sucesso' });
@@ -65,7 +72,7 @@ export function ControlEvidencesList({
         variant: 'destructive' 
       });
     } finally {
-      setUnlinkEvidence(null);
+      setEvidenceToUnlink(null);
     }
   };
 
@@ -91,21 +98,31 @@ export function ControlEvidencesList({
     }
   };
 
-  const handleDownload = (evidence: Evidence) => {
-    downloadEvidence.mutate(evidence);
+  const handlePreviewEvidence = (evidence: Evidence) => {
+    setPreviewEvidence(evidence);
+  };
+
+  const handleDownloadEvidence = (evidence: Evidence) => {
+    downloadEvidence(evidence);
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          <Paperclip className="w-4 h-4" />
-          Evidências ({linkedEvidences.length})
-        </div>
+        <h4 className="text-sm font-medium flex items-center gap-2">
+          <Paperclip className="w-4 h-4 text-primary" />
+          Evidências
+          {linkedEvidences.length > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {linkedEvidences.length}
+            </Badge>
+          )}
+        </h4>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Plus className="w-4 h-4 mr-1" />
+            <Button variant="default" size="sm" className="h-7 gap-1">
+              <Plus className="w-3 h-3" />
               Adicionar
             </Button>
           </DialogTrigger>
@@ -176,44 +193,98 @@ export function ControlEvidencesList({
         </Dialog>
       </div>
 
-      {linkedEvidences.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic">
-          Nenhuma evidência anexada
-        </p>
-      ) : (
-        <div className="space-y-1">
-          {linkedEvidences.map((evidence) => (
-            <div
-              key={evidence.id}
-              className="flex items-center justify-between p-2 rounded bg-muted/50 text-sm group"
-            >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-                <span className="truncate">{evidence.name}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6"
-                  onClick={() => setPreviewEvidence(evidence)}
-                  title="Visualizar"
-                >
-                  <Eye className="w-3 h-3" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => setUnlinkEvidence(evidence)}
-                  title="Desvincular"
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          ))}
+      {/* Empty State */}
+      {linkedEvidences.length === 0 && (
+        <div className="text-center py-6 border border-dashed rounded-lg bg-muted/20">
+          <FolderOpen className="w-10 h-10 mx-auto mb-2 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground mb-3">
+            Nenhuma evidência anexada
+          </p>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1">
+                <Plus className="w-3 h-3" />
+                Adicionar Evidência
+              </Button>
+            </DialogTrigger>
+          </Dialog>
         </div>
+      )}
+
+      {/* Evidence Cards */}
+      {linkedEvidences.length > 0 && (
+        <ScrollArea className="max-h-[280px]">
+          <div className="space-y-2 pr-2">
+            {linkedEvidences.map((evidence) => (
+              <div
+                key={evidence.id}
+                onClick={() => handlePreviewEvidence(evidence)}
+                className={cn(
+                  'p-3 rounded-lg border bg-card cursor-pointer transition-all duration-150',
+                  'hover:bg-accent/50 hover:border-primary/50 hover:shadow-sm',
+                  'active:scale-[0.99]'
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {/* File type icon */}
+                    <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{evidence.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {evidence.file_type || 'Arquivo'} 
+                        {evidence.file_size && ` • ${(evidence.file_size / 1024).toFixed(1)} KB`}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {/* Download Button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadEvidence(evidence);
+                          }}
+                          disabled={isDownloading}
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Baixar</TooltipContent>
+                    </Tooltip>
+
+                    {/* Unlink Button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEvidenceToUnlink(evidence);
+                          }}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Desvincular</TooltipContent>
+                    </Tooltip>
+
+                    <ChevronRight className="w-4 h-4 text-muted-foreground ml-1" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
       )}
 
       {/* Diálogo de upload de nova evidência */}
@@ -232,16 +303,16 @@ export function ControlEvidencesList({
         evidence={previewEvidence}
         open={!!previewEvidence}
         onOpenChange={(open) => !open && setPreviewEvidence(null)}
-        onDownload={handleDownload}
+        onDownload={handleDownloadEvidence}
       />
 
       {/* Confirmação de desvincular */}
-      <AlertDialog open={!!unlinkEvidence} onOpenChange={(open) => !open && setUnlinkEvidence(null)}>
+      <AlertDialog open={!!evidenceToUnlink} onOpenChange={(open) => !open && setEvidenceToUnlink(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Desvincular evidência?</AlertDialogTitle>
             <AlertDialogDescription>
-              A evidência "{unlinkEvidence?.name}" será desvinculada deste controle. 
+              A evidência "{evidenceToUnlink?.name}" será desvinculada deste controle. 
               O arquivo não será excluído.
             </AlertDialogDescription>
           </AlertDialogHeader>

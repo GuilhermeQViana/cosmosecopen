@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -35,7 +34,6 @@ import {
 import {
   ChevronDown,
   ChevronUp,
-  MessageSquare,
   Save,
   Loader2,
   AlertTriangle,
@@ -107,16 +105,12 @@ export function ControlCardExpanded({
   const [maturityLevel, setMaturityLevel] = useState<number>(
     assessment ? parseInt(assessment.maturity_level) : 0
   );
-  const [observations, setObservations] = useState(
-    assessment?.observations || ''
-  );
   const [hasChanges, setHasChanges] = useState(false);
 
   // Sync with assessment updates
   useEffect(() => {
     if (assessment) {
       setMaturityLevel(parseInt(assessment.maturity_level));
-      setObservations(assessment.observations || '');
     }
   }, [assessment]);
 
@@ -125,16 +119,10 @@ export function ControlCardExpanded({
     setHasChanges(true);
   };
 
-  const handleObservationsChange = (value: string) => {
-    setObservations(value);
-    setHasChanges(true);
-  };
-
   const handleSave = async () => {
     await onSave({
       controlId: control.id,
       maturityLevel: maturityLevel.toString() as MaturityLevel,
-      observations: observations || undefined,
     });
     setHasChanges(false);
   };
@@ -340,8 +328,6 @@ export function ControlCardExpanded({
           expanded={expanded}
           control={control}
           assessment={assessment}
-          observations={observations}
-          onObservationsChange={handleObservationsChange}
           hasChanges={hasChanges}
           onSave={handleSave}
           isSaving={isSaving}
@@ -356,8 +342,6 @@ interface ExpandedContentProps {
   expanded: boolean;
   control: Control;
   assessment?: Assessment;
-  observations: string;
-  onObservationsChange: (value: string) => void;
   hasChanges: boolean;
   onSave: () => Promise<void>;
   isSaving: boolean;
@@ -367,8 +351,6 @@ function ExpandedContent({
   expanded,
   control,
   assessment,
-  observations,
-  onObservationsChange,
   hasChanges,
   onSave,
   isSaving,
@@ -403,21 +385,6 @@ function ExpandedContent({
           {control.description}
         </p>
       )}
-
-      {/* Observations */}
-      <div className="space-y-2">
-        <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <MessageSquare className="w-4 h-4" />
-          Observações
-        </label>
-        <Textarea
-          value={observations}
-          onChange={(e) => onObservationsChange(e.target.value)}
-          placeholder="Adicione observações sobre o controle..."
-          rows={3}
-          className="resize-none"
-        />
-      </div>
 
       <Separator />
 
