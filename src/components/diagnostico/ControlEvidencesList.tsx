@@ -7,10 +7,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useEvidences } from '@/hooks/useEvidences';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useEvidences, useUpdateEvidence, useDownloadEvidence, Evidence } from '@/hooks/useEvidences';
 import { UploadEvidenceDialog } from '@/components/evidencias/UploadEvidenceDialog';
-import { Paperclip, Plus, FileText, ExternalLink, Upload } from 'lucide-react';
+import { EvidencePreviewDialog } from '@/components/evidencias/EvidencePreviewDialog';
+import { Paperclip, Plus, FileText, Eye, Upload, X, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 interface ControlEvidencesListProps {
   assessmentId: string | undefined;
@@ -23,13 +35,65 @@ export function ControlEvidencesList({
 }: ControlEvidencesListProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [previewEvidence, setPreviewEvidence] = useState<Evidence | null>(null);
+  const [unlinkEvidence, setUnlinkEvidence] = useState<Evidence | null>(null);
+  
   const { data: allEvidences = [] } = useEvidences();
+  const updateEvidence = useUpdateEvidence();
+  const downloadEvidence = useDownloadEvidence();
+  const { toast } = useToast();
 
-  // For now, filter evidences by tags containing control code
-  // In a real implementation, you'd have assessment_evidences junction table
+  // Filter evidences by tags containing control code
   const linkedEvidences = allEvidences.filter(
-    (e) => e.tags?.includes(controlCode) || e.description?.includes(controlCode)
+    (e) => e.tags?.includes(controlCode)
   );
+
+  const handleUnlink = async () => {
+    if (!unlinkEvidence) return;
+    
+    const newTags = (unlinkEvidence.tags || []).filter(t => t !== controlCode);
+    
+    try {
+      await updateEvidence.mutateAsync({
+        id: unlinkEvidence.id,
+        tags: newTags.length > 0 ? newTags : null,
+      });
+      toast({ title: 'Evidência desvinculada com sucesso' });
+    } catch {
+      toast({ 
+        title: 'Erro ao desvincular', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setUnlinkEvidence(null);
+    }
+  };
+
+  const handleLink = async (evidence: Evidence) => {
+    const currentTags = evidence.tags || [];
+    if (currentTags.includes(controlCode)) {
+      setDialogOpen(false);
+      return;
+    }
+    
+    try {
+      await updateEvidence.mutateAsync({
+        id: evidence.id,
+        tags: [...currentTags, controlCode],
+      });
+      toast({ title: 'Evidência vinculada com sucesso' });
+      setDialogOpen(false);
+    } catch {
+      toast({ 
+        title: 'Erro ao vincular', 
+        variant: 'destructive' 
+      });
+    }
+  };
+
+  const handleDownload = (evidence: Evidence) => {
+    downloadEvidence.mutate(evidence);
+  };
 
   return (
     <div className="space-y-2">
@@ -72,32 +136,39 @@ export function ControlEvidencesList({
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {allEvidences.map((evidence) => (
-                    <div
-                      key={evidence.id}
-                      className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-4 h-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-sm font-medium">{evidence.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {evidence.file_type}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // In a real implementation, link evidence to assessment
-                          setDialogOpen(false);
-                        }}
+                  {allEvidences.map((evidence) => {
+                    const isLinked = evidence.tags?.includes(controlCode);
+                    return (
+                      <div
+                        key={evidence.id}
+                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                       >
-                        Vincular
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{evidence.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {evidence.file_type}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant={isLinked ? "secondary" : "ghost"}
+                          size="sm"
+                          disabled={isLinked || updateEvidence.isPending}
+                          onClick={() => handleLink(evidence)}
+                        >
+                          {updateEvidence.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : isLinked ? (
+                            'Vinculada'
+                          ) : (
+                            'Vincular'
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </ScrollArea>
@@ -114,15 +185,32 @@ export function ControlEvidencesList({
           {linkedEvidences.map((evidence) => (
             <div
               key={evidence.id}
-              className="flex items-center justify-between p-2 rounded bg-muted/50 text-sm"
+              className="flex items-center justify-between p-2 rounded bg-muted/50 text-sm group"
             >
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{evidence.name}</span>
               </div>
-              <Button variant="ghost" size="icon" className="h-6 w-6">
-                <ExternalLink className="w-3 h-3" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6"
+                  onClick={() => setPreviewEvidence(evidence)}
+                  title="Visualizar"
+                >
+                  <Eye className="w-3 h-3" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => setUnlinkEvidence(evidence)}
+                  title="Desvincular"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -138,6 +226,37 @@ export function ControlEvidencesList({
           setDialogOpen(false);
         }}
       />
+
+      {/* Preview inline de evidência */}
+      <EvidencePreviewDialog
+        evidence={previewEvidence}
+        open={!!previewEvidence}
+        onOpenChange={(open) => !open && setPreviewEvidence(null)}
+        onDownload={handleDownload}
+      />
+
+      {/* Confirmação de desvincular */}
+      <AlertDialog open={!!unlinkEvidence} onOpenChange={(open) => !open && setUnlinkEvidence(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Desvincular evidência?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A evidência "{unlinkEvidence?.name}" será desvinculada deste controle. 
+              O arquivo não será excluído.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleUnlink}
+              disabled={updateEvidence.isPending}
+            >
+              {updateEvidence.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Desvincular
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
