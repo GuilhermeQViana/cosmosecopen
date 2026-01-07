@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { getRiskLevelColor, getRiskLevelLabel, calculateRiskLevel } from '@/hooks/useRisks';
-import { AlertTriangle, Plus, ExternalLink, Shield, Loader2 } from 'lucide-react';
+import { AlertTriangle, Plus, ExternalLink, Shield, Loader2, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LinkedRisk {
@@ -128,8 +128,13 @@ export function ControlRisksList({
             </Badge>
           )}
         </h4>
-        <Button variant="outline" size="sm" onClick={handleCreateRisk} className="h-7">
-          <Plus className="w-3 h-3 mr-1" />
+        <Button 
+          variant="default" 
+          size="sm" 
+          onClick={handleCreateRisk} 
+          className="h-7 gap-1"
+        >
+          <Plus className="w-3 h-3" />
           Criar Risco
         </Button>
       </div>
@@ -141,11 +146,12 @@ export function ControlRisksList({
       )}
 
       {!isLoading && risks.length === 0 && (
-        <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
-          <Shield className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-          <p>Nenhum risco vinculado a este controle</p>
-          <Button variant="link" size="sm" onClick={handleCreateRisk}>
-            Criar um risco associado
+        <div className="text-center py-6 text-sm text-muted-foreground border border-dashed rounded-lg bg-muted/20">
+          <Shield className="w-10 h-10 mx-auto mb-2 text-muted-foreground/50" />
+          <p className="mb-3">Nenhum risco vinculado a este controle</p>
+          <Button variant="outline" size="sm" onClick={handleCreateRisk} className="gap-1">
+            <Plus className="w-3 h-3" />
+            Criar Risco Associado
           </Button>
         </div>
       )}
@@ -157,21 +163,27 @@ export function ControlRisksList({
             return (
               <div
                 key={risk.id}
-                className="flex items-center justify-between p-2 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
                 onClick={() => handleViewRisk(risk.id)}
+                className={cn(
+                  'p-3 rounded-lg border bg-card cursor-pointer transition-all duration-150',
+                  'hover:bg-accent/50 hover:border-primary/50 hover:shadow-sm',
+                  'active:scale-[0.99]'
+                )}
               >
-                <div className="flex items-center gap-2">
-                  <div className={cn('w-2 h-2 rounded-full', getRiskLevelColor(level))} />
-                  <code className="text-xs font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                    {risk.code}
-                  </code>
-                  <span className="text-sm truncate max-w-[200px]">{risk.title}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {getRiskLevelLabel(level)}
-                  </Badge>
-                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={cn('w-2.5 h-2.5 rounded-full', getRiskLevelColor(level))} />
+                    <code className="text-xs font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                      {risk.code}
+                    </code>
+                    <span className="text-sm font-medium truncate max-w-[180px]">{risk.title}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {getRiskLevelLabel(level)}
+                    </Badge>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
                 </div>
               </div>
             );
