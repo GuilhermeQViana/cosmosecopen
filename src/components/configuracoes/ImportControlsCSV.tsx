@@ -54,13 +54,16 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
     }
   }, [parseFile]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: {
       'text/csv': ['.csv'],
+      'application/vnd.ms-excel': ['.csv'],
     },
     maxFiles: 1,
     disabled: isParsing,
+    noClick: false,
+    noKeyboard: false,
   });
 
   const handleImport = async () => {
@@ -109,7 +112,11 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
           </CardHeader>
           <CardContent>
             <div
-              {...getRootProps()}
+              {...getRootProps({
+                onClick: (e) => {
+                  e.stopPropagation();
+                },
+              })}
               className={`
                 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
                 transition-colors
@@ -134,9 +141,19 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
                   <p className="text-lg mb-2">
                     Arraste um arquivo CSV ou clique para selecionar
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground mb-4">
                     O arquivo deve conter as colunas: code, name (obrigatórias)
                   </p>
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      open();
+                    }}
+                  >
+                    Selecionar Arquivo
+                  </Button>
                 </>
               )}
             </div>
