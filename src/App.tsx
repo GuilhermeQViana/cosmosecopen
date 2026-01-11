@@ -32,6 +32,7 @@ import VendorRequisitos from "@/pages/VendorRequisitos";
 import VendorAgenda from "@/pages/VendorAgenda";
 import Documentacao from "@/pages/Documentacao";
 import Feedbacks from "@/pages/Feedbacks";
+import BrandAssets from "@/pages/BrandAssets";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
                   <Route path="/selecionar-framework" element={<SelecionarFramework />} />
                   <Route path="/checkout-success" element={<CheckoutSuccess />} />
                   <Route path="/documentacao" element={<Documentacao />} />
+                  <Route path="/brand-assets" element={<BrandAssets />} />
                   
                   {/* Módulo Frameworks (GRC) */}
                   <Route element={<AppLayout />}>
