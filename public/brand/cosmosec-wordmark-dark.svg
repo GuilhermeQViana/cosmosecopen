@@ -1,0 +1,60 @@
+<svg width="280" height="64" viewBox="0 0 280 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo Icon -->
+  <g>
+    <!-- Outer orbit ring -->
+    <circle cx="32" cy="32" r="28" stroke="url(#orbitGradientWMD)" stroke-width="1.5" stroke-dasharray="4 6"/>
+    
+    <!-- Middle orbit ring -->
+    <circle cx="32" cy="32" r="20" stroke="url(#orbitGradient2WMD)" stroke-width="1" stroke-dasharray="3 5"/>
+    
+    <!-- Central shield/star shape -->
+    <path d="M32 8L36.5 24.5L52 20L43.5 32L52 44L36.5 39.5L32 56L27.5 39.5L12 44L20.5 32L12 20L27.5 24.5L32 8Z" fill="url(#starGradientWMD)"/>
+    
+    <!-- Inner core -->
+    <circle cx="32" cy="32" r="8" fill="url(#coreGradientWMD)"/>
+    
+    <!-- Central dot -->
+    <circle cx="32" cy="32" r="3" fill="white"/>
+    
+    <!-- Constellation dots -->
+    <circle cx="10" cy="18" r="1.5" fill="#00D4FF"/>
+    <circle cx="54" cy="14" r="1" fill="#00D4FF"/>
+    <circle cx="58" cy="42" r="1.5" fill="#00D4FF"/>
+    <circle cx="8" cy="48" r="1" fill="#00D4FF"/>
+  </g>
+  
+  <!-- Wordmark Text - Dark version with dark text -->
+  <text x="76" y="44" font-family="Space Grotesk, sans-serif" font-size="32" font-weight="700" letter-spacing="0.025em">
+    <tspan fill="url(#textGradientWMD)">Cosmo</tspan><tspan fill="#0B0E14">Sec</tspan>
+  </text>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="orbitGradientWMD" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2E5CFF"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+    
+    <linearGradient id="orbitGradient2WMD" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#2E5CFF"/>
+    </linearGradient>
+    
+    <linearGradient id="starGradientWMD" x1="32" y1="8" x2="32" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2E5CFF"/>
+      <stop offset="50%" stop-color="#1E4FCC"/>
+      <stop offset="100%" stop-color="#00A3CC"/>
+    </linearGradient>
+    
+    <radialGradient id="coreGradientWMD" cx="32" cy="32" r="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7DD3FC"/>
+      <stop offset="100%" stop-color="#2E5CFF"/>
+    </radialGradient>
+    
+    <linearGradient id="textGradientWMD" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="50%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+  </defs>
+</svg>
