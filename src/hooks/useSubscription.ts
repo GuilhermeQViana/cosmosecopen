@@ -46,6 +46,27 @@ export function useSubscription() {
         return;
       }
 
+      // Check if user is super admin (owner) - bypass all subscription checks
+      const { data: isSuperAdmin } = await supabase.rpc('is_super_admin', {
+        check_user_id: user.id
+      });
+
+      if (isSuperAdmin) {
+        setState({
+          hasAccess: true,
+          subscriptionStatus: 'active',
+          isTrialing: false,
+          daysRemaining: null,
+          daysUntilRenewal: null,
+          trialEndsAt: null,
+          subscriptionEndsAt: null,
+          isLoading: false,
+          isCheckoutLoading: false,
+          hasPaymentFailed: false,
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         body: { organization_id: organization.id },
       });
