@@ -14,6 +14,14 @@ const LOGO_SIZES = [
   { name: 'Extra Large', size: 512 },
 ];
 
+const WORDMARK_SIZES = [
+  { name: 'Small', width: 280, height: 64 },
+  { name: 'Medium', width: 560, height: 128 },
+  { name: 'Large', width: 840, height: 192 },
+  { name: 'Extra Large', width: 1120, height: 256 },
+  { name: 'Max Quality', width: 1680, height: 384 },
+];
+
 const SVG_FILES = [
   { name: 'Logo Animado', path: '/brand/cosmosec-logo.svg', description: 'SVG com animações CSS' },
   { name: 'Logo Estático', path: '/brand/cosmosec-logo-static.svg', description: 'SVG sem animações' },
@@ -25,7 +33,7 @@ const SVG_FILES = [
 export default function BrandAssets() {
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
+  const wordmarkCanvasRef = useRef<HTMLCanvasElement>(null);
   const downloadSVG = (path: string, filename: string) => {
     const link = document.createElement('a');
     link.href = path;
@@ -72,6 +80,44 @@ export default function BrandAssets() {
     img.src = '/brand/cosmosec-logo-static.svg';
   };
 
+  const downloadWordmarkPNG = async (width: number, height: number, variant: 'dark' | 'light' = 'dark') => {
+    const canvas = wordmarkCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Use higher resolution for better quality
+    const scale = 2;
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.scale(scale, scale);
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `cosmosec-wordmark-${variant}-${width}x${height}@2x.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          toast.success(`Logo completa ${width}x${height} (2x) baixada!`);
+        }
+      }, 'image/png', 1.0);
+    };
+
+    img.src = variant === 'dark' ? '/brand/cosmosec-wordmark.svg' : '/brand/cosmosec-wordmark-dark.svg';
+  };
+
   const copySVGCode = async (path: string, name: string) => {
     try {
       const response = await fetch(path);
@@ -87,9 +133,9 @@ export default function BrandAssets() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hidden canvas for PNG generation */}
+      {/* Hidden canvases for PNG generation */}
       <canvas ref={canvasRef} className="hidden" />
-
+      <canvas ref={wordmarkCanvasRef} className="hidden" />
       <div className="container mx-auto py-8 px-4 max-w-6xl">
         <div className="mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4">
@@ -194,14 +240,14 @@ export default function BrandAssets() {
           </CardContent>
         </Card>
 
-        {/* PNG Downloads */}
+        {/* PNG Downloads - Icon Only */}
         <Card className="mb-8 bg-card/50 backdrop-blur border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Download className="h-5 w-5 text-cyan-400" />
-              Arquivos PNG (Fundo Transparente)
+              PNG Ícone (Fundo Transparente)
             </CardTitle>
-            <CardDescription>Imagens rasterizadas em múltiplos tamanhos</CardDescription>
+            <CardDescription>Apenas o ícone, sem texto - ideal para avatares e favicons</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
@@ -217,6 +263,64 @@ export default function BrandAssets() {
                   <span className="text-xs text-muted-foreground">{size}x{size}px</span>
                 </Button>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* PNG Downloads - Full Logo with Wordmark */}
+        <Card className="mb-8 bg-card/50 backdrop-blur border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" />
+              PNG Logo Completa (Máxima Qualidade)
+            </CardTitle>
+            <CardDescription>Logo com nome "CosmoSec" - ideal para materiais de marketing (renderizado em 2x para máxima nitidez)</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Dark Background Version */}
+            <div>
+              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-[#0B0E14] border border-border/50" />
+                Para Fundo Escuro
+              </h4>
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
+                {WORDMARK_SIZES.map(({ name, width, height }) => (
+                  <Button
+                    key={`dark-${width}`}
+                    variant="outline"
+                    className="h-auto py-4 flex flex-col gap-2 hover:border-primary/50"
+                    onClick={() => downloadWordmarkPNG(width, height, 'dark')}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="font-medium">{name}</span>
+                    <span className="text-xs text-muted-foreground">{width}x{height}</span>
+                    <span className="text-[10px] text-cyan-400">@2x ({width * 2}px)</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Light Background Version */}
+            <div>
+              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-white border border-border/50" />
+                Para Fundo Claro
+              </h4>
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
+                {WORDMARK_SIZES.map(({ name, width, height }) => (
+                  <Button
+                    key={`light-${width}`}
+                    variant="outline"
+                    className="h-auto py-4 flex flex-col gap-2 hover:border-primary/50"
+                    onClick={() => downloadWordmarkPNG(width, height, 'light')}
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="font-medium">{name}</span>
+                    <span className="text-xs text-muted-foreground">{width}x{height}</span>
+                    <span className="text-[10px] text-cyan-400">@2x ({width * 2}px)</span>
+                  </Button>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
