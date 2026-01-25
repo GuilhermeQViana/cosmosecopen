@@ -1549,6 +1549,17 @@ export type Database = {
       accept_organization_invite: { Args: { _token: string }; Returns: boolean }
       check_deadline_notifications: { Args: never; Returns: undefined }
       check_organization_access: { Args: { _org_id: string }; Returns: boolean }
+      create_notification: {
+        Args: {
+          _link?: string
+          _message?: string
+          _organization_id: string
+          _title: string
+          _type?: string
+          _user_id: string
+        }
+        Returns: string
+      }
       create_organization_with_admin: {
         Args: { org_description?: string; org_name: string }
         Returns: {
