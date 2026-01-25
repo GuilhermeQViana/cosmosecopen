@@ -148,7 +148,7 @@ serve(async (req) => {
                             <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                               <tr>
                                 <td align="center">
-                                  <a href="https://cosmosec.lovable.dev/configuracoes" style="display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #000000; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Assinar Agora →</a>
+                                  <a href="https://cosmosec.com.br/configuracoes" style="display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #000000; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Assinar Agora →</a>
                                 </td>
                               </tr>
                             </table>

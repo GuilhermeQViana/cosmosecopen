@@ -166,7 +166,7 @@ serve(async (req) => {
                                   <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                     <tr>
                                       <td align="center">
-                                        <a href="https://cosmosec.lovable.dev/dashboard" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Acessar Dashboard →</a>
+                                        <a href="https://cosmosec.com.br/dashboard" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Acessar Dashboard →</a>
                                       </td>
                                     </tr>
                                   </table>
@@ -320,7 +320,7 @@ serve(async (req) => {
                                   <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                     <tr>
                                       <td align="center">
-                                        <a href="https://cosmosec.lovable.dev/configuracoes" style="display: inline-block; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Gerenciar Assinatura →</a>
+                                        <a href="https://cosmosec.com.br/configuracoes" style="display: inline-block; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Gerenciar Assinatura →</a>
                                       </td>
                                     </tr>
                                   </table>
@@ -452,7 +452,7 @@ serve(async (req) => {
                                   <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                     <tr>
                                       <td align="center">
-                                        <a href="https://cosmosec.lovable.dev/configuracoes" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Reativar Assinatura →</a>
+                                        <a href="https://cosmosec.com.br/configuracoes" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Reativar Assinatura →</a>
                                       </td>
                                     </tr>
                                   </table>
