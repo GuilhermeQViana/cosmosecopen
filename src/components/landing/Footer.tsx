@@ -20,9 +20,9 @@ export function Footer() {
       { label: 'Contato', href: '#' },
     ],
     legal: [
-      { label: 'Termos de Uso', href: '#' },
-      { label: 'Política de Privacidade', href: '#' },
-      { label: 'LGPD', href: '#' },
+      { label: 'Termos de Uso', href: '/termos', isRoute: true },
+      { label: 'Política de Privacidade', href: '/privacidade', isRoute: true },
+      { label: 'LGPD', href: '/lgpd', isRoute: true },
     ],
   };
 
@@ -101,9 +101,15 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {link.label}
-                  </a>
+                  {link.isRoute ? (
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

@@ -33,6 +33,9 @@ import VendorAgenda from "@/pages/VendorAgenda";
 import Documentacao from "@/pages/Documentacao";
 import Feedbacks from "@/pages/Feedbacks";
 import BrandAssets from "@/pages/BrandAssets";
+import TermosDeUso from "@/pages/TermosDeUso";
+import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
+import PoliticaLGPD from "@/pages/PoliticaLGPD";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +60,9 @@ const App = () => (
                   <Route path="/checkout-success" element={<CheckoutSuccess />} />
                   <Route path="/documentacao" element={<Documentacao />} />
                   <Route path="/brand-assets" element={<BrandAssets />} />
+                  <Route path="/termos" element={<TermosDeUso />} />
+                  <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+                  <Route path="/lgpd" element={<PoliticaLGPD />} />
                   
                   {/* Módulo Frameworks (GRC) */}
                   <Route element={<AppLayout />}>
