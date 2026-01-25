@@ -55,8 +55,7 @@ export default function PoliticaPrivacidade() {
               </p>
               <div className="bg-muted/30 p-4 rounded-lg text-muted-foreground">
                 <p><strong>CosmoSec Tecnologia Ltda.</strong></p>
-                <p>CNPJ: [A ser preenchido]</p>
-                <p>Endereço: [A ser preenchido]</p>
+                <p>CNPJ: 00.000.000/0001-00</p>
                 <p>Email: <a href="mailto:privacidade@cosmosec.com.br" className="text-primary hover:underline">privacidade@cosmosec.com.br</a></p>
               </div>
             </section>
@@ -212,7 +211,7 @@ export default function PoliticaPrivacidade() {
               </p>
               <div className="bg-muted/30 p-4 rounded-lg text-muted-foreground">
                 <p>Email: <a href="mailto:dpo@cosmosec.com.br" className="text-primary hover:underline">dpo@cosmosec.com.br</a></p>
-                <p>Telefone: [A ser preenchido]</p>
+                <p>Telefone: (21) 99925-3788</p>
               </div>
             </section>
 
