@@ -301,7 +301,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         try {
           const emailResponse = await resend.emails.send({
-            from: "CosmoSec GRC <onboarding@resend.dev>",
+            from: "CosmoSec <noreply@cosmosec.com.br>",
             to: [userEmail],
             subject: `Planos de Ação: ${subjectParts.join(" | ")}`,
             html: emailHtml,

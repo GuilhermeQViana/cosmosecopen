@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
     const inviteUrl = `${appUrl}/auth?invite=${inviteToken}`;
 
     const emailResponse = await resend.emails.send({
-      from: "Cora GovSec <onboarding@resend.dev>",
+      from: "CosmoSec <noreply@cosmosec.com.br>",
       to: [email],
       subject: `Convite para ${organizationName} - Cora GovSec`,
       html: `

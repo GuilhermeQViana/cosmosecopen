@@ -122,7 +122,7 @@ serve(async (req) => {
                   .single();
 
                 await resend.emails.send({
-                  from: "CosmoSec <onboarding@resend.dev>",
+                  from: "CosmoSec <noreply@cosmosec.com.br>",
                   to: [user.email],
                   subject: "🎉 Bem-vindo ao CosmoSec! Sua assinatura está ativa",
                   html: `
@@ -265,7 +265,7 @@ serve(async (req) => {
                   .single();
 
                 await resend.emails.send({
-                  from: "CosmoSec <onboarding@resend.dev>",
+                  from: "CosmoSec <noreply@cosmosec.com.br>",
                   to: [user.email],
                   subject: "✅ Pagamento confirmado - CosmoSec",
                   html: `
@@ -405,7 +405,7 @@ serve(async (req) => {
                   .single();
 
                 await resend.emails.send({
-                  from: "CosmoSec <onboarding@resend.dev>",
+                  from: "CosmoSec <noreply@cosmosec.com.br>",
                   to: [user.email],
                   subject: "😢 Sua assinatura foi cancelada - CosmoSec",
                   html: `
