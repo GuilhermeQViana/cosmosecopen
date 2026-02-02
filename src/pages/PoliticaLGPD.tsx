@@ -269,6 +269,9 @@ export default function PoliticaLGPD() {
                     dpo@cosmosec.com.br
                   </a>
                 </p>
+                <p className="text-sm">
+                  <strong>Telefone:</strong> (21) 99925-3788
+                </p>
               </div>
             </div>
           </CardContent>
