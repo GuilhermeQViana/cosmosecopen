@@ -11,6 +11,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { VendorLayout } from "@/components/layout/VendorLayout";
 import Landing from "@/pages/Landing";
 import Auth from "@/pages/Auth";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Onboarding from "@/pages/Onboarding";
 import SelecionarOrganizacao from "@/pages/SelecionarOrganizacao";
 import SelecionarModulo from "@/pages/SelecionarModulo";
