@@ -435,9 +435,9 @@ export default function Auth() {
 
             <p className="text-center text-sm text-blue-300/50 mt-6 opacity-0 animate-stagger-fade-in" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
               Ao continuar, você concorda com os{' '}
-              <a href="#" className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors">Termos de Uso</a>
+              <Link to="/termos" className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors">Termos de Uso</Link>
               {' '}e{' '}
-              <a href="#" className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors">Política de Privacidade</a>.
+              <Link to="/privacidade" className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors">Política de Privacidade</Link>.
             </p>
           </div>
         </div>

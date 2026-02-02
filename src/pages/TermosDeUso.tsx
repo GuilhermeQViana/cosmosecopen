@@ -179,9 +179,10 @@ export default function TermosDeUso() {
               <p className="text-muted-foreground">
                 Para dúvidas sobre estes Termos de Uso, entre em contato:
               </p>
-              <p className="text-muted-foreground">
-                Email: <a href="mailto:legal@cosmosec.com.br" className="text-primary hover:underline">legal@cosmosec.com.br</a>
-              </p>
+              <div className="bg-muted/30 p-4 rounded-lg text-muted-foreground">
+                <p>Email: <a href="mailto:legal@cosmosec.com.br" className="text-primary hover:underline">legal@cosmosec.com.br</a></p>
+                <p>Telefone: (21) 99925-3788</p>
+              </div>
             </section>
 
           </CardContent>
