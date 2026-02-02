@@ -103,16 +103,6 @@ export function CreateFrameworkDialog({
           onOpenChange(false);
         }
       }
-        await createFramework.mutateAsync({
-          name: name.trim(),
-          code: code.trim().toUpperCase(),
-          version: version.trim() || undefined,
-          description: description.trim() || undefined,
-          icon: selectedIcon,
-        });
-        toast.success('Framework criado com sucesso');
-      }
-      onOpenChange(false);
     } catch (error: any) {
       if (error.message?.includes('duplicate')) {
         toast.error('Já existe um framework com este código');
