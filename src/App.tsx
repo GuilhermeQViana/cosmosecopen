@@ -89,6 +89,7 @@ const App = () => (
                     <Route path="/vrm" element={<FornecedoresDashboard />} />
                     <Route path="/vrm/fornecedores" element={<Fornecedores />} />
                     <Route path="/vrm/requisitos" element={<VendorRequisitos />} />
+                    <Route path="/vrm/evidencias" element={<VendorEvidencias />} />
                     <Route path="/vrm/agenda" element={<VendorAgenda />} />
                     <Route path="/vrm/configuracoes" element={<Configuracoes />} />
                   </Route>

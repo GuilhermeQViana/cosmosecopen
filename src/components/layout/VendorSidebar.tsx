@@ -56,6 +56,7 @@ const mainNavItems: NavItem[] = [
   { title: 'Dashboard', url: '/vrm', icon: LayoutDashboard },
   { title: 'Fornecedores', url: '/vrm/fornecedores', icon: Building },
   { title: 'Requisitos', url: '/vrm/requisitos', icon: FileText },
+  { title: 'Evidências', url: '/vrm/evidencias', icon: FolderOpen },
   { title: 'Agenda', url: '/vrm/agenda', icon: Calendar },
 ];
 
