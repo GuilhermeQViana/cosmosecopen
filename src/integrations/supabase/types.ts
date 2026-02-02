@@ -1352,6 +1352,75 @@ export type Database = {
           },
         ]
       }
+      vendor_evidence_vault: {
+        Row: {
+          category: string
+          classification: string
+          created_at: string | null
+          description: string | null
+          expires_at: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          name: string
+          organization_id: string
+          tags: string[] | null
+          updated_at: string | null
+          uploaded_by: string | null
+          vendor_id: string
+        }
+        Insert: {
+          category?: string
+          classification?: string
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          tags?: string[] | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          vendor_id: string
+        }
+        Update: {
+          category?: string
+          classification?: string
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_evidence_vault_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_evidence_vault_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_evidences: {
         Row: {
           assessment_id: string
