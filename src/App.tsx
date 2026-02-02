@@ -32,6 +32,7 @@ import Fornecedores from "@/pages/Fornecedores";
 import FornecedoresDashboard from "@/pages/FornecedoresDashboard";
 import VendorRequisitos from "@/pages/VendorRequisitos";
 import VendorAgenda from "@/pages/VendorAgenda";
+import VendorEvidencias from "@/pages/VendorEvidencias";
 import Documentacao from "@/pages/Documentacao";
 import Feedbacks from "@/pages/Feedbacks";
 import BrandAssets from "@/pages/BrandAssets";
