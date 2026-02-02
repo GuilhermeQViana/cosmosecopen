@@ -41,10 +41,10 @@ const classificationOptions: { value: VendorEvidenceClassification | 'all'; labe
 ];
 
 export default function VendorEvidencias() {
-  const { vendors, isLoading: vendorsLoading } = useVendors();
+  const { data: vendors, isLoading: vendorsLoading } = useVendors();
   const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
   
-  const { 
+  const {
     evidences, 
     isLoading: evidencesLoading, 
     evidenceCountsByVendor,
