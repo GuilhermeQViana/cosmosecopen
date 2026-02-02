@@ -39,6 +39,16 @@ export default function TermosDeUso() {
           <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-6">
             
             <section>
+              <h2 className="text-xl font-semibold text-foreground">Identificação do Prestador</h2>
+              <div className="bg-muted/30 p-4 rounded-lg text-muted-foreground">
+                <p><strong>CosmoSec Tecnologia Ltda.</strong></p>
+                <p>CNPJ: 00.000.000/0001-00</p>
+                <p>Telefone: (21) 99925-3788</p>
+                <p>Email: <a href="mailto:contato@cosmosec.com.br" className="text-primary hover:underline">contato@cosmosec.com.br</a></p>
+              </div>
+            </section>
+
+            <section>
               <h2 className="text-xl font-semibold text-foreground">1. Aceitação dos Termos</h2>
               <p className="text-muted-foreground">
                 Ao acessar e utilizar a plataforma CosmoSec ("Serviço"), você concorda em cumprir e estar 
