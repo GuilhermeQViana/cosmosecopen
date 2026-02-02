@@ -26,12 +26,14 @@ interface CreateFrameworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editingFramework?: CustomFramework | null;
+  onSuccess?: (data: { id: string; code: string; name: string }) => void;
 }
 
 export function CreateFrameworkDialog({ 
   open, 
   onOpenChange,
-  editingFramework 
+  editingFramework,
+  onSuccess,
 }: CreateFrameworkDialogProps) {
   const createFramework = useCreateCustomFramework();
   const updateFramework = useUpdateCustomFramework();

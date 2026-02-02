@@ -1,14 +1,23 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFrameworkContext, FrameworkCode } from '@/contexts/FrameworkContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Building2, Landmark, Check, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Check, Loader2, ArrowLeft, Sparkles, Plus, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { StarField } from '@/components/ui/star-field';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { getFrameworkIcon } from '@/lib/framework-icons';
+import { CreateFrameworkDialog } from '@/components/configuracoes/CreateFrameworkDialog';
+import { FrameworkActionsMenu } from '@/components/configuracoes/FrameworkActionsMenu';
+import { FrameworkSuccessDialog } from '@/components/configuracoes/FrameworkSuccessDialog';
+import { FrameworkControlsManager } from '@/components/configuracoes/FrameworkControlsManager';
+import { CustomFramework } from '@/hooks/useCustomFrameworks';
+import { cn } from '@/lib/utils';
 
 const standardFrameworkColors: Record<string, string> = {
   nist_csf: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
@@ -27,6 +36,16 @@ const frameworkDescriptions: Record<string, string> = {
 export default function SelecionarFramework() {
   const navigate = useNavigate();
   const { frameworks, currentFramework, setFramework, isLoading: frameworksLoading } = useFrameworkContext();
+
+  // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editingFramework, setEditingFramework] = useState<CustomFramework | null>(null);
+  const [managingFramework, setManagingFramework] = useState<CustomFramework | null>(null);
+  const [successDialogData, setSuccessDialogData] = useState<{
+    id: string;
+    code: string;
+    name: string;
+  } | null>(null);
 
   // Get control counts for each framework
   const { data: controlCounts = {} } = useQuery({
@@ -51,6 +70,30 @@ export default function SelecionarFramework() {
     navigate('/dashboard');
   };
 
+  const handleCreateSuccess = (data: { id: string; code: string; name: string }) => {
+    setCreateDialogOpen(false);
+    setSuccessDialogData(data);
+  };
+
+  const handleEditFramework = (framework: CustomFramework) => {
+    setEditingFramework(framework);
+  };
+
+  const handleManageControls = (framework: CustomFramework) => {
+    setManagingFramework(framework);
+  };
+
+  const handleSuccessManageControls = () => {
+    if (successDialogData) {
+      // Find the framework in the list to open controls manager
+      const framework = frameworks.find(f => f.id === successDialogData.id);
+      if (framework) {
+        setSuccessDialogData(null);
+        setManagingFramework(framework as unknown as CustomFramework);
+      }
+    }
+  };
+
   if (frameworksLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
@@ -61,6 +104,23 @@ export default function SelecionarFramework() {
             <Loader2 className="w-10 h-10 animate-spin text-primary relative z-10" />
           </div>
           <p className="text-muted-foreground animate-pulse">Carregando frameworks...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show controls manager in a sheet
+  if (managingFramework) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/10" />
+        <StarField starCount={40} dustCount={15} shootingStarCount={1} />
+        
+        <div className="container max-w-5xl mx-auto py-8 px-4 relative z-10">
+          <FrameworkControlsManager 
+            framework={managingFramework} 
+            onBack={() => setManagingFramework(null)} 
+          />
         </div>
       </div>
     );
@@ -94,9 +154,19 @@ export default function SelecionarFramework() {
           <h1 className="text-3xl font-bold text-foreground mb-3 font-space">
             Selecione um Framework
           </h1>
-          <p className="text-muted-foreground max-w-md mx-auto">
+          <p className="text-muted-foreground max-w-md mx-auto mb-6">
             Escolha o framework de compliance que deseja trabalhar. Você pode trocar a qualquer momento.
           </p>
+
+          {/* Create Framework Button */}
+          <Button 
+            onClick={() => setCreateDialogOpen(true)}
+            className="gap-2"
+            variant="outline"
+          >
+            <Plus className="w-4 h-4" />
+            Novo Framework
+          </Button>
         </div>
 
         {/* Framework Cards */}
@@ -106,18 +176,29 @@ export default function SelecionarFramework() {
             const isSelected = currentFramework?.code === code;
             const controlCount = controlCounts[framework.id] || 0;
             const isCustom = framework.is_custom;
+            const isEmpty = isCustom && controlCount === 0;
             const colorClass = isCustom ? customFrameworkColor : (standardFrameworkColors[code] || customFrameworkColor);
             const IconComponent = getFrameworkIcon(isCustom ? framework.icon : code);
 
             return (
               <Card
                 key={framework.id}
-                className={`relative cursor-pointer transition-all duration-300 border-border/50 bg-card/40 backdrop-blur-xl hover:shadow-xl hover:shadow-primary/10 group animate-fade-in ${
+                className={cn(
+                  "relative cursor-pointer transition-all duration-300 border-border/50 bg-card/40 backdrop-blur-xl hover:shadow-xl hover:shadow-primary/10 group animate-fade-in",
                   isSelected ? 'border-primary ring-2 ring-primary/30 shadow-lg shadow-primary/20' : 'hover:border-primary/50'
-                }`}
+                )}
                 style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => handleSelectFramework(code)}
               >
+                {/* Actions Menu for Custom Frameworks */}
+                {isCustom && (
+                  <FrameworkActionsMenu
+                    framework={framework as unknown as CustomFramework}
+                    onEdit={handleEditFramework}
+                    onManageControls={handleManageControls}
+                  />
+                )}
+
                 {isSelected && (
                   <div className="absolute top-3 right-3 z-10">
                     <div className="w-7 h-7 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg shadow-primary/30">
@@ -134,7 +215,7 @@ export default function SelecionarFramework() {
                       <IconComponent className="w-8 h-8" />
                     </div>
                   </div>
-                  <CardTitle className="text-lg flex items-center gap-2 font-space">
+                  <CardTitle className="text-lg flex items-center gap-2 font-space flex-wrap">
                     {framework.name}
                     {framework.version && (
                       <Badge variant="secondary" className="text-xs font-normal bg-secondary/50">
@@ -157,6 +238,24 @@ export default function SelecionarFramework() {
                     <span className="text-muted-foreground">Controles</span>
                     <span className="font-bold text-foreground font-space">{controlCount}</span>
                   </div>
+
+                  {/* Empty Framework Warning */}
+                  {isEmpty && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="mt-3 flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            <span>Adicione controles</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Este framework não possui controles.</p>
+                          <p>Clique no menu ⋮ para importar ou adicionar.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -175,6 +274,32 @@ export default function SelecionarFramework() {
           </Button>
         </div>
       </div>
+
+      {/* Create Framework Dialog */}
+      <CreateFrameworkDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={handleCreateSuccess}
+      />
+
+      {/* Edit Framework Dialog */}
+      <CreateFrameworkDialog
+        open={!!editingFramework}
+        onOpenChange={(open) => !open && setEditingFramework(null)}
+        editingFramework={editingFramework}
+      />
+
+      {/* Success Dialog */}
+      {successDialogData && (
+        <FrameworkSuccessDialog
+          open={!!successDialogData}
+          onOpenChange={(open) => !open && setSuccessDialogData(null)}
+          frameworkId={successDialogData.id}
+          frameworkCode={successDialogData.code}
+          frameworkName={successDialogData.name}
+          onManageControls={handleSuccessManageControls}
+        />
+      )}
     </div>
   );
 }
