@@ -53,6 +53,8 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                  <Route path="/redefinir-senha" element={<ResetPassword />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
                   <Route path="/selecionar-modulo" element={<SelecionarModulo />} />
