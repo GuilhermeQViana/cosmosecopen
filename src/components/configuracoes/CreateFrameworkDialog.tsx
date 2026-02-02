@@ -82,7 +82,27 @@ export function CreateFrameworkDialog({
           icon: selectedIcon,
         });
         toast.success('Framework atualizado com sucesso');
+        onOpenChange(false);
       } else {
+        const data = await createFramework.mutateAsync({
+          name: name.trim(),
+          code: code.trim().toUpperCase(),
+          version: version.trim() || undefined,
+          description: description.trim() || undefined,
+          icon: selectedIcon,
+        });
+        toast.success('Framework criado com sucesso');
+        
+        if (onSuccess && data) {
+          onSuccess({
+            id: data.id,
+            code: data.code,
+            name: data.name,
+          });
+        } else {
+          onOpenChange(false);
+        }
+      }
         await createFramework.mutateAsync({
           name: name.trim(),
           code: code.trim().toUpperCase(),
