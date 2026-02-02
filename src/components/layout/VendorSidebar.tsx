@@ -41,6 +41,7 @@ import {
   ArrowLeftRight,
   FileText,
   Calendar,
+  FolderOpen,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
