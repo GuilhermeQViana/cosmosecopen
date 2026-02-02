@@ -255,6 +255,10 @@ export function AppSidebar() {
                   <Layers className="w-4 h-4 mr-2" />
                   Ver todos os frameworks
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/configuracoes?tab=frameworks')}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Gerenciar Frameworks
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

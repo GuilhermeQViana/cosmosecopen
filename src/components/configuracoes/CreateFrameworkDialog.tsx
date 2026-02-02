@@ -26,12 +26,14 @@ interface CreateFrameworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editingFramework?: CustomFramework | null;
+  onSuccess?: (data: { id: string; code: string; name: string }) => void;
 }
 
 export function CreateFrameworkDialog({ 
   open, 
   onOpenChange,
-  editingFramework 
+  editingFramework,
+  onSuccess,
 }: CreateFrameworkDialogProps) {
   const createFramework = useCreateCustomFramework();
   const updateFramework = useUpdateCustomFramework();
@@ -80,8 +82,9 @@ export function CreateFrameworkDialog({
           icon: selectedIcon,
         });
         toast.success('Framework atualizado com sucesso');
+        onOpenChange(false);
       } else {
-        await createFramework.mutateAsync({
+        const data = await createFramework.mutateAsync({
           name: name.trim(),
           code: code.trim().toUpperCase(),
           version: version.trim() || undefined,
@@ -89,8 +92,17 @@ export function CreateFrameworkDialog({
           icon: selectedIcon,
         });
         toast.success('Framework criado com sucesso');
+        
+        if (onSuccess && data) {
+          onSuccess({
+            id: data.id,
+            code: data.code,
+            name: data.name,
+          });
+        } else {
+          onOpenChange(false);
+        }
       }
-      onOpenChange(false);
     } catch (error: any) {
       if (error.message?.includes('duplicate')) {
         toast.error('Já existe um framework com este código');
