@@ -1,219 +1,187 @@
 
-# Plano: Banco de Evidencias para Gestao de Fornecedores
+# Plano: Melhorias de Usabilidade em Frameworks Customizados
 
-## Contexto e Objetivo
+## Problemas Identificados
 
-O modulo de Gestao de Fornecedores (VRM) atualmente possui apenas evidencias vinculadas a avaliacoes especificas (`vendor_evidences`). O objetivo e criar um **Cofre de Evidencias dedicado** para fornecedores, permitindo:
+### Situacao Atual
+A gestao de frameworks customizados esta escondida em **Configuracoes > Frameworks**, dificultando o acesso. A pagina de selecao de framework (`/selecionar-framework`) nao oferece acoes rapidas para criar, editar ou excluir frameworks customizados.
 
-- Armazenar evidencias separadas por fornecedor
-- Navegar entre fornecedores em uma arvore lateral
-- Gerenciar evidencias independentes de avaliacoes
-- Manter consistencia visual com o Cofre de Evidencias do modulo GRC
-
----
-
-## Arquitetura Atual
-
-### Tabelas Existentes
-- `vendor_evidences` - vinculadas a `vendor_assessments` (assessment_id obrigatorio)
-- `evidences` - modulo GRC (usa `evidence_folders` para organizacao)
-
-### Limitacao
-As evidencias de fornecedores estao sempre atreladas a uma avaliacao, nao existe um repositorio geral por fornecedor.
+### Lacunas de UX
+| Problema | Impacto |
+|----------|---------|
+| Sem botao "Criar Framework" na pagina de selecao | Usuario precisa saber que existe a aba em Configuracoes |
+| Sem acoes de editar/excluir nos cards | Usuario tem que navegar para outra secao |
+| Falta indicador visual de "framework vazio" | Confusao quando framework tem 0 controles |
+| Fluxo de importacao de controles desconexo | Apos criar, usuario nao sabe como adicionar controles |
 
 ---
 
-## Solucao Proposta
+## Melhorias Propostas
 
-### 1. Nova Tabela: `vendor_evidence_vault`
+### 1. Adicionar Botoes de Acao na Pagina de Selecao
 
-Criar tabela para evidencias gerais de fornecedores (contratos, certificacoes, DDQ, etc.):
+**Arquivo:** `src/pages/SelecionarFramework.tsx`
+
+Adicionar na pagina de selecao:
+- Botao "**+ Novo Framework**" no header
+- Menu de contexto (dropdown) nos cards de frameworks customizados com:
+  - Editar metadados
+  - Gerenciar controles
+  - Importar CSV
+  - Excluir framework
+- Badge visual para frameworks sem controles ("Vazio - adicione controles")
 
 ```text
-vendor_evidence_vault
-├── id (uuid, PK)
-├── vendor_id (uuid, FK -> vendors)
-├── organization_id (uuid, FK -> organizations)
-├── name (text)
-├── description (text, nullable)
-├── file_path (text)
-├── file_type (text, nullable)
-├── file_size (bigint, nullable)
-├── classification (text) - publico, interno, confidencial
-├── category (text) - contrato, certificacao, ddq, politica, outro
-├── expires_at (timestamptz, nullable)
-├── tags (text[], nullable)
-├── uploaded_by (uuid, nullable)
-├── created_at (timestamptz)
-├── updated_at (timestamptz)
+┌─────────────────────────────────────────────────────────────┐
+│  Selecione um Framework           [+ Novo Framework]        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ BCB/CMN      │  │ ISO 27001    │  │ NIST CSF     │      │
+│  │ 49 controles │  │ 93 controles │  │ 75 controles │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│                                                             │
+│  ┌──────────────┐                                          │
+│  │ SOC 2        │ ⋮  <- Menu de acoes                      │
+│  │ Custom       │     [Editar]                             │
+│  │ 0 controles  │     [Gerenciar Controles]                │
+│  │ ⚠ Vazio      │     [Importar CSV]                       │
+│  └──────────────┘     [Excluir]                            │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 2. Nova Pagina: `/vrm/evidencias`
+### 2. Mover Dialogs para Serem Reutilizaveis
 
-Interface similar a `/evidencias` do modulo GRC:
-- Painel esquerdo: arvore de fornecedores
-- Painel direito: grid de evidencias do fornecedor selecionado
-- Filtros por classificacao e categoria
-- Upload, preview, download, exclusao
+Os componentes `CreateFrameworkDialog` e `FrameworkControlsManager` ja existem em `src/components/configuracoes/`. Vamos reutiliza-los na pagina de selecao.
 
-### 3. Navegacao
+### 3. Adicionar Navegacao Direta para Gerenciamento
 
-Adicionar item "Evidencias" no menu lateral VRM entre "Requisitos" e "Agenda".
+Apos criar framework customizado, oferecer opcao de:
+- Ir direto para importar controles (CSV)
+- Adicionar controles manualmente
+- Voltar para selecao
+
+### 4. Melhorar Feedback Visual nos Cards
+
+- **Badge "Vazio"** quando `controlCount === 0`
+- **Tooltip** explicando como adicionar controles
+- **Destaque visual** para frameworks customizados (borda roxa ja existe)
+
+### 5. Adicionar Link Rapido na Sidebar
+
+No dropdown de framework da sidebar, adicionar opcao:
+- "Gerenciar Frameworks Customizados" -> abre `/configuracoes?tab=frameworks`
 
 ---
-
-## Arquivos a Criar
-
-| Arquivo | Descricao |
-|---------|-----------|
-| `src/pages/VendorEvidencias.tsx` | Pagina principal do cofre |
-| `src/hooks/useVendorEvidenceVault.ts` | Hook para CRUD de evidencias |
-| `src/components/fornecedores/VendorEvidenceVault.tsx` | Componente de listagem |
-| `src/components/fornecedores/VendorEvidenceUploadVault.tsx` | Dialog de upload |
-| `src/components/fornecedores/VendorEvidenceCard.tsx` | Card de evidencia |
-| `src/components/fornecedores/VendorEvidencePreview.tsx` | Preview de arquivo |
-| `src/components/fornecedores/VendorEvidenceTree.tsx` | Arvore de fornecedores |
-| `src/components/fornecedores/VendorEvidenceStats.tsx` | Estatisticas |
 
 ## Arquivos a Modificar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/App.tsx` | Adicionar rota `/vrm/evidencias` |
-| `src/components/layout/VendorSidebar.tsx` | Adicionar item de menu |
+| `src/pages/SelecionarFramework.tsx` | Adicionar botao criar, menu de acoes, badge vazio |
+| `src/components/layout/AppSidebar.tsx` | Adicionar link "Gerenciar Frameworks" no dropdown |
+| `src/components/configuracoes/CreateFrameworkDialog.tsx` | Adicionar callback `onSuccessWithNav` para redirecionar |
+
+## Arquivos a Criar
+
+| Arquivo | Descricao |
+|---------|-----------|
+| `src/components/configuracoes/FrameworkActionsMenu.tsx` | Menu dropdown de acoes (editar, gerenciar, excluir) |
 
 ---
 
-## Estrutura da Pagina
+## Detalhes de Implementacao
+
+### 1. SelecionarFramework.tsx - Adicionar Acoes
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  Header: Cofre de Evidencias de Fornecedores                │
-│  [+ Nova Evidencia]                                         │
-├─────────────────────────────────────────────────────────────┤
-│  Stats: Total | Por Classificacao | Proximos a Expirar      │
-├───────────────┬─────────────────────────────────────────────┤
-│               │  Filtros: Busca | Classificacao | Categoria │
-│  Arvore de    ├─────────────────────────────────────────────┤
-│  Fornecedores │                                             │
-│               │  Grid de Evidencias (Cards)                 │
-│  - VND-001    │  ┌────────┐ ┌────────┐ ┌────────┐          │
-│  - VND-002    │  │ Evid 1 │ │ Evid 2 │ │ Evid 3 │          │
-│  - VND-003    │  └────────┘ └────────┘ └────────┘          │
-│    ...        │                                             │
-│               │                                             │
-└───────────────┴─────────────────────────────────────────────┘
+Imports necessarios:
+- CreateFrameworkDialog
+- FrameworkControlsManager
+- AlertDialog (para confirmacao de exclusao)
+- DropdownMenu (para menu de acoes)
+- useDeleteCustomFramework (hook)
+
+Estados necessarios:
+- createDialogOpen: boolean
+- editingFramework: CustomFramework | null
+- managingFramework: CustomFramework | null
+- deleteFrameworkId: string | null
+
+Logica de exclusao:
+- Confirmacao via AlertDialog
+- Usar useDeleteCustomFramework hook
+- Invalidar queries apos exclusao
 ```
 
----
+### 2. Badge "Vazio" para Frameworks sem Controles
 
-## Categorias de Evidencias
-
-- **Contrato** - Contratos e aditivos
-- **Certificacao** - ISO, SOC2, PCI-DSS, etc.
-- **DDQ** - Due Diligence Questionnaire
-- **Politica** - Politicas de seguranca do fornecedor
-- **SLA** - Acordos de nivel de servico
-- **Auditoria** - Relatorios de auditoria
-- **Outro** - Documentos diversos
-
----
-
-## Classificacoes (reutilizar do modulo GRC)
-
-- `publico` - Documentos publicos
-- `interno` - Uso interno
-- `confidencial` - Acesso restrito
-
----
-
-## Fluxo de Upload
-
-1. Usuario seleciona fornecedor na arvore
-2. Clica em "Nova Evidencia"
-3. Dialog abre com:
-   - Dropzone para arquivo
-   - Nome (auto-preenchido)
-   - Categoria (select)
-   - Classificacao (select)
-   - Descricao (opcional)
-   - Tags (opcional)
-   - Data de expiracao (opcional)
-4. Arquivo enviado para bucket `vendor-evidences`
-5. Registro criado em `vendor_evidence_vault`
-
----
-
-## Detalhes Tecnicos
-
-### Migracao SQL
-
-```sql
-CREATE TABLE public.vendor_evidence_vault (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  vendor_id uuid NOT NULL REFERENCES public.vendors(id) ON DELETE CASCADE,
-  organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  description text,
-  file_path text NOT NULL,
-  file_type text,
-  file_size bigint,
-  classification text NOT NULL DEFAULT 'interno',
-  category text NOT NULL DEFAULT 'outro',
-  expires_at timestamptz,
-  tags text[],
-  uploaded_by uuid,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
--- RLS
-ALTER TABLE public.vendor_evidence_vault ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view evidences from their organization"
-  ON public.vendor_evidence_vault FOR SELECT
-  USING (organization_id IN (
-    SELECT organization_id FROM public.profiles WHERE id = auth.uid()
-  ));
-
-CREATE POLICY "Users can insert evidences to their organization"
-  ON public.vendor_evidence_vault FOR INSERT
-  WITH CHECK (organization_id IN (
-    SELECT organization_id FROM public.profiles WHERE id = auth.uid()
-  ));
-
-CREATE POLICY "Users can update evidences from their organization"
-  ON public.vendor_evidence_vault FOR UPDATE
-  USING (organization_id IN (
-    SELECT organization_id FROM public.profiles WHERE id = auth.uid()
-  ));
-
-CREATE POLICY "Users can delete evidences from their organization"
-  ON public.vendor_evidence_vault FOR DELETE
-  USING (organization_id IN (
-    SELECT organization_id FROM public.profiles WHERE id = auth.uid()
-  ));
+Quando `controlCount === 0` e `is_custom === true`:
+```text
+┌────────────────────┐
+│ ⚠ Adicione         │
+│   controles        │
+└────────────────────┘
 ```
 
-### Reutilizacao de Componentes
+Estilos: `bg-amber-500/10 text-amber-600 border-amber-500/30`
 
-- `ResizablePanelGroup` - Layout split igual ao `/evidencias`
-- Padroes visuais do `EvidenceCard` e `EvidencePreviewDialog`
-- Hook pattern similar ao `useEvidences`
+### 3. Menu de Acoes no Card
 
-### Storage
+Posicionar no canto superior direito do card (apenas para `is_custom === true`):
 
-Reutilizar o bucket `vendor-evidences` existente com path:
-`{organization_id}/vault/{vendor_id}/{uuid}.{ext}`
+Opcoes:
+- **Editar** -> abre CreateFrameworkDialog com dados preenchidos
+- **Gerenciar Controles** -> abre FrameworkControlsManager inline ou navega
+- **Importar CSV** -> navega para Configuracoes > Frameworks > Importar
+- **Excluir** -> abre AlertDialog de confirmacao
+
+### 4. Fluxo Pos-Criacao
+
+Apos criar novo framework, exibir Dialog de sucesso com opcoes:
+- "Importar Controles (CSV)" -> vai para importacao
+- "Adicionar Controle Manualmente" -> vai para gerenciador
+- "Selecionar Framework" -> fecha e seleciona o novo
+
+---
+
+## Fluxo de Usuario Melhorado
+
+```text
+Pagina de Selecao
+       │
+       ├─► Clicar em "Novo Framework"
+       │         │
+       │         ▼
+       │   Dialog de Criacao
+       │         │
+       │         ├─► Salvar -> Dialog "E agora?"
+       │         │                │
+       │         │                ├─► Importar CSV
+       │         │                ├─► Adicionar Manualmente
+       │         │                └─► Selecionar e Usar
+       │         │
+       │         └─► Cancelar -> Volta
+       │
+       ├─► Clicar em card customizado
+       │         │
+       │         └─► Seleciona e vai para Dashboard
+       │
+       └─► Clicar em menu (⋮) do card
+                 │
+                 ├─► Editar -> Dialog preenchido
+                 ├─► Gerenciar -> Lista de controles
+                 ├─► Importar CSV -> Tela de importacao
+                 └─► Excluir -> Confirmacao -> Remove
+```
 
 ---
 
 ## Resultado Esperado
 
-1. Nova pagina `/vrm/evidencias` acessivel pelo menu lateral
-2. Arvore de fornecedores com contador de evidencias
-3. Upload de evidencias vinculadas a fornecedores especificos
-4. Filtros por classificacao e categoria
-5. Preview inline para PDFs e imagens
-6. Indicador de documentos proximos a expirar
-7. Consistencia visual com o restante da plataforma
+1. Usuario pode criar framework direto na pagina de selecao
+2. Acoes de editar/excluir acessiveis sem sair da pagina
+3. Feedback visual claro para frameworks vazios
+4. Fluxo guiado apos criacao de novo framework
+5. Acesso rapido ao gerenciamento via sidebar
