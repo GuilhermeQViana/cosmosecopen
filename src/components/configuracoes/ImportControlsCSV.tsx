@@ -216,7 +216,7 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
                     <TableHead className="w-28">Código</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Categoria</TableHead>
-                    <TableHead className="w-32">Erros</TableHead>
+                    <TableHead className="min-w-[200px]">Erros</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
