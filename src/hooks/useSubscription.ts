@@ -168,12 +168,16 @@ export function useSubscription() {
   }, [user]);
 
   useEffect(() => {
-    checkSubscription();
-  }, [checkSubscription]);
+    // Only check if organization changed or initial load
+    const orgChanged = organization?.id !== lastCheckedOrg.current;
+    if (orgChanged || !initialCheckDone.current) {
+      checkSubscription();
+    }
+  }, [organization?.id, checkSubscription]);
 
-  // Refresh every minute
+  // Refresh every 5 minutes (less aggressive than every minute)
   useEffect(() => {
-    const interval = setInterval(checkSubscription, 60000);
+    const interval = setInterval(() => checkSubscription(true), 300000);
     return () => clearInterval(interval);
   }, [checkSubscription]);
 

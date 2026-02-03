@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -32,6 +32,10 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Track if initial load has completed to avoid re-loading on navigation
+  const initialLoadDone = useRef(false);
+  const lastUserId = useRef<string | null>(null);
 
   // Buscar todas as organizações do usuário
   const refreshOrganizations = useCallback(async () => {
@@ -50,7 +54,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       console.error('Error fetching organizations:', error);
       setOrganizations([]);
     }
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the entire user object
 
   // Buscar organização ativa do usuário
   const refreshOrganization = useCallback(async () => {
@@ -89,7 +93,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id
 
   // Definir organização ativa
   const setActiveOrganization = useCallback(async (orgId: string): Promise<boolean> => {
@@ -135,14 +139,28 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   }, [refreshOrganizations, refreshOrganization]);
 
   useEffect(() => {
+    // Only reload if user actually changed (login/logout), not on every navigation
+    const userChanged = user?.id !== lastUserId.current;
+    
+    if (!userChanged && initialLoadDone.current) {
+      // Same user, already loaded - skip re-fetching
+      return;
+    }
+    
+    lastUserId.current = user?.id || null;
+    
     const loadData = async () => {
-      setLoading(true);
+      // Only show loading on first load or user change
+      if (!initialLoadDone.current || userChanged) {
+        setLoading(true);
+      }
       await Promise.all([refreshOrganization(), refreshOrganizations()]);
+      initialLoadDone.current = true;
       setLoading(false);
     };
     
     loadData();
-  }, [user, refreshOrganization, refreshOrganizations]);
+  }, [user?.id, refreshOrganization, refreshOrganizations]);
 
   return (
     <OrganizationContext.Provider value={{ 
