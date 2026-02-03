@@ -1,77 +1,51 @@
 
-# Plano: Melhorias de Usabilidade em Frameworks Customizados
+# Plano: Exibir Detalhes dos Erros na Importacao de CSV
 
-## Problemas Identificados
+## Problema Identificado
 
-### Situacao Atual
-A gestao de frameworks customizados esta escondida em **Configuracoes > Frameworks**, dificultando o acesso. A pagina de selecao de framework (`/selecionar-framework`) nao oferece acoes rapidas para criar, editar ou excluir frameworks customizados.
+Na tela de importacao de controles CSV, quando um item tem erros, aparece apenas um badge "1 erro(s)" sem explicar qual foi o problema especifico. O usuario nao consegue saber se:
+- O codigo esta vazio ou duplicado
+- O nome esta faltando
+- O peso esta invalido
 
-### Lacunas de UX
-| Problema | Impacto |
-|----------|---------|
-| Sem botao "Criar Framework" na pagina de selecao | Usuario precisa saber que existe a aba em Configuracoes |
-| Sem acoes de editar/excluir nos cards | Usuario tem que navegar para outra secao |
-| Falta indicador visual de "framework vazio" | Confusao quando framework tem 0 controles |
-| Fluxo de importacao de controles desconexo | Apos criar, usuario nao sabe como adicionar controles |
+Os erros ja sao coletados no hook (`control.errors[]`), mas nao sao exibidos na interface.
 
 ---
 
-## Melhorias Propostas
+## Solucao Proposta
 
-### 1. Adicionar Botoes de Acao na Pagina de Selecao
+### 1. Exibir Erros Inline na Tabela
 
-**Arquivo:** `src/pages/SelecionarFramework.tsx`
-
-Adicionar na pagina de selecao:
-- Botao "**+ Novo Framework**" no header
-- Menu de contexto (dropdown) nos cards de frameworks customizados com:
-  - Editar metadados
-  - Gerenciar controles
-  - Importar CSV
-  - Excluir framework
-- Badge visual para frameworks sem controles ("Vazio - adicione controles")
+Substituir o badge generico "1 erro(s)" por uma lista dos erros reais. Cada erro sera exibido com icone e texto explicativo.
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  Selecione um Framework           [+ Novo Framework]        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ BCB/CMN      │  │ ISO 27001    │  │ NIST CSF     │      │
-│  │ 49 controles │  │ 93 controles │  │ 75 controles │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-│                                                             │
-│  ┌──────────────┐                                          │
-│  │ SOC 2        │ ⋮  <- Menu de acoes                      │
-│  │ Custom       │     [Editar]                             │
-│  │ 0 controles  │     [Gerenciar Controles]                │
-│  │ ⚠ Vazio      │     [Importar CSV]                       │
-│  └──────────────┘     [Excluir]                            │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+Antes:
+| Linha | Status | Codigo | Nome | Categoria | Erros       |
+|-------|--------|--------|------|-----------|-------------|
+| 2     | X      | 4893   | Art. | de que... | [1 erro(s)] |
+
+Depois:
+| Linha | Status | Codigo | Nome | Categoria | Erros                           |
+|-------|--------|--------|------|-----------|----------------------------------|
+| 2     | X      | 4893   | Art. | de que... | - Codigo "4893" duplicado       |
+|       |        |        |      |           |   no arquivo                     |
 ```
 
-### 2. Mover Dialogs para Serem Reutilizaveis
+### 2. Adicionar Tooltip ou Expandir para Muitos Erros
 
-Os componentes `CreateFrameworkDialog` e `FrameworkControlsManager` ja existem em `src/components/configuracoes/`. Vamos reutiliza-los na pagina de selecao.
+Para linhas com varios erros, mostrar o primeiro e permitir ver todos via:
+- HoverCard com lista completa
+- Ou exibir todos empilhados na celula
 
-### 3. Adicionar Navegacao Direta para Gerenciamento
+### 3. Resumo de Erros Agrupados
 
-Apos criar framework customizado, oferecer opcao de:
-- Ir direto para importar controles (CSV)
-- Adicionar controles manualmente
-- Voltar para selecao
-
-### 4. Melhorar Feedback Visual nos Cards
-
-- **Badge "Vazio"** quando `controlCount === 0`
-- **Tooltip** explicando como adicionar controles
-- **Destaque visual** para frameworks customizados (borda roxa ja existe)
-
-### 5. Adicionar Link Rapido na Sidebar
-
-No dropdown de framework da sidebar, adicionar opcao:
-- "Gerenciar Frameworks Customizados" -> abre `/configuracoes?tab=frameworks`
+Adicionar uma secao no final mostrando tipos de erros encontrados:
+```text
+Tipos de erros encontrados:
+- 45 linhas com "Codigo duplicado"  
+- 80 linhas com "Nome e obrigatorio"
+- 26 linhas com "Codigo e obrigatorio"
+```
 
 ---
 
@@ -79,109 +53,88 @@ No dropdown de framework da sidebar, adicionar opcao:
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/pages/SelecionarFramework.tsx` | Adicionar botao criar, menu de acoes, badge vazio |
-| `src/components/layout/AppSidebar.tsx` | Adicionar link "Gerenciar Frameworks" no dropdown |
-| `src/components/configuracoes/CreateFrameworkDialog.tsx` | Adicionar callback `onSuccessWithNav` para redirecionar |
-
-## Arquivos a Criar
-
-| Arquivo | Descricao |
-|---------|-----------|
-| `src/components/configuracoes/FrameworkActionsMenu.tsx` | Menu dropdown de acoes (editar, gerenciar, excluir) |
+| `src/components/configuracoes/ImportControlsCSV.tsx` | Exibir erros detalhados na tabela e resumo agrupado |
 
 ---
 
 ## Detalhes de Implementacao
 
-### 1. SelecionarFramework.tsx - Adicionar Acoes
+### 1. Modificar Celula de Erros na Tabela
 
-```text
-Imports necessarios:
-- CreateFrameworkDialog
-- FrameworkControlsManager
-- AlertDialog (para confirmacao de exclusao)
-- DropdownMenu (para menu de acoes)
-- useDeleteCustomFramework (hook)
+Trocar o Badge generico por lista de erros:
 
-Estados necessarios:
-- createDialogOpen: boolean
-- editingFramework: CustomFramework | null
-- managingFramework: CustomFramework | null
-- deleteFrameworkId: string | null
-
-Logica de exclusao:
-- Confirmacao via AlertDialog
-- Usar useDeleteCustomFramework hook
-- Invalidar queries apos exclusao
+```tsx
+<TableCell>
+  {control.errors.length > 0 && (
+    <div className="space-y-1">
+      {control.errors.map((error, idx) => (
+        <div key={idx} className="text-xs text-destructive flex items-start gap-1">
+          <span className="shrink-0">•</span>
+          <span>{error}</span>
+        </div>
+      ))}
+    </div>
+  )}
+</TableCell>
 ```
 
-### 2. Badge "Vazio" para Frameworks sem Controles
+### 2. Ajustar Largura da Coluna de Erros
 
-Quando `controlCount === 0` e `is_custom === true`:
-```text
-┌────────────────────┐
-│ ⚠ Adicione         │
-│   controles        │
-└────────────────────┘
+Aumentar a largura minima da coluna para acomodar mensagens maiores:
+- De `w-32` para `min-w-[200px]`
+
+### 3. Adicionar Resumo de Erros por Tipo
+
+Agrupar erros por tipo e exibir contagem:
+
+```tsx
+// Agrupar erros por mensagem
+const errorSummary = useMemo(() => {
+  const summary = new Map<string, number>();
+  result.controls.forEach(control => {
+    control.errors.forEach(error => {
+      // Normalizar mensagens de codigo duplicado
+      const key = error.startsWith('Codigo "') 
+        ? 'Codigo duplicado no arquivo' 
+        : error;
+      summary.set(key, (summary.get(key) || 0) + 1);
+    });
+  });
+  return Array.from(summary.entries())
+    .sort((a, b) => b[1] - a[1]);
+}, [result]);
 ```
 
-Estilos: `bg-amber-500/10 text-amber-600 border-amber-500/30`
+### 4. Exibir Resumo na Secao de Atencao
 
-### 3. Menu de Acoes no Card
-
-Posicionar no canto superior direito do card (apenas para `is_custom === true`):
-
-Opcoes:
-- **Editar** -> abre CreateFrameworkDialog com dados preenchidos
-- **Gerenciar Controles** -> abre FrameworkControlsManager inline ou navega
-- **Importar CSV** -> navega para Configuracoes > Frameworks > Importar
-- **Excluir** -> abre AlertDialog de confirmacao
-
-### 4. Fluxo Pos-Criacao
-
-Apos criar novo framework, exibir Dialog de sucesso com opcoes:
-- "Importar Controles (CSV)" -> vai para importacao
-- "Adicionar Controle Manualmente" -> vai para gerenciador
-- "Selecionar Framework" -> fecha e seleciona o novo
-
----
-
-## Fluxo de Usuario Melhorado
-
-```text
-Pagina de Selecao
-       │
-       ├─► Clicar em "Novo Framework"
-       │         │
-       │         ▼
-       │   Dialog de Criacao
-       │         │
-       │         ├─► Salvar -> Dialog "E agora?"
-       │         │                │
-       │         │                ├─► Importar CSV
-       │         │                ├─► Adicionar Manualmente
-       │         │                └─► Selecionar e Usar
-       │         │
-       │         └─► Cancelar -> Volta
-       │
-       ├─► Clicar em card customizado
-       │         │
-       │         └─► Seleciona e vai para Dashboard
-       │
-       └─► Clicar em menu (⋮) do card
-                 │
-                 ├─► Editar -> Dialog preenchido
-                 ├─► Gerenciar -> Lista de controles
-                 ├─► Importar CSV -> Tela de importacao
-                 └─► Excluir -> Confirmacao -> Remove
+```tsx
+{result.invalidCount > 0 && (
+  <div className="p-4 bg-amber-500/10 border ...">
+    <div className="flex items-center gap-2 ...">
+      <AlertTriangle />
+      <span>Atencao - {result.invalidCount} controle(s) com erros</span>
+    </div>
+    
+    <div className="mt-3 space-y-1">
+      <p className="text-xs font-medium text-muted-foreground">
+        Tipos de erros encontrados:
+      </p>
+      {errorSummary.map(([error, count]) => (
+        <div key={error} className="text-sm flex gap-2">
+          <Badge variant="outline">{count}</Badge>
+          <span>{error}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 ```
 
 ---
 
 ## Resultado Esperado
 
-1. Usuario pode criar framework direto na pagina de selecao
-2. Acoes de editar/excluir acessiveis sem sair da pagina
-3. Feedback visual claro para frameworks vazios
-4. Fluxo guiado apos criacao de novo framework
-5. Acesso rapido ao gerenciamento via sidebar
+1. Usuario ve exatamente qual erro ocorreu em cada linha
+2. Erros duplicados sao agrupados e contabilizados no resumo
+3. Facilita corrigir o arquivo CSV antes de reimportar
+4. Interface mais informativa e menos frustrante
