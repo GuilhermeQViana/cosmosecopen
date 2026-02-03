@@ -282,13 +282,26 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
               <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                 <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-2">
                   <AlertTriangle className="h-5 w-5" />
-                  <span className="font-medium">Atenção</span>
+                  <span className="font-medium">Atenção - {result.invalidCount} controle(s) com erros</span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {result.invalidCount} controle(s) contêm erros e não serão importados. 
+                <p className="text-sm text-muted-foreground mb-3">
                   Corrija os erros no arquivo e tente novamente, ou prossiga para importar 
                   apenas os {result.validCount} controles válidos.
                 </p>
+                
+                {errorSummary.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Tipos de erros encontrados:
+                    </p>
+                    {errorSummary.map(([error, count]) => (
+                      <div key={error} className="text-sm flex items-center gap-2">
+                        <Badge variant="outline" className="shrink-0">{count}</Badge>
+                        <span className="text-muted-foreground">{error}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
