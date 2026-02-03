@@ -1,6 +1,6 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -20,11 +20,14 @@ import {
   AlertTriangle,
   Loader2,
   Download,
-  X
+  X,
+  ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useImportControls, downloadTemplate, ParsedControl } from '@/hooks/useImportControls';
+import { useImportControls, downloadTemplate, FieldMapping } from '@/hooks/useImportControls';
 import { useBulkCreateControls, ControlInput } from '@/hooks/useCustomFrameworks';
+import { CSVImportTutorial } from './CSVImportTutorial';
+import { CSVFieldMapper, autoMapFields } from './CSVFieldMapper';
 
 interface ImportControlsCSVProps {
   frameworkId: string;
@@ -32,10 +35,18 @@ interface ImportControlsCSVProps {
   onCancel: () => void;
 }
 
+type ImportStep = 'upload' | 'mapping' | 'preview';
+
 export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportControlsCSVProps) {
-  const { parseFile, isLoading: isParsing, result, error, reset } = useImportControls();
+  const { parseContent, extractHeaders, isLoading: isParsing, result, error, reset } = useImportControls();
   const bulkCreateControls = useBulkCreateControls();
+  
+  const [step, setStep] = useState<ImportStep>('upload');
+  const [csvContent, setCsvContent] = useState<string | null>(null);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [fieldMapping, setFieldMapping] = useState<FieldMapping>({});
   const [importedFile, setImportedFile] = useState<File | null>(null);
+  const [showTutorial, setShowTutorial] = useState(true);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -46,13 +57,27 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
       return;
     }
 
-    setImportedFile(file);
     try {
-      await parseFile(file);
+      const content = await file.text();
+      setCsvContent(content);
+      setImportedFile(file);
+
+      const headers = extractHeaders(content);
+      if (headers.length === 0) {
+        toast.error('Arquivo CSV inválido ou vazio');
+        return;
+      }
+      
+      setCsvHeaders(headers);
+      
+      // Auto-map fields and go to mapping step
+      const autoMapping = autoMapFields(headers);
+      setFieldMapping(autoMapping);
+      setStep('mapping');
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || 'Erro ao ler arquivo');
     }
-  }, [parseFile]);
+  }, [extractHeaders]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
@@ -65,6 +90,17 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
     noClick: false,
     noKeyboard: false,
   });
+
+  const handleMappingConfirm = useCallback(() => {
+    if (!csvContent) return;
+
+    try {
+      parseContent(csvContent, fieldMapping);
+      setStep('preview');
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }, [csvContent, fieldMapping, parseContent]);
 
   const handleImport = async () => {
     if (!result || result.validCount === 0) {
@@ -91,7 +127,21 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
 
   const handleReset = () => {
     reset();
+    setCsvContent(null);
+    setCsvHeaders([]);
+    setFieldMapping({});
     setImportedFile(null);
+    setStep('upload');
+  };
+
+  const handleBackToUpload = () => {
+    reset();
+    setStep('upload');
+  };
+
+  const handleBackToMapping = () => {
+    reset();
+    setStep('mapping');
   };
 
   // Group errors by type for summary
@@ -111,9 +161,19 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
       .sort((a, b) => b[1] - a[1]);
   }, [result]);
 
-  return (
-    <div className="space-y-4">
-      {!result ? (
+  // Render based on current step
+  if (step === 'upload') {
+    return (
+      <div className="space-y-4">
+        {/* Tutorial */}
+        {showTutorial && (
+          <CSVImportTutorial 
+            onDownloadTemplate={downloadTemplate}
+            defaultOpen={true}
+          />
+        )}
+
+        {/* Upload Card */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center justify-between">
@@ -159,7 +219,7 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
                     Arraste um arquivo CSV ou clique para selecionar
                   </p>
                   <p className="text-sm text-muted-foreground mb-4">
-                    O arquivo deve conter as colunas: code, name (obrigatórias)
+                    Você poderá mapear as colunas na próxima etapa
                   </p>
                   <Button 
                     type="button" 
@@ -192,142 +252,187 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
             </div>
           </CardContent>
         </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4" />
-                {importedFile?.name}
-              </span>
-              <Button variant="ghost" size="icon" onClick={handleReset}>
-                <X className="h-4 w-4" />
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Summary */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span className="font-medium">{result.validCount} válidos</span>
-              </div>
-              {result.invalidCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-destructive" />
-                  <span className="font-medium">{result.invalidCount} com erros</span>
-                </div>
-              )}
-              <span className="text-muted-foreground">
-                Total: {result.totalCount} controles
-              </span>
-            </div>
+      </div>
+    );
+  }
 
-            {/* Preview Table */}
-            <ScrollArea className="h-[300px] border rounded-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">Linha</TableHead>
-                    <TableHead className="w-16">Status</TableHead>
-                    <TableHead className="w-28">Código</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead className="min-w-[200px]">Erros</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {result.controls.map((control) => (
-                    <TableRow 
-                      key={control.rowNumber}
-                      className={!control.isValid ? 'bg-destructive/5' : ''}
-                    >
-                      <TableCell className="font-mono text-sm">
-                        {control.rowNumber}
-                      </TableCell>
-                      <TableCell>
-                        {control.isValid ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-destructive" />
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {control.code || '-'}
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate">
-                        {control.name || '-'}
-                      </TableCell>
-                      <TableCell>{control.category || '-'}</TableCell>
-                      <TableCell>
-                        {control.errors.length > 0 && (
-                          <div className="space-y-1">
-                            {control.errors.map((error, idx) => (
-                              <div key={idx} className="text-xs text-destructive flex items-start gap-1">
-                                <span className="shrink-0">•</span>
-                                <span>{error}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-
-            {/* Error Details */}
-            {result.invalidCount > 0 && (
-              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-2">
-                  <AlertTriangle className="h-5 w-5" />
-                  <span className="font-medium">Atenção - {result.invalidCount} controle(s) com erros</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Corrija os erros no arquivo e tente novamente, ou prossiga para importar 
-                  apenas os {result.validCount} controles válidos.
+  if (step === 'mapping') {
+    return (
+      <div className="space-y-4">
+        {/* File info */}
+        <Card className="bg-muted/50">
+          <CardContent className="py-3">
+            <div className="flex items-center gap-3">
+              <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">{importedFile?.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {csvHeaders.length} colunas detectadas
                 </p>
-                
-                {errorSummary.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Tipos de erros encontrados:
-                    </p>
-                    {errorSummary.map(([error, count]) => (
-                      <div key={error} className="text-sm flex items-center gap-2">
-                        <Badge variant="outline" className="shrink-0">{count}</Badge>
-                        <span className="text-muted-foreground">{error}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleBackToUpload}>
+                <X className="h-4 w-4 mr-1" />
+                Trocar arquivo
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Field Mapper */}
+        <CSVFieldMapper
+          csvHeaders={csvHeaders}
+          initialMapping={fieldMapping}
+          onMappingChange={setFieldMapping}
+          onConfirm={handleMappingConfirm}
+          onBack={handleBackToUpload}
+        />
+      </div>
+    );
+  }
+
+  // Preview step
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              {importedFile?.name}
+            </span>
+            <Button variant="ghost" size="icon" onClick={handleReset}>
+              <X className="h-4 w-4" />
+            </Button>
+          </CardTitle>
+          <CardDescription>
+            Revise os dados antes de importar
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Summary */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <span className="font-medium">{result?.validCount || 0} válidos</span>
+            </div>
+            {result && result.invalidCount > 0 && (
+              <div className="flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-destructive" />
+                <span className="font-medium">{result.invalidCount} com erros</span>
               </div>
             )}
+            <span className="text-muted-foreground">
+              Total: {result?.totalCount || 0} controles
+            </span>
+          </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleReset}>
-                Escolher Outro Arquivo
-              </Button>
+          {/* Preview Table */}
+          <ScrollArea className="h-[300px] border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16">Linha</TableHead>
+                  <TableHead className="w-16">Status</TableHead>
+                  <TableHead className="w-28">Código</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead className="min-w-[200px]">Erros</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {result?.controls.map((control) => (
+                  <TableRow 
+                    key={control.rowNumber}
+                    className={!control.isValid ? 'bg-destructive/5' : ''}
+                  >
+                    <TableCell className="font-mono text-sm">
+                      {control.rowNumber}
+                    </TableCell>
+                    <TableCell>
+                      {control.isValid ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-destructive" />
+                      )}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {control.code || '-'}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      {control.name || '-'}
+                    </TableCell>
+                    <TableCell>{control.category || '-'}</TableCell>
+                    <TableCell>
+                      {control.errors.length > 0 && (
+                        <div className="space-y-1">
+                          {control.errors.map((error, idx) => (
+                            <div key={idx} className="text-xs text-destructive flex items-start gap-1">
+                              <span className="shrink-0">•</span>
+                              <span>{error}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+
+          {/* Error Details */}
+          {result && result.invalidCount > 0 && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-2">
+                <AlertTriangle className="h-5 w-5" />
+                <span className="font-medium">Atenção - {result.invalidCount} controle(s) com erros</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                Corrija os erros no arquivo e tente novamente, ou prossiga para importar 
+                apenas os {result.validCount} controles válidos.
+              </p>
+              
+              {errorSummary.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Tipos de erros encontrados:
+                  </p>
+                  {errorSummary.map(([error, count]) => (
+                    <div key={error} className="text-sm flex items-center gap-2">
+                      <Badge variant="outline" className="shrink-0">{count}</Badge>
+                      <span className="text-muted-foreground">{error}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-between pt-2">
+            <Button variant="outline" onClick={handleBackToMapping}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar ao Mapeamento
+            </Button>
+            <div className="flex gap-2">
               <Button variant="outline" onClick={onCancel}>
                 Cancelar
               </Button>
               <Button 
                 onClick={handleImport}
-                disabled={result.validCount === 0 || bulkCreateControls.isPending}
+                disabled={(result?.validCount || 0) === 0 || bulkCreateControls.isPending}
               >
                 {bulkCreateControls.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Upload className="mr-2 h-4 w-4" />
                 )}
-                Importar {result.validCount} Controles
+                Importar {result?.validCount || 0} Controles
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
