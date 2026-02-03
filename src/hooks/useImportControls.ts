@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { ControlInput } from './useCustomFrameworks';
 
+export type FieldMapping = Record<string, string | null>;
+
 export interface ParsedControl extends ControlInput {
   rowNumber: number;
   errors: string[];
@@ -14,24 +16,20 @@ export interface ImportResult {
   totalCount: number;
 }
 
-const REQUIRED_COLUMNS = ['code', 'name'];
-const OPTIONAL_COLUMNS = [
-  'category',
-  'description',
-  'weight',
-  'criticality',
-  'weight_reason',
-  'implementation_example',
-  'evidence_example',
-  'order_index',
-];
+const REQUIRED_FIELDS = ['code', 'name'];
 
 export function useImportControls() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const parseCSV = useCallback((content: string): ImportResult => {
+  const extractHeaders = useCallback((content: string): string[] => {
+    const lines = content.split(/\r?\n/);
+    if (lines.length === 0) return [];
+    return parseCSVLine(lines[0]).map(h => h.trim());
+  }, []);
+
+  const parseCSV = useCallback((content: string, customMapping?: FieldMapping): ImportResult => {
     const lines = content.split(/\r?\n/).filter((line) => line.trim());
     
     if (lines.length < 2) {
@@ -39,12 +37,33 @@ export function useImportControls() {
     }
 
     // Parse header
-    const header = parseCSVLine(lines[0]).map((h) => h.toLowerCase().trim());
+    const header = parseCSVLine(lines[0]).map((h) => h.trim());
     
-    // Validate required columns
-    const missingColumns = REQUIRED_COLUMNS.filter((col) => !header.includes(col));
-    if (missingColumns.length > 0) {
-      throw new Error(`Colunas obrigatórias faltando: ${missingColumns.join(', ')}`);
+    // Build effective mapping
+    let effectiveMapping: Record<string, string>;
+    
+    if (customMapping) {
+      // Use custom mapping - invert it to get header -> system field
+      effectiveMapping = {};
+      header.forEach((h, index) => {
+        const systemField = customMapping[h];
+        if (systemField) {
+          effectiveMapping[index.toString()] = systemField;
+        }
+      });
+    } else {
+      // Use header directly (legacy behavior)
+      effectiveMapping = {};
+      header.forEach((h, index) => {
+        effectiveMapping[index.toString()] = h.toLowerCase().trim();
+      });
+    }
+
+    // Validate required fields are mapped
+    const mappedFields = new Set(Object.values(effectiveMapping));
+    const missingRequired = REQUIRED_FIELDS.filter(f => !mappedFields.has(f));
+    if (missingRequired.length > 0) {
+      throw new Error(`Os campos obrigatórios "${missingRequired.join(', ')}" devem ser mapeados`);
     }
 
     const controls: ParsedControl[] = [];
@@ -57,10 +76,13 @@ export function useImportControls() {
       const values = parseCSVLine(line);
       const errors: string[] = [];
       
-      // Map values to columns
+      // Map values to system fields using the effective mapping
       const row: Record<string, string> = {};
-      header.forEach((col, index) => {
-        row[col] = values[index]?.trim() || '';
+      header.forEach((_, index) => {
+        const systemField = effectiveMapping[index.toString()];
+        if (systemField) {
+          row[systemField] = values[index]?.trim() || '';
+        }
       });
 
       // Validate required fields
@@ -127,14 +149,35 @@ export function useImportControls() {
   }, []);
 
   const parseFile = useCallback(
-    async (file: File): Promise<ImportResult> => {
+    async (file: File, customMapping?: FieldMapping): Promise<ImportResult> => {
       setIsLoading(true);
       setError(null);
       setResult(null);
 
       try {
         const content = await file.text();
-        const parsed = parseCSV(content);
+        const parsed = parseCSV(content, customMapping);
+        setResult(parsed);
+        return parsed;
+      } catch (err: any) {
+        const errorMessage = err.message || 'Erro ao processar arquivo';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [parseCSV]
+  );
+
+  const parseContent = useCallback(
+    (content: string, customMapping?: FieldMapping): ImportResult => {
+      setIsLoading(true);
+      setError(null);
+      setResult(null);
+
+      try {
+        const parsed = parseCSV(content, customMapping);
         setResult(parsed);
         return parsed;
       } catch (err: any) {
@@ -156,6 +199,8 @@ export function useImportControls() {
 
   return {
     parseFile,
+    parseContent,
+    extractHeaders,
     isLoading,
     result,
     error,
@@ -193,7 +238,7 @@ function parseCSVLine(line: string): string[] {
 }
 
 export function generateCSVTemplate(): string {
-  const headers = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
+  const headers = ['code', 'name', 'category', 'description', 'weight', 'criticality', 'weight_reason', 'implementation_example', 'evidence_example', 'order_index'];
   const exampleRows = [
     {
       code: 'CTRL-001',
