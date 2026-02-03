@@ -38,12 +38,14 @@ interface ImportControlsCSVProps {
 type ImportStep = 'upload' | 'mapping' | 'preview';
 
 export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportControlsCSVProps) {
-  const { parseContent, extractHeaders, isLoading: isParsing, result, error, reset } = useImportControls();
+  const { parseContent, extractHeaders, isLoading: isParsing, result, error, reset, detectedDelimiter } = useImportControls();
   const bulkCreateControls = useBulkCreateControls();
   
   const [step, setStep] = useState<ImportStep>('upload');
   const [csvContent, setCsvContent] = useState<string | null>(null);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [csvDelimiter, setCsvDelimiter] = useState<string>(',');
+  const [csvDelimiterName, setCsvDelimiterName] = useState<string>('Vírgula');
   const [fieldMapping, setFieldMapping] = useState<FieldMapping>({});
   const [importedFile, setImportedFile] = useState<File | null>(null);
   const [showTutorial, setShowTutorial] = useState(true);
@@ -62,13 +64,15 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
       setCsvContent(content);
       setImportedFile(file);
 
-      const headers = extractHeaders(content);
+      const { headers, delimiter, delimiterName } = extractHeaders(content);
       if (headers.length === 0) {
         toast.error('Arquivo CSV inválido ou vazio');
         return;
       }
       
       setCsvHeaders(headers);
+      setCsvDelimiter(delimiter);
+      setCsvDelimiterName(delimiterName);
       
       // Auto-map fields and go to mapping step
       const autoMapping = autoMapFields(headers);
@@ -95,12 +99,12 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
     if (!csvContent) return;
 
     try {
-      parseContent(csvContent, fieldMapping);
+      parseContent(csvContent, fieldMapping, csvDelimiter);
       setStep('preview');
     } catch (err: any) {
       toast.error(err.message);
     }
-  }, [csvContent, fieldMapping, parseContent]);
+  }, [csvContent, fieldMapping, csvDelimiter, parseContent]);
 
   const handleImport = async () => {
     if (!result || result.validCount === 0) {
@@ -129,6 +133,8 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
     reset();
     setCsvContent(null);
     setCsvHeaders([]);
+    setCsvDelimiter(',');
+    setCsvDelimiterName('Vírgula');
     setFieldMapping({});
     setImportedFile(null);
     setStep('upload');
@@ -267,7 +273,7 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
               <div className="flex-1">
                 <p className="font-medium text-sm">{importedFile?.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {csvHeaders.length} colunas detectadas
+                  {csvHeaders.length} colunas detectadas • Separador: {csvDelimiterName}
                 </p>
               </div>
               <Button variant="ghost" size="sm" onClick={handleBackToUpload}>

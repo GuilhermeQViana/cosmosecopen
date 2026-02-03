@@ -346,35 +346,6 @@ export function useImportControls() {
   };
 }
 
-// Helper function to parse CSV line considering quoted values
-function parseCSVLine(line: string): string[] {
-  const result: string[] = [];
-  let current = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    const nextChar = line[i + 1];
-
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        current += '"';
-        i++; // Skip next quote
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if ((char === ',' || char === ';') && !inQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-
-  result.push(current.trim());
-  return result;
-}
-
 export function generateCSVTemplate(): string {
   const headers = ['code', 'name', 'category', 'description', 'weight', 'criticality', 'weight_reason', 'implementation_example', 'evidence_example', 'order_index'];
   const exampleRows = [
