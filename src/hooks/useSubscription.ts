@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,10 +32,19 @@ export function useSubscription() {
     isCheckoutLoading: false,
     hasPaymentFailed: false,
   });
+  
+  // Cache to avoid re-fetching on every navigation
+  const lastCheckedOrg = useRef<string | null>(null);
+  const initialCheckDone = useRef(false);
 
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (force = false) => {
     if (!organization || !user) {
       setState(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    // Skip if already checked for this organization (unless forced)
+    if (!force && initialCheckDone.current && lastCheckedOrg.current === organization.id) {
       return;
     }
 
@@ -52,6 +61,8 @@ export function useSubscription() {
       });
 
       if (isSuperAdmin) {
+        lastCheckedOrg.current = organization.id;
+        initialCheckDone.current = true;
         setState({
           hasAccess: true,
           subscriptionStatus: 'active',
@@ -95,6 +106,9 @@ export function useSubscription() {
         daysUntilRenewal = Math.ceil((subscriptionEndsAtDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       }
 
+      lastCheckedOrg.current = organization.id;
+      initialCheckDone.current = true;
+      
       setState({
         hasAccess: data.has_access,
         subscriptionStatus: data.subscription_status,
@@ -111,7 +125,7 @@ export function useSubscription() {
       console.error('Error checking subscription:', error);
       setState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [organization, user]);
+  }, [organization?.id, user?.id]);
 
   const createCheckout = useCallback(async () => {
     if (!organization) {
@@ -168,12 +182,16 @@ export function useSubscription() {
   }, [user]);
 
   useEffect(() => {
-    checkSubscription();
-  }, [checkSubscription]);
+    // Only check if organization changed or initial load
+    const orgChanged = organization?.id !== lastCheckedOrg.current;
+    if (orgChanged || !initialCheckDone.current) {
+      checkSubscription();
+    }
+  }, [organization?.id, checkSubscription]);
 
-  // Refresh every minute
+  // Refresh every 5 minutes (less aggressive than every minute)
   useEffect(() => {
-    const interval = setInterval(checkSubscription, 60000);
+    const interval = setInterval(() => checkSubscription(true), 300000);
     return () => clearInterval(interval);
   }, [checkSubscription]);
 

@@ -45,14 +45,30 @@ export function AppLayout() {
   const { user, loading: authLoading } = useAuth();
   const { organization, organizations, loading: orgLoading } = useOrganization();
   const { currentFramework, isLoading: frameworkLoading } = useFrameworkContext();
-  const { hasAccess, isLoading: subscriptionLoading, subscriptionStatus } = useSubscription();
+  const { hasAccess, isLoading: subscriptionLoading } = useSubscription();
   const location = useLocation();
   const breadcrumbItems = useBreadcrumb();
 
   // Allowed routes even when subscription expired
   const allowedWithoutSubscription = ['/configuracoes', '/selecionar-organizacao', '/selecionar-framework', '/checkout-success'];
 
-  if (authLoading || orgLoading || frameworkLoading || subscriptionLoading) {
+  // Only show full-screen loading on initial auth check, not on every navigation
+  // Organization/framework/subscription loading should not block the entire UI
+  const isInitialLoading = authLoading;
+  
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show loading only if org context is still doing initial load (not cached)
+  if (orgLoading && !organization && organizations.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
