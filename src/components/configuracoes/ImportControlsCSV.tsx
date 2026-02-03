@@ -94,6 +94,23 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
     setImportedFile(null);
   };
 
+  // Group errors by type for summary
+  const errorSummary = useMemo(() => {
+    if (!result) return [];
+    const summary = new Map<string, number>();
+    result.controls.forEach(control => {
+      control.errors.forEach(error => {
+        // Normalize duplicate code messages
+        const key = error.startsWith('Código "') 
+          ? 'Código duplicado no arquivo' 
+          : error;
+        summary.set(key, (summary.get(key) || 0) + 1);
+      });
+    });
+    return Array.from(summary.entries())
+      .sort((a, b) => b[1] - a[1]);
+  }, [result]);
+
   return (
     <div className="space-y-4">
       {!result ? (
