@@ -244,9 +244,14 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
                       <TableCell>{control.category || '-'}</TableCell>
                       <TableCell>
                         {control.errors.length > 0 && (
-                          <Badge variant="destructive" className="text-xs">
-                            {control.errors.length} erro(s)
-                          </Badge>
+                          <div className="space-y-1">
+                            {control.errors.map((error, idx) => (
+                              <div key={idx} className="text-xs text-destructive flex items-start gap-1">
+                                <span className="shrink-0">•</span>
+                                <span>{error}</span>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>
