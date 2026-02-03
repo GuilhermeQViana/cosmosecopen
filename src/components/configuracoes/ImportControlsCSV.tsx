@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -93,6 +93,23 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
     reset();
     setImportedFile(null);
   };
+
+  // Group errors by type for summary
+  const errorSummary = useMemo(() => {
+    if (!result) return [];
+    const summary = new Map<string, number>();
+    result.controls.forEach(control => {
+      control.errors.forEach(error => {
+        // Normalize duplicate code messages
+        const key = error.startsWith('Código "') 
+          ? 'Código duplicado no arquivo' 
+          : error;
+        summary.set(key, (summary.get(key) || 0) + 1);
+      });
+    });
+    return Array.from(summary.entries())
+      .sort((a, b) => b[1] - a[1]);
+  }, [result]);
 
   return (
     <div className="space-y-4">
@@ -216,7 +233,7 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
                     <TableHead className="w-28">Código</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Categoria</TableHead>
-                    <TableHead className="w-32">Erros</TableHead>
+                    <TableHead className="min-w-[200px]">Erros</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -244,9 +261,14 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
                       <TableCell>{control.category || '-'}</TableCell>
                       <TableCell>
                         {control.errors.length > 0 && (
-                          <Badge variant="destructive" className="text-xs">
-                            {control.errors.length} erro(s)
-                          </Badge>
+                          <div className="space-y-1">
+                            {control.errors.map((error, idx) => (
+                              <div key={idx} className="text-xs text-destructive flex items-start gap-1">
+                                <span className="shrink-0">•</span>
+                                <span>{error}</span>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>
@@ -260,13 +282,26 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
               <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                 <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-2">
                   <AlertTriangle className="h-5 w-5" />
-                  <span className="font-medium">Atenção</span>
+                  <span className="font-medium">Atenção - {result.invalidCount} controle(s) com erros</span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {result.invalidCount} controle(s) contêm erros e não serão importados. 
+                <p className="text-sm text-muted-foreground mb-3">
                   Corrija os erros no arquivo e tente novamente, ou prossiga para importar 
                   apenas os {result.validCount} controles válidos.
                 </p>
+                
+                {errorSummary.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Tipos de erros encontrados:
+                    </p>
+                    {errorSummary.map(([error, count]) => (
+                      <div key={error} className="text-sm flex items-center gap-2">
+                        <Badge variant="outline" className="shrink-0">{count}</Badge>
+                        <span className="text-muted-foreground">{error}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
