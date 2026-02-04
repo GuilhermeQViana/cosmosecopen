@@ -1,39 +1,64 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
-export function ThemeToggle() {
-  const { setTheme, theme } = useTheme();
+interface ThemeToggleProps {
+  className?: string;
+}
+
+export function ThemeToggle({ className }: ThemeToggleProps) {
+  const { setTheme, theme, resolvedTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Alternar tema</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>
-          <Sun className="mr-2 h-4 w-4" />
-          Claro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
-          <Moon className="mr-2 h-4 w-4" />
-          Escuro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
-          <span className="mr-2">💻</span>
-          Sistema
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className={cn(
+        "relative h-9 w-9 rounded-full overflow-hidden",
+        "hover:bg-accent/50 transition-colors duration-300",
+        "group",
+        className
+      )}
+      aria-label="Alternar tema"
+    >
+      {/* Sun icon */}
+      <Sun 
+        className={cn(
+          "h-4 w-4 absolute transition-all duration-500 ease-in-out",
+          "text-amber-500",
+          resolvedTheme === 'dark' 
+            ? "rotate-90 scale-0 opacity-0" 
+            : "rotate-0 scale-100 opacity-100"
+        )} 
+      />
+      
+      {/* Moon icon */}
+      <Moon 
+        className={cn(
+          "h-4 w-4 absolute transition-all duration-500 ease-in-out",
+          "text-primary",
+          resolvedTheme === 'dark' 
+            ? "rotate-0 scale-100 opacity-100" 
+            : "-rotate-90 scale-0 opacity-0"
+        )} 
+      />
+      
+      {/* Glow effect on hover */}
+      <span 
+        className={cn(
+          "absolute inset-0 rounded-full opacity-0 group-hover:opacity-100",
+          "transition-opacity duration-300",
+          resolvedTheme === 'dark' 
+            ? "bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]" 
+            : "bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+        )}
+      />
+    </Button>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { cn } from '@/lib/utils';
 
 export function Navbar() {
@@ -63,8 +64,9 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden lg:flex items-center">
+          {/* Theme Toggle + CTA Button */}
+          <div className="hidden lg:flex items-center gap-3">
+            <ThemeToggle />
             <Button asChild>
               <a href="#contact">Falar Conosco</a>
             </Button>
@@ -104,11 +106,13 @@ export function Navbar() {
                   </a>
                 )
               ))}
-              <div className="pt-4 border-t border-border">
-                <Button asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                  <a href="#contact">Falar Conosco</a>
-                </Button>
+              <div className="flex items-center justify-between pt-4 border-t border-border">
+                <span className="text-sm text-muted-foreground">Alternar tema</span>
+                <ThemeToggle />
               </div>
+              <Button asChild className="w-full mt-2" onClick={() => setIsMobileMenuOpen(false)}>
+                <a href="#contact">Falar Conosco</a>
+              </Button>
             </div>
           </div>
         )}
