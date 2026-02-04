@@ -176,8 +176,8 @@ export function ContactSection() {
           </div>
 
           {/* Contact Form */}
-          <Card className="lg:col-span-3 bg-card/80 dark:bg-card/60 backdrop-blur-sm border-primary/20">
-            <CardContent className="p-6 md:p-8">
+          <Card className="lg:col-span-3 bg-card/80 dark:bg-card/60 backdrop-blur-sm border-primary/20 relative z-20">
+            <CardContent className="p-6 md:p-8 relative z-20">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
