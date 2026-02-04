@@ -6,6 +6,7 @@ import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { BenefitsSection } from '@/components/landing/BenefitsSection';
 import { UseCasesSection } from '@/components/landing/UseCasesSection';
+import { ROICalculatorSection } from '@/components/landing/ROICalculatorSection';
 import { ProductTourSection } from '@/components/landing/ProductTourSection';
 import { ContactSection } from '@/components/landing/ContactSection';
 import { FAQSection } from '@/components/landing/FAQSection';
@@ -25,6 +26,7 @@ export default function Landing() {
         <HowItWorksSection />
         <BenefitsSection />
         <UseCasesSection />
+        <ROICalculatorSection />
         <ProductTourSection />
         <ContactSection />
         <FAQSection />
