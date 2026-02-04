@@ -24,6 +24,7 @@ export default function Landing() {
         <FeaturesSection />
         <HowItWorksSection />
         <BenefitsSection />
+        <UseCasesSection />
         <ProductTourSection />
         <ContactSection />
         <FAQSection />
