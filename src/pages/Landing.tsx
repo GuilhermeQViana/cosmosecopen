@@ -5,6 +5,7 @@ import { FrameworksSection } from '@/components/landing/FrameworksSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { BenefitsSection } from '@/components/landing/BenefitsSection';
+import { UseCasesSection } from '@/components/landing/UseCasesSection';
 import { ProductTourSection } from '@/components/landing/ProductTourSection';
 import { ContactSection } from '@/components/landing/ContactSection';
 import { FAQSection } from '@/components/landing/FAQSection';
@@ -23,6 +24,7 @@ export default function Landing() {
         <FeaturesSection />
         <HowItWorksSection />
         <BenefitsSection />
+        <UseCasesSection />
         <ProductTourSection />
         <ContactSection />
         <FAQSection />
