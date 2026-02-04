@@ -10,7 +10,7 @@ export function Footer() {
       { label: 'Funcionalidades', href: '#features' },
       { label: 'GRC Frameworks', href: '#frameworks' },
       { label: 'Gestão de Fornecedores', href: '#modules' },
-      { label: 'Preços', href: '#pricing' },
+      { label: 'Tour do Produto', href: '/tour', isRoute: true },
       { label: 'Documentação', href: '/documentacao', isRoute: true },
     ],
     empresa: [
