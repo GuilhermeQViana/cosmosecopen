@@ -266,6 +266,9 @@ export default function ConhecaCosmoSec() {
                   />
                 ))}
               </div>
+              
+              {/* Dashboard Gallery for GRC module */}
+              {module.id === 'grc' && <DashboardScreenshotGallery />}
             </div>
           </section>
         ))}
