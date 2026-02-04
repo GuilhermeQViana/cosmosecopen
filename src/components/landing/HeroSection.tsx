@@ -79,11 +79,11 @@ export function HeroSection() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button size="lg" variant="cosmic" asChild className="text-base px-8 group">
-                <Link to="/auth">
+                <a href="#contact">
                   <Sparkles className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-                  Testar 7 Dias Grátis
+                  Falar com Especialista
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </a>
               </Button>
               <Button 
                 size="lg" 
@@ -91,13 +91,13 @@ export function HeroSection() {
                 asChild 
                 className="text-base px-8 border-primary/30 hover:border-secondary/50 hover:bg-secondary/10 dark:border-primary/40 dark:hover:border-secondary/60"
               >
-                <a href="#modules">Ver Módulos</a>
+                <Link to="/tour">Conhecer a Plataforma</Link>
               </Button>
             </div>
 
-            {/* Trial info */}
+            {/* Contact info */}
             <p className="text-sm text-muted-foreground mt-4">
-              Após 7 dias, R$ 449,90/mês. Cancele quando quiser.
+              Solicite uma demonstração personalizada para sua empresa
             </p>
 
             {/* Stats with Glow */}

@@ -112,8 +112,8 @@ export function Navbar() {
                 <Button variant="outline" asChild className="w-full">
                   <Link to="/auth">Entrar</Link>
                 </Button>
-                <Button asChild className="w-full">
-                  <Link to="/auth">Começar Agora</Link>
+                <Button asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                  <a href="#contact">Falar Conosco</a>
                 </Button>
               </div>
             </div>

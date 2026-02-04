@@ -15,12 +15,12 @@ const faqs = [
         answer: 'A CosmoSec é uma plataforma completa de Governança, Risco e Conformidade (GRC) que integra gestão de frameworks de segurança e avaliação de riscos de terceiros (VRM) em uma única solução. Permite diagnosticar controles, gerenciar riscos, armazenar evidências e criar planos de ação automatizados com IA.',
       },
       {
-        question: 'Como funciona o período de teste gratuito?',
-        answer: 'Oferecemos 7 dias de teste gratuito com acesso completo a todas as funcionalidades Pro, incluindo ambos os módulos (GRC e VRM), frameworks ilimitados, fornecedores ilimitados e suporte prioritário. Não é necessário cartão de crédito para começar.',
+        question: 'Como posso contratar a CosmoSec?',
+        answer: 'Para contratar, basta entrar em contato conosco através do formulário na página ou por email. Nossa equipe comercial irá agendar uma demonstração personalizada e apresentar a proposta ideal para sua organização.',
       },
       {
-        question: 'Posso gerenciar múltiplas organizações?',
-        answer: 'Sim! A plataforma suporta múltiplas organizações com workspaces isolados. Você pode alternar entre organizações facilmente e cada uma mantém seus próprios dados, frameworks, riscos e fornecedores completamente separados.',
+        question: 'Qual o processo de onboarding?',
+        answer: 'Após a contratação, nossa equipe de Customer Success irá guiá-lo no processo de implantação: configuração inicial, importação de dados existentes, treinamento da equipe e acompanhamento nos primeiros meses de uso.',
       },
       {
         question: 'Os dados estão seguros?',

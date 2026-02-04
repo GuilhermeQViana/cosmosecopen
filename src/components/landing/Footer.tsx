@@ -16,8 +16,7 @@ export function Footer() {
     empresa: [
       { label: 'Sobre Nós', href: '#' },
       { label: 'Blog', href: '#' },
-      { label: 'Carreiras', href: '#' },
-      { label: 'Contato', href: '#' },
+      { label: 'Contato', href: '#contact' },
     ],
     legal: [
       { label: 'Termos de Uso', href: '/termos', isRoute: true },
