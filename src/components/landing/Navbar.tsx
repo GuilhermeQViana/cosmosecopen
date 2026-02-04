@@ -106,11 +106,13 @@ export function Navbar() {
                   </a>
                 )
               ))}
-              <div className="pt-4 border-t border-border">
-                <Button asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                  <a href="#contact">Falar Conosco</a>
-                </Button>
+              <div className="flex items-center justify-between pt-4 border-t border-border">
+                <span className="text-sm text-muted-foreground">Alternar tema</span>
+                <ThemeToggle />
               </div>
+              <Button asChild className="w-full mt-2" onClick={() => setIsMobileMenuOpen(false)}>
+                <a href="#contact">Falar Conosco</a>
+              </Button>
             </div>
           </div>
         )}
