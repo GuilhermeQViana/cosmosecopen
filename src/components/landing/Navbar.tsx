@@ -21,7 +21,7 @@ export function Navbar() {
     { href: '#modules', label: 'Módulos' },
     { href: '#frameworks', label: 'Frameworks' },
     { href: '#features', label: 'Funcionalidades' },
-    { href: '#pricing', label: 'Preços' },
+    { href: '/tour', label: 'Tour', isRoute: true },
     { href: '/documentacao', label: 'Documentação', isRoute: true },
   ];
 
@@ -70,7 +70,7 @@ export function Navbar() {
               <Link to="/auth">Entrar</Link>
             </Button>
             <Button asChild>
-              <Link to="/auth">Começar Agora</Link>
+              <a href="#contact">Falar Conosco</a>
             </Button>
           </div>
 
@@ -112,8 +112,8 @@ export function Navbar() {
                 <Button variant="outline" asChild className="w-full">
                   <Link to="/auth">Entrar</Link>
                 </Button>
-                <Button asChild className="w-full">
-                  <Link to="/auth">Começar Agora</Link>
+                <Button asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                  <a href="#contact">Falar Conosco</a>
                 </Button>
               </div>
             </div>

@@ -5,7 +5,8 @@ import { FrameworksSection } from '@/components/landing/FrameworksSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { BenefitsSection } from '@/components/landing/BenefitsSection';
-import { PricingSection } from '@/components/landing/PricingSection';
+import { ProductTourSection } from '@/components/landing/ProductTourSection';
+import { ContactSection } from '@/components/landing/ContactSection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { Footer } from '@/components/landing/Footer';
 import { StarField } from '@/components/ui/star-field';
@@ -22,7 +23,8 @@ export default function Landing() {
         <FeaturesSection />
         <HowItWorksSection />
         <BenefitsSection />
-        <PricingSection />
+        <ProductTourSection />
+        <ContactSection />
         <FAQSection />
       </main>
       <Footer />

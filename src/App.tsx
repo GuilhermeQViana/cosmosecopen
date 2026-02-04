@@ -10,6 +10,7 @@ import { FrameworkProvider } from "@/contexts/FrameworkContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { VendorLayout } from "@/components/layout/VendorLayout";
 import Landing from "@/pages/Landing";
+import TourProduto from "@/pages/TourProduto";
 import Auth from "@/pages/Auth";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
@@ -55,6 +56,7 @@ const App = () => (
               <FrameworkProvider>
                 <Routes>
                   <Route path="/" element={<Landing />} />
+                  <Route path="/tour" element={<TourProduto />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/esqueci-senha" element={<ForgotPassword />} />
                   <Route path="/redefinir-senha" element={<ResetPassword />} />

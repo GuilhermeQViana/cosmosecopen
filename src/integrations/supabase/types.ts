@@ -387,6 +387,54 @@ export type Database = {
           },
         ]
       }
+      contact_requests: {
+        Row: {
+          company: string
+          company_size: string | null
+          contacted_at: string | null
+          contacted_by: string | null
+          created_at: string
+          email: string
+          how_found: string | null
+          id: string
+          message: string | null
+          name: string
+          notes: string | null
+          role: string | null
+          status: string
+        }
+        Insert: {
+          company: string
+          company_size?: string | null
+          contacted_at?: string | null
+          contacted_by?: string | null
+          created_at?: string
+          email: string
+          how_found?: string | null
+          id?: string
+          message?: string | null
+          name: string
+          notes?: string | null
+          role?: string | null
+          status?: string
+        }
+        Update: {
+          company?: string
+          company_size?: string | null
+          contacted_at?: string | null
+          contacted_by?: string | null
+          created_at?: string
+          email?: string
+          how_found?: string | null
+          id?: string
+          message?: string | null
+          name?: string
+          notes?: string | null
+          role?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       controls: {
         Row: {
           category: string | null

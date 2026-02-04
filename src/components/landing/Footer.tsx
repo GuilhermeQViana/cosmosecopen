@@ -10,14 +10,13 @@ export function Footer() {
       { label: 'Funcionalidades', href: '#features' },
       { label: 'GRC Frameworks', href: '#frameworks' },
       { label: 'Gestão de Fornecedores', href: '#modules' },
-      { label: 'Preços', href: '#pricing' },
+      { label: 'Tour do Produto', href: '/tour', isRoute: true },
       { label: 'Documentação', href: '/documentacao', isRoute: true },
     ],
     empresa: [
       { label: 'Sobre Nós', href: '#' },
       { label: 'Blog', href: '#' },
-      { label: 'Carreiras', href: '#' },
-      { label: 'Contato', href: '#' },
+      { label: 'Contato', href: '#contact' },
     ],
     legal: [
       { label: 'Termos de Uso', href: '/termos', isRoute: true },
