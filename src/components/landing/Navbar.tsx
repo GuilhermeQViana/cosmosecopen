@@ -21,7 +21,7 @@ export function Navbar() {
     { href: '#modules', label: 'Módulos' },
     { href: '#frameworks', label: 'Frameworks' },
     { href: '#features', label: 'Funcionalidades' },
-    { href: '/tour', label: 'Tour', isRoute: true },
+    { href: '/tour', label: 'Conheça', isRoute: true },
   ];
 
   return (
