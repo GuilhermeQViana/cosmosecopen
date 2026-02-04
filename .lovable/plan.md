@@ -1,81 +1,80 @@
 
-# Plano: Corrigir Formulário de Contato e Galeria de Screenshots
+# Plano: Implementar Envio de Email para Formulário de Contato
 
-## Resumo Executivo
+## Situação Atual
 
-Durante a investigação, descobri que o formulário de contato está funcionando corretamente quando testado diretamente. O problema reportado pode estar relacionado a um erro de Hot Module Reload (HMR) causado por uma referência a um arquivo inexistente (`DashboardScreenshotGallery.tsx`).
+O formulário de contato salva os dados corretamente no banco de dados, mas **não envia nenhum email** para `contato@cosmosec.com.br`. A equipe comercial não recebe notificação quando alguém solicita uma demonstração.
 
-## Diagnóstico Realizado
+## Solução Proposta
 
-### O que funciona:
-- Campos de texto (Nome, Email, Empresa) aceitam entrada normalmente
-- Campos de Select/Dropdown funcionam
-- Botão "Solicitar Demonstração" submete o formulário
-- Dados são salvos corretamente no banco de dados
-- Políticas de segurança (RLS) estão configuradas para permitir inserções públicas
+Criar uma Edge Function que será acionada automaticamente quando um novo registro for inserido na tabela `contact_requests`, enviando um email formatado para a equipe comercial.
 
-### Problema identificado:
-- O console mostra erro de HMR tentando carregar o arquivo `/src/components/conheca/DashboardScreenshotGallery.tsx` que não existe
-- Este erro pode estar causando comportamento inconsistente na página
-
-## Correções Propostas
-
-### 1. Criar o componente DashboardScreenshotGallery faltante
-
-Recriar o componente de galeria de screenshots que foi referenciado mas não existe:
+## Arquitetura
 
 ```text
-src/components/conheca/DashboardScreenshotGallery.tsx
-├── Galeria interativa com 4 screenshots do Dashboard
-├── Navegação por setas (esquerda/direita)  
-├── Miniaturas para seleção rápida
-├── Modal fullscreen para visualização ampliada
-└── Legendas técnicas para cada screenshot
+Usuário preenche formulário
+         ↓
+Dados salvos em contact_requests
+         ↓
+Trigger do banco chama Edge Function
+         ↓
+Edge Function envia email via Resend
+         ↓
+Email chega em contato@cosmosec.com.br
 ```
 
-### 2. Verificar importações no ConhecaCosmoSec.tsx
+## Implementação
 
-Garantir que a importação e uso do componente estejam corretos na página de tour.
+### 1. Criar Edge Function `send-contact-notification`
 
-### 3. Mover screenshots para pasta pública
+Nova função para enviar email quando houver nova solicitação:
 
-Garantir que as imagens estejam no diretório `public/screenshots/`:
-- `dashboard-1.png`
-- `dashboard-2.png`
-- `dashboard-3.png`
-- `dashboard-4.png`
+| Campo | Descrição |
+|-------|-----------|
+| **De** | noreply@cosmosec.com.br |
+| **Para** | contato@cosmosec.com.br |
+| **Assunto** | Nova Solicitação de Demo: [Nome da Empresa] |
+
+O email incluirá todos os dados do formulário formatados:
+- Nome completo e cargo
+- Email corporativo
+- Empresa e tamanho
+- Como conheceu a CosmoSec
+- Mensagem/dúvidas
+
+### 2. Criar Database Trigger
+
+Trigger que dispara automaticamente ao inserir novo registro:
+
+```text
+Tabela: contact_requests
+Evento: AFTER INSERT
+Ação: Chamar send-contact-notification
+```
+
+### 3. Atualizar Formulário (Alternativa)
+
+Opcionalmente, o formulário pode chamar a Edge Function diretamente após salvar com sucesso, garantindo feedback imediato.
 
 ## Arquivos a Criar/Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/conheca/DashboardScreenshotGallery.tsx` | Criar |
-| `src/pages/ConhecaCosmoSec.tsx` | Verificar importação |
+| `supabase/functions/send-contact-notification/index.ts` | Criar |
+| `supabase/config.toml` | Adicionar configuração da função |
+| Migração SQL (Trigger) | Criar trigger no banco |
 
-## Detalhes Técnicos
+## Template do Email
 
-### Estrutura do Componente DashboardScreenshotGallery
-
-O componente terá:
-- Estado para controlar o índice da imagem atual
-- Array de screenshots com títulos e descrições
-- Função de navegação (anterior/próximo)
-- Dialog da Radix UI para modo fullscreen
-- Animações suaves de transição
-
-### Imagens e Legendas
-
-| Screenshot | Título | Descrição |
-|------------|--------|-----------|
-| dashboard-1.png | Resumo Executivo | Score de segurança e métricas principais |
-| dashboard-2.png | Métricas de Remediação | Progresso dos planos de ação |
-| dashboard-3.png | Mapa de Calor de Riscos | Distribuição visual de riscos |
-| dashboard-4.png | Tendências de Conformidade | Evolução histórica dos indicadores |
+O email para a equipe comercial terá:
+- Cabeçalho com logo CosmoSec
+- Dados do lead organizados em tabela
+- Botão de resposta rápida
+- Data/hora do envio
 
 ## Resultado Esperado
 
-Após as correções:
-- O erro de HMR desaparecerá do console
-- A galeria de screenshots será exibida na página de tour
-- Todas as interações do formulário de contato funcionarão normalmente
-- O usuário poderá navegar pelas screenshots do Dashboard Executivo
+Após implementação:
+- Cada submissão do formulário gerará um email instantâneo
+- A equipe comercial receberá notificação em `contato@cosmosec.com.br`
+- Tempo de resposta ao lead será reduzido significativamente
