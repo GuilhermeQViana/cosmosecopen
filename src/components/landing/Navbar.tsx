@@ -22,7 +22,6 @@ export function Navbar() {
     { href: '#frameworks', label: 'Frameworks' },
     { href: '#features', label: 'Funcionalidades' },
     { href: '/tour', label: 'Tour', isRoute: true },
-    { href: '/documentacao', label: 'Documentação', isRoute: true },
   ];
 
   return (
