@@ -180,7 +180,7 @@ export function ProductTourSection() {
         <div className="text-center mt-12">
           <Button variant="cosmic" size="lg" asChild className="group">
             <Link to="/tour">
-              Ver Tour Completo
+              Conheça a CosmoSec
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Button>

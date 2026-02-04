@@ -56,7 +56,7 @@ const App = () => (
               <FrameworkProvider>
                 <Routes>
                   <Route path="/" element={<Landing />} />
-                  <Route path="/tour" element={<TourProduto />} />
+                  <Route path="/tour" element={<ConhecaCosmoSec />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/esqueci-senha" element={<ForgotPassword />} />
                   <Route path="/redefinir-senha" element={<ResetPassword />} />
