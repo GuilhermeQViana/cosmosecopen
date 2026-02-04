@@ -70,7 +70,7 @@ export function Navbar() {
               <Link to="/auth">Entrar</Link>
             </Button>
             <Button asChild>
-              <Link to="/auth">Começar Agora</Link>
+              <a href="#contact">Falar Conosco</a>
             </Button>
           </div>
 
