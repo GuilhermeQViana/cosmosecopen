@@ -1,313 +1,81 @@
 
-# Plano: Melhorar UX da Pagina de Tour e Renomear para "Conheca a CosmoSec"
+# Plano: Corrigir Formulário de Contato e Galeria de Screenshots
 
-## Visao Geral
+## Resumo Executivo
 
-Este plano transforma a pagina `/tour` em uma experiencia mais envolvente e intuitiva, com o novo nome "Conheca a CosmoSec". As melhorias focam em navegacao, interatividade e apresentacao visual.
+Durante a investigação, descobri que o formulário de contato está funcionando corretamente quando testado diretamente. O problema reportado pode estar relacionado a um erro de Hot Module Reload (HMR) causado por uma referência a um arquivo inexistente (`DashboardScreenshotGallery.tsx`).
 
----
+## Diagnóstico Realizado
 
-## 1. Renomeacao da Pagina
+### O que funciona:
+- Campos de texto (Nome, Email, Empresa) aceitam entrada normalmente
+- Campos de Select/Dropdown funcionam
+- Botão "Solicitar Demonstração" submete o formulário
+- Dados são salvos corretamente no banco de dados
+- Políticas de segurança (RLS) estão configuradas para permitir inserções públicas
 
-### Arquivos a Modificar
+### Problema identificado:
+- O console mostra erro de HMR tentando carregar o arquivo `/src/components/conheca/DashboardScreenshotGallery.tsx` que não existe
+- Este erro pode estar causando comportamento inconsistente na página
 
-| Arquivo | Alteracao |
-|---------|-----------|
-| `src/pages/TourProduto.tsx` | Renomear para `ConhecaCosmoSec.tsx` |
-| `src/App.tsx` | Atualizar import e manter rota `/tour` |
-| `src/components/landing/Navbar.tsx` | Alterar label "Tour" para "Conheca" |
-| `src/components/landing/Footer.tsx` | Alterar "Tour do Produto" para "Conheca a CosmoSec" |
-| `src/components/landing/ProductTourSection.tsx` | Atualizar textos de referencia |
+## Correções Propostas
 
-### Novos Textos
+### 1. Criar o componente DashboardScreenshotGallery faltante
 
-```text
-Navbar: "Conheca" (ao inves de "Tour")
-Footer: "Conheca a CosmoSec" (ao inves de "Tour do Produto")
-Badge Hero: "Conheca a CosmoSec" (ao inves de "Tour Completo")
-```
-
----
-
-## 2. Melhorias de Navegacao
-
-### 2.1 Menu de Navegacao Sticky (Table of Contents)
-
-Adicionar um menu lateral fixo que acompanha o scroll, permitindo navegacao rapida entre secoes:
+Recriar o componente de galeria de screenshots que foi referenciado mas não existe:
 
 ```text
-+------------------+----------------------------------------+
-|                  |                                        |
-| [Navegacao]      |    Conteudo Principal                  |
-|                  |                                        |
-| > GRC Frameworks |    [Secao atual visivel]               |
-|   VRM            |                                        |
-|   Avancado       |                                        |
-|                  |                                        |
-| [Falar Conosco]  |                                        |
-|                  |                                        |
-+------------------+----------------------------------------+
+src/components/conheca/DashboardScreenshotGallery.tsx
+├── Galeria interativa com 4 screenshots do Dashboard
+├── Navegação por setas (esquerda/direita)  
+├── Miniaturas para seleção rápida
+├── Modal fullscreen para visualização ampliada
+└── Legendas técnicas para cada screenshot
 ```
 
-**Comportamento:**
-- Visivel apenas em desktop (lg:)
-- Destaca secao atual baseado no scroll
-- Clique navega suavemente para secao
-- CTA fixo no final do menu
+### 2. Verificar importações no ConhecaCosmoSec.tsx
 
-### 2.2 Indicador de Progresso
+Garantir que a importação e uso do componente estejam corretos na página de tour.
 
-Barra de progresso no topo que mostra quanto da pagina foi visualizado:
+### 3. Mover screenshots para pasta pública
 
-```text
-[======================>                    ] 55%
-```
+Garantir que as imagens estejam no diretório `public/screenshots/`:
+- `dashboard-1.png`
+- `dashboard-2.png`
+- `dashboard-3.png`
+- `dashboard-4.png`
 
----
+## Arquivos a Criar/Modificar
 
-## 3. Melhorias Visuais e Interativas
+| Arquivo | Ação |
+|---------|------|
+| `src/components/conheca/DashboardScreenshotGallery.tsx` | Criar |
+| `src/pages/ConhecaCosmoSec.tsx` | Verificar importação |
 
-### 3.1 Animacoes de Entrada
+## Detalhes Técnicos
 
-Adicionar animacoes sutis nos cards de funcionalidades usando CSS ou Framer Motion:
+### Estrutura do Componente DashboardScreenshotGallery
 
-- Cards aparecem com fade-in e slide-up ao entrar na viewport
-- Escalonamento (stagger) entre cards da mesma secao
-- Transicoes suaves no hover
+O componente terá:
+- Estado para controlar o índice da imagem atual
+- Array de screenshots com títulos e descrições
+- Função de navegação (anterior/próximo)
+- Dialog da Radix UI para modo fullscreen
+- Animações suaves de transição
 
-### 3.2 Cards Expandiveis
+### Imagens e Legendas
 
-Ao clicar em um card de feature, expandir para mostrar mais detalhes:
+| Screenshot | Título | Descrição |
+|------------|--------|-----------|
+| dashboard-1.png | Resumo Executivo | Score de segurança e métricas principais |
+| dashboard-2.png | Métricas de Remediação | Progresso dos planos de ação |
+| dashboard-3.png | Mapa de Calor de Riscos | Distribuição visual de riscos |
+| dashboard-4.png | Tendências de Conformidade | Evolução histórica dos indicadores |
 
-```text
-Antes (colapsado):
-+---------------------------------------+
-| [Icon] Dashboard Executivo            |
-| Visao consolidada com score...        |
-| [Score real] [Graficos] [Alertas]     |
-+---------------------------------------+
+## Resultado Esperado
 
-Depois (expandido):
-+---------------------------------------+
-| [Icon] Dashboard Executivo         [-]|
-|                                       |
-| Visao consolidada com score de        |
-| seguranca, graficos de tendencia...   |
-|                                       |
-| Destaques:                            |
-| - Score de maturidade em tempo real   |
-| - Graficos de evolucao por framework  |
-| - Widget de alertas prioritarios      |
-| - Metricas de remediacao              |
-|                                       |
-| [Ver na Demo ->]                      |
-+---------------------------------------+
-```
-
-### 3.3 Hover Effects Aprimorados
-
-- Elevacao sutil no hover (translate-y e shadow)
-- Glow effect no icone
-- Borda com gradiente animado
-
----
-
-## 4. Secao Hero Aprimorada
-
-### 4.1 Novo Layout
-
-```text
-+----------------------------------------------------------+
-|                                                          |
-|  Badge: Conheca a CosmoSec                               |
-|                                                          |
-|  Titulo: Descubra como a CosmoSec                        |
-|          transforma sua governanca                       |
-|                                                          |
-|  Subtitulo: Explore cada modulo e funcionalidade         |
-|             da plataforma que simplifica sua             |
-|             jornada de conformidade.                     |
-|                                                          |
-|  +----------------+  +----------------+  +-------------+ |
-|  | GRC Frameworks |  | Fornecedores   |  | Avancado    | |
-|  | 6 recursos     |  | 6 recursos     |  | 6 recursos  | |
-|  +----------------+  +----------------+  +-------------+ |
-|                                                          |
-|  [Solicitar Demonstracao]  [Ir para GRC v]               |
-|                                                          |
-+----------------------------------------------------------+
-```
-
-### 4.2 Quick Navigation Cards
-
-Tres cards clicaveis no hero que levam diretamente para cada modulo:
-- Mostram icone, titulo e contagem de features
-- Animacao de hover com scale e glow
-- Navegacao suave ao clicar
-
----
-
-## 5. Comparativo de Modulos
-
-Nova secao apos os modulos principais mostrando diferenca entre GRC e VRM:
-
-```text
-+----------------------------------------------------------+
-| Qual modulo e ideal para voce?                            |
-|----------------------------------------------------------+
-|                                                          |
-| +------------------------+  +------------------------+   |
-| | GRC Frameworks         |  | VRM Fornecedores       |   |
-| |------------------------|  |------------------------|   |
-| | Ideal para:            |  | Ideal para:            |   |
-| | - ISO 27001            |  | - Due diligence        |   |
-| | - NIST CSF             |  | - Avaliacao de risco   |   |
-| | - BCB 4893             |  | - Gestao de contratos  |   |
-| |                        |  |                        |   |
-| | [Saber mais]           |  | [Saber mais]           |   |
-| +------------------------+  +------------------------+   |
-|                                                          |
-|            [Ou use ambos com integracao nativa]          |
-|                                                          |
-+----------------------------------------------------------+
-```
-
----
-
-## 6. Depoimentos/Casos de Sucesso (Opcional)
-
-Incluir mini-depoimentos contextuais em cada secao de modulo:
-
-```text
-"Com a matriz de riscos, conseguimos reduzir o tempo
-de analise em 60%." - Analista de Seguranca, Fintech
-```
-
----
-
-## 7. CTA Final Aprimorado
-
-Secao de CTA com mais urgencia e opcoes:
-
-```text
-+----------------------------------------------------------+
-|                                                          |
-|  Pronto para ver tudo isso funcionando?                  |
-|                                                          |
-|  +------------------------------------------------+      |
-|  |                                                |      |
-|  |  [Icon Calendario]  Agende uma Demo            |      |
-|  |  Sessao personalizada de 30 minutos            |      |
-|  |  com nosso time de especialistas               |      |
-|  |                                                |      |
-|  |  [Agendar Agora ->]                           |      |
-|  |                                                |      |
-|  +------------------------------------------------+      |
-|                                                          |
-|  Ou fale diretamente:                                    |
-|  [WhatsApp]  [Email]  [LinkedIn]                         |
-|                                                          |
-+----------------------------------------------------------+
-```
-
----
-
-## Estrutura de Arquivos
-
-### Novo Componente: TourNavigation.tsx
-
-```typescript
-// Navegacao lateral sticky para a pagina de tour
-// - Lista de secoes com destaque na atual
-// - Scroll suave ao clicar
-// - CTA fixo
-```
-
-### Novo Componente: TourProgressBar.tsx
-
-```typescript
-// Barra de progresso no topo
-// - Calcula posicao do scroll
-// - Mostra porcentagem visualizada
-```
-
-### Novo Componente: ExpandableFeatureCard.tsx
-
-```typescript
-// Card de feature que expande ao clicar
-// - Estado colapsado/expandido
-// - Animacao de transicao
-// - Mais detalhes quando expandido
-```
-
----
-
-## Resumo das Melhorias
-
-| Area | Melhoria | Impacto |
-|------|----------|---------|
-| Navegacao | Menu sticky lateral | Facilita exploracao |
-| Navegacao | Barra de progresso | Senso de completude |
-| Navegacao | Quick navigation no hero | Acesso rapido |
-| Visual | Animacoes de entrada | Experiencia premium |
-| Visual | Cards expandiveis | Mais detalhes sem sobrecarregar |
-| Visual | Hover effects | Interatividade |
-| Conteudo | Comparativo de modulos | Clareza na escolha |
-| Conteudo | CTA aprimorado | Conversao |
-| Naming | "Conheca a CosmoSec" | Branding consistente |
-
----
-
-## Ordem de Implementacao
-
-1. **Fase 1 - Renomeacao**
-   - Renomear arquivo e atualizar imports
-   - Atualizar textos na Navbar, Footer e Hero
-
-2. **Fase 2 - Navegacao**
-   - Criar TourNavigation (menu lateral)
-   - Criar TourProgressBar
-   - Adicionar quick navigation cards no hero
-
-3. **Fase 3 - Interatividade**
-   - Implementar ExpandableFeatureCard
-   - Adicionar animacoes de entrada
-   - Melhorar hover effects
-
-4. **Fase 4 - Conteudo**
-   - Adicionar secao de comparativo
-   - Aprimorar CTA final
-
----
-
-## Secao Tecnica
-
-### Dependencias Necessarias
-Nenhuma nova dependencia - utilizaremos recursos ja existentes:
-- Tailwind CSS para animacoes
-- useState/useEffect para interatividade
-- IntersectionObserver para scroll tracking
-
-### Componentes a Criar/Modificar
-
-```text
-src/
-  pages/
-    ConhecaCosmoSec.tsx (renomeado de TourProduto.tsx)
-  components/
-    conheca/
-      TourNavigation.tsx (novo)
-      TourProgressBar.tsx (novo)
-      ExpandableFeatureCard.tsx (novo)
-      ModuleComparisonSection.tsx (novo)
-      QuickNavigationCards.tsx (novo)
-```
-
-### Hook Customizado
-
-```typescript
-// useScrollProgress.ts
-// - Calcula progresso do scroll
-// - Retorna secao atual visivel
-// - Usado pelo TourNavigation e ProgressBar
-```
+Após as correções:
+- O erro de HMR desaparecerá do console
+- A galeria de screenshots será exibida na página de tour
+- Todas as interações do formulário de contato funcionarão normalmente
+- O usuário poderá navegar pelas screenshots do Dashboard Executivo
