@@ -105,10 +105,7 @@ export function Navbar() {
                   </a>
                 )
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="outline" asChild className="w-full">
-                  <Link to="/auth">Entrar</Link>
-                </Button>
+              <div className="pt-4 border-t border-border">
                 <Button asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
                   <a href="#contact">Falar Conosco</a>
                 </Button>
