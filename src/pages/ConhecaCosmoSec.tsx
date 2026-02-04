@@ -26,6 +26,7 @@ import { QuickNavigationCards } from '@/components/conheca/QuickNavigationCards'
 import { ExpandableFeatureCard } from '@/components/conheca/ExpandableFeatureCard';
 import { ModuleComparisonSection } from '@/components/conheca/ModuleComparisonSection';
 import { EnhancedCTASection } from '@/components/conheca/EnhancedCTASection';
+import { DashboardScreenshotGallery } from '@/components/conheca/DashboardScreenshotGallery';
 
 const modules = [
   {
@@ -265,6 +266,9 @@ export default function ConhecaCosmoSec() {
                   />
                 ))}
               </div>
+              
+              {/* Dashboard Gallery for GRC module */}
+              {module.id === 'grc' && <DashboardScreenshotGallery />}
             </div>
           </section>
         ))}
