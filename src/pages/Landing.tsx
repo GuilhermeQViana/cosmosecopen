@@ -26,6 +26,7 @@ export default function Landing() {
         <HowItWorksSection />
         <BenefitsSection />
         <UseCasesSection />
+        <ROICalculatorSection />
         <ProductTourSection />
         <ContactSection />
         <FAQSection />
