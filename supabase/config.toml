@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.generate-implementation-guide]
 verify_jwt = false
+
+[functions.send-contact-notification]
+verify_jwt = false
