@@ -21,7 +21,7 @@ export function Navbar() {
     { href: '#modules', label: 'Módulos' },
     { href: '#frameworks', label: 'Frameworks' },
     { href: '#features', label: 'Funcionalidades' },
-    { href: '#pricing', label: 'Preços' },
+    { href: '/tour', label: 'Tour', isRoute: true },
     { href: '/documentacao', label: 'Documentação', isRoute: true },
   ];
 
