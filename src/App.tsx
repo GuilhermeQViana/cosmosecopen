@@ -10,7 +10,7 @@ import { FrameworkProvider } from "@/contexts/FrameworkContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { VendorLayout } from "@/components/layout/VendorLayout";
 import Landing from "@/pages/Landing";
-import TourProduto from "@/pages/TourProduto";
+import ConhecaCosmoSec from "@/pages/ConhecaCosmoSec";
 import Auth from "@/pages/Auth";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
