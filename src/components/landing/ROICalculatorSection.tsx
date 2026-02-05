@@ -256,12 +256,18 @@ export function ROICalculatorSection() {
               {/* Secondary metrics */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-primary/5">
-                  <span className="text-sm text-muted-foreground">Ganho de produtividade</span>
-                  <span className="text-sm font-semibold text-foreground">+{calculations.productivityGain}%</span>
+                  <span className="text-sm text-muted-foreground">Investimento estimado CosmoSec</span>
+                  <span className="text-sm font-semibold text-foreground">{formatCurrency(calculations.cosmoSecCost)}/ano</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-secondary/10">
+                  <span className="text-sm text-muted-foreground">ROI líquido (economia - investimento)</span>
+                  <span className={`text-sm font-semibold ${calculations.netROI > 0 ? 'text-secondary' : 'text-destructive'}`}>
+                    {calculations.netROI > 0 ? '+' : ''}{formatCurrency(calculations.netROI)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-primary/5">
-                  <span className="text-sm text-muted-foreground">Custo anual atual estimado</span>
-                  <span className="text-sm font-semibold text-foreground">{formatCurrency(calculations.currentAnnualCost)}</span>
+                  <span className="text-sm text-muted-foreground">Ganho de produtividade</span>
+                  <span className="text-sm font-semibold text-foreground">+{calculations.productivityGain}%</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-primary/5">
                   <span className="text-sm text-muted-foreground">Tempo para retorno (payback)</span>
