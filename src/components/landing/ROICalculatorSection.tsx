@@ -40,9 +40,22 @@ export function ROICalculatorSection() {
     // Savings
     const hoursSaved = Math.round(currentAnnualHours * totalSavingsPercent);
     const costSaved = Math.round(currentAnnualCost * totalSavingsPercent);
-    
-    // Time to value
-    const monthsToBreakeven = costSaved > 0 ? Math.max(1, Math.round(12 / (costSaved / 50000))) : 12;
+
+    // CosmoSec estimated cost based on operation size (R$ 30k - 60k/year)
+    let cosmoSecCost = 30000; // Base: small operation
+    if (teamSize >= 8 || frameworks >= 4) {
+      cosmoSecCost = 60000; // Large operation
+    } else if (teamSize >= 4 || frameworks >= 3) {
+      cosmoSecCost = 45000; // Medium operation
+    }
+
+    // Time to breakeven: (CosmoSec Cost / Annual Savings) * 12 months
+    const monthsToBreakeven = costSaved > 0 
+      ? Math.max(1, Math.round((cosmoSecCost / costSaved) * 12)) 
+      : 12;
+
+    // Net ROI: Savings - Investment
+    const netROI = costSaved - cosmoSecCost;
 
     // Productivity improvement
     const productivityGain = Math.round(totalSavingsPercent * 100);
@@ -52,7 +65,9 @@ export function ROICalculatorSection() {
       currentAnnualCost,
       hoursSaved,
       costSaved,
+      cosmoSecCost,
       monthsToBreakeven,
+      netROI,
       productivityGain,
       totalSavingsPercent
     };
