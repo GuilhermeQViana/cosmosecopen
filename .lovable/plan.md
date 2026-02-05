@@ -1,54 +1,68 @@
 
-# Plano: Ajustar Calculadora de ROI com Preço Real do CosmoSec
 
-## Problema Atual
+# Plano: Incorporar Formulário de Contato na Seção "Agende uma Demo"
 
-A calculadora usa um valor fixo arbitrário de R$ 50.000 para calcular o payback, gerando resultados imprecisos. O preço real do CosmoSec varia de **R$ 30.000 a R$ 60.000/ano**.
+## Situação Atual
+
+A seção `EnhancedCTASection` na página `/tour` exibe apenas um card com o botão "Agendar Agora" que redireciona o usuário para a landing page principal (`/#contact`). Isso causa fricção na jornada do lead que precisa sair da página atual.
+
+## Objetivo
+
+Incorporar o formulário de contato diretamente na seção "Agende uma Demo" da página `/tour`, mantendo a mesma funcionalidade do formulário da landing principal:
+- Salvar dados no banco de dados
+- Enviar notificação por email para a equipe comercial
+- Feedback visual ao usuário
 
 ## Mudanças Propostas
 
-### 1. Nova Lógica de Precificação
+### Layout do Formulário
 
-Calcular o custo estimado do CosmoSec baseado no tamanho da operação:
+| Seção | Conteúdo |
+|-------|----------|
+| Cabeçalho | Ícone calendário + "Agende uma Demo" + subtítulo |
+| Formulário | Campos em grid responsivo |
+| Contatos Alternativos | Email e LinkedIn (abaixo do formulário) |
+| Rodapé | Link "Voltar para Home" |
 
-| Cenário | Custo CosmoSec/ano |
-|---------|-------------------|
-| Pequeno (1-3 pessoas, 1-2 frameworks) | R$ 30.000 |
-| Médio (4-7 pessoas, 2-3 frameworks) | R$ 45.000 |
-| Grande (8+ pessoas, 4+ frameworks) | R$ 60.000 |
+### Campos do Formulário
 
-### 2. Fórmula de Payback Corrigida
+| Campo | Tipo | Obrigatório |
+|-------|------|-------------|
+| Nome completo | Input texto | Sim |
+| Email corporativo | Input email | Sim |
+| Empresa | Input texto com ícone | Sim |
+| Cargo | Input texto | Não |
+| Tamanho da empresa | Select dropdown | Não |
+| Como nos conheceu | Select dropdown | Não |
+| Mensagem | Textarea | Não |
 
-```text
-Payback (meses) = (Custo CosmoSec / Economia Anual) × 12
-```
+### Funcionalidades
 
-**Exemplo:**
-- Economia anual: R$ 504.000
-- Custo CosmoSec: R$ 45.000
-- Payback = (45.000 / 504.000) × 12 = ~1 mês
-
-### 3. Nova Métrica: ROI Líquido
-
-Adicionar o cálculo do retorno líquido:
-
-```text
-ROI Líquido = Economia Anual - Custo CosmoSec
-```
-
-### 4. Exibir Investimento Estimado
-
-Mostrar ao usuário qual seria o investimento estimado baseado no seu perfil.
+1. Validação de campos obrigatórios (nome, email, empresa)
+2. Salvamento na tabela `contact_requests`
+3. Disparo de email via Edge Function `send-contact-notification`
+4. Toast de sucesso/erro
+5. Reset do formulário após envio
 
 ## Arquivo a Modificar
 
-| Arquivo | Mudança |
-|---------|---------|
-| `src/components/landing/ROICalculatorSection.tsx` | Ajustar cálculos e adicionar métricas |
+| Arquivo | Ação |
+|---------|------|
+| `src/components/conheca/EnhancedCTASection.tsx` | Substituir card com botão por formulário completo |
+
+## Design Visual
+
+O formulário seguirá o design system CosmoSec:
+- Card com glassmorphism (`bg-card/80 backdrop-blur-sm`)
+- Bordas com gradiente (`border-primary/20`)
+- Botão cosmic gradient
+- Efeitos nebula de fundo (já existentes)
+- Responsivo: grid de 2 colunas em desktop, 1 coluna em mobile
 
 ## Resultado Esperado
 
-- Payback realista baseado no preço do CosmoSec
-- Nova métrica de ROI líquido (economia - investimento)
-- Exibição do investimento estimado
-- Cálculos mais transparentes para o lead
+- Lead permanece na página `/tour` durante todo o processo
+- Formulário funcional com mesmos campos da landing principal
+- Notificação por email para `contato@cosmosec.com.br`
+- Experiência fluida sem redirecionamentos
+
