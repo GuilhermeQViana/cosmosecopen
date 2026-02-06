@@ -10,9 +10,14 @@ import { cn } from '@/lib/utils';
 
 const screenshots = [
   {
-    src: '/screenshots/dashboard-1.png',
+    src: '/screenshots/dashboard-tour.png',
     title: 'Resumo Executivo',
     description: 'Score de segurança e métricas principais',
+  },
+  {
+    src: '/screenshots/dashboard-1.png',
+    title: 'Dashboard Completo',
+    description: 'Visão geral do painel executivo',
   },
   {
     src: '/screenshots/dashboard-2.png',
