@@ -1,14 +1,8 @@
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { ModulesSection } from '@/components/landing/ModulesSection';
-import { FrameworksSection } from '@/components/landing/FrameworksSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { BenefitsSection } from '@/components/landing/BenefitsSection';
-import { UseCasesSection } from '@/components/landing/UseCasesSection';
-import { ROICalculatorSection } from '@/components/landing/ROICalculatorSection';
-import { ProductTourSection } from '@/components/landing/ProductTourSection';
-import { ContactSection } from '@/components/landing/ContactSection';
+import { PlatformSection } from '@/components/landing/PlatformSection';
+import { TrustSection } from '@/components/landing/TrustSection';
+import { CTASection } from '@/components/landing/CTASection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { Footer } from '@/components/landing/Footer';
 import { StarField } from '@/components/ui/star-field';
@@ -20,15 +14,9 @@ export default function Landing() {
       <Navbar />
       <main className="relative z-10">
         <HeroSection />
-        <ModulesSection />
-        <FrameworksSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <BenefitsSection />
-        <UseCasesSection />
-        <ROICalculatorSection />
-        <ProductTourSection />
-        <ContactSection />
+        <PlatformSection />
+        <TrustSection />
+        <CTASection />
         <FAQSection />
       </main>
       <Footer />

@@ -19,10 +19,9 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: '#modules', label: 'Módulos' },
-    { href: '#frameworks', label: 'Frameworks' },
-    { href: '#features', label: 'Funcionalidades' },
-    { href: '/tour', label: 'Conheça', isRoute: true },
+    { href: '#platform', label: 'Plataforma' },
+    { href: '/tour', label: 'Recursos', isRoute: true },
+    { href: '#contact', label: 'Contato' },
   ];
 
   return (
@@ -64,11 +63,14 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Theme Toggle + CTA Button */}
+          {/* Theme Toggle + CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             <ThemeToggle />
-            <Button asChild>
-              <a href="#contact">Falar Conosco</a>
+            <Button variant="outline" size="sm" asChild className="border-primary/30 hover:border-secondary/50">
+              <Link to="/tour">Ver Tour</Link>
+            </Button>
+            <Button size="sm" variant="cosmic" asChild>
+              <a href="#contact">Falar com Especialista</a>
             </Button>
           </div>
 
@@ -110,8 +112,11 @@ export function Navbar() {
                 <span className="text-sm text-muted-foreground">Alternar tema</span>
                 <ThemeToggle />
               </div>
-              <Button asChild className="w-full mt-2" onClick={() => setIsMobileMenuOpen(false)}>
-                <a href="#contact">Falar Conosco</a>
+              <Button variant="outline" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/tour">Ver Tour</Link>
+              </Button>
+              <Button variant="cosmic" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                <a href="#contact">Falar com Especialista</a>
               </Button>
             </div>
           </div>
