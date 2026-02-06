@@ -2,6 +2,7 @@ import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { PlatformSection } from '@/components/landing/PlatformSection';
 import { TrustSection } from '@/components/landing/TrustSection';
+import { ROICalculatorSection } from '@/components/landing/ROICalculatorSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { Footer } from '@/components/landing/Footer';
@@ -16,6 +17,7 @@ export default function Landing() {
         <HeroSection />
         <PlatformSection />
         <TrustSection />
+        <ROICalculatorSection />
         <CTASection />
         <FAQSection />
       </main>
