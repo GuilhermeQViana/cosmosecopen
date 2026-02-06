@@ -124,11 +124,10 @@ const handler = async (req: Request): Promise<Response> => {
               ` : ''}
             </table>
 
-            <div style="text-align: center; margin-top: 30px;">
-              <a href="mailto:${contactData.email}?subject=Re: Solicitação de Demonstração CosmoSec&body=Olá ${contactData.name},%0D%0A%0D%0AObrigado pelo seu interesse na CosmoSec!%0D%0A%0D%0A" 
-                 style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                📧 Responder Lead
-              </a>
+            <div style="text-align: center; margin-top: 30px; background: #f0f9ff; border-radius: 8px; padding: 15px;">
+              <p style="color: #0369a1; margin: 0; font-weight: 600;">
+                📧 Para responder, envie email para: <strong>${contactData.email}</strong>
+              </p>
             </div>
           </div>
 
