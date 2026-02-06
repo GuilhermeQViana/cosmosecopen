@@ -53,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const emailResponse = await resend.emails.send({
-      from: "CosmoSec <noreply@cosmosec.com.br>",
+      from: "CosmoSec <contato@cosmosec.com.br>",
       to: ["contato@cosmosec.com.br"],
       reply_to: contactData.email,
       subject: `🚀 Nova Solicitação de Demo: ${contactData.company}`,
@@ -87,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
               <tr>
                 <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
                   <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Email Corporativo</strong><br>
-                  <a href="mailto:${contactData.email}" style="color: #3b82f6; font-size: 16px; text-decoration: none;">${contactData.email}</a>
+                  <span style="color: #0f172a; font-size: 16px;">${contactData.email}</span>
                 </td>
               </tr>
               <tr>
@@ -125,8 +125,8 @@ const handler = async (req: Request): Promise<Response> => {
             </table>
 
             <div style="text-align: center; margin-top: 30px; background: #f0f9ff; border-radius: 8px; padding: 15px;">
-              <p style="color: #0369a1; margin: 0; font-weight: 600;">
-                📧 Para responder, envie email para: <strong>${contactData.email}</strong>
+              <p style="color: #0369a1; margin: 0; font-size: 14px;">
+                💡 Use "Responder" no seu cliente de email para contatar este lead diretamente.
               </p>
             </div>
           </div>
