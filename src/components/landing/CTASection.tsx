@@ -1,12 +1,30 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Send, Building2, Eye } from 'lucide-react';
+import { ArrowRight, Send, Building2, Eye, User, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+
+const COMPANY_SIZES = [
+  { value: '1-50', label: '1-50 funcionários' },
+  { value: '51-200', label: '51-200 funcionários' },
+  { value: '201-500', label: '201-500 funcionários' },
+  { value: '501-1000', label: '501-1000 funcionários' },
+  { value: '1000+', label: 'Mais de 1000 funcionários' },
+];
+
+const HOW_FOUND_OPTIONS = [
+  { value: 'google', label: 'Google' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'indicacao', label: 'Indicação' },
+  { value: 'evento', label: 'Evento/Webinar' },
+  { value: 'outro', label: 'Outro' },
+];
 
 export function CTASection() {
   const { toast } = useToast();
@@ -15,6 +33,10 @@ export function CTASection() {
     name: '',
     email: '',
     company: '',
+    role: '',
+    company_size: '',
+    how_found: '',
+    message: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +45,7 @@ export function CTASection() {
     if (!formData.name || !formData.email || !formData.company) {
       toast({
         title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos.',
+        description: 'Por favor, preencha nome, email e empresa.',
         variant: 'destructive',
       });
       return;
@@ -39,6 +61,10 @@ export function CTASection() {
           name: formData.name,
           email: formData.email,
           company: formData.company,
+          role: formData.role || null,
+          company_size: formData.company_size || null,
+          how_found: formData.how_found || null,
+          message: formData.message || null,
         });
 
       if (error) throw error;
@@ -49,6 +75,10 @@ export function CTASection() {
           name: formData.name,
           email: formData.email,
           company: formData.company,
+          role: formData.role || undefined,
+          company_size: formData.company_size || undefined,
+          how_found: formData.how_found || undefined,
+          message: formData.message || undefined,
         },
       });
 
@@ -61,7 +91,15 @@ export function CTASection() {
         description: 'Nossa equipe entrará em contato em breve.',
       });
 
-      setFormData({ name: '', email: '', company: '' });
+      setFormData({ 
+        name: '', 
+        email: '', 
+        company: '', 
+        role: '', 
+        company_size: '', 
+        how_found: '', 
+        message: '' 
+      });
     } catch (error) {
       console.error('Error submitting contact:', error);
       toast({
@@ -105,7 +143,7 @@ export function CTASection() {
         </div>
 
         {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
           {/* Left Column - Tour Preview */}
           <Card className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border-primary/20 dark:border-primary/30 overflow-hidden group">
             <CardContent className="p-8">
@@ -160,43 +198,124 @@ export function CTASection() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo</Label>
-                  <Input
-                    id="name"
-                    placeholder="Seu nome"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email corporativo</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="seu@empresa.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company">Empresa</Label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Row 1: Nome + Email */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">
+                      Nome completo <span className="text-destructive">*</span>
+                    </Label>
                     <Input
-                      id="company"
-                      placeholder="Nome da empresa"
-                      className="pl-10"
-                      value={formData.company}
-                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                      id="name"
+                      placeholder="Seu nome"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="bg-muted/50"
                       required
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">
+                      Email corporativo <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@empresa.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="bg-muted/50"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Row 2: Empresa + Cargo */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="company">
+                      Empresa <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="company"
+                        placeholder="Nome da empresa"
+                        className="pl-10 bg-muted/50"
+                        value={formData.company}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Cargo</Label>
+                    <div className="relative">
+                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="role"
+                        placeholder="Ex: CISO, Gerente de TI"
+                        className="pl-10 bg-muted/50"
+                        value={formData.role}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 3: Tamanho + Como conheceu */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="company_size">Tamanho da empresa</Label>
+                    <Select 
+                      value={formData.company_size} 
+                      onValueChange={(value) => setFormData({ ...formData, company_size: value })}
+                    >
+                      <SelectTrigger id="company_size" className="bg-muted/50">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COMPANY_SIZES.map((size) => (
+                          <SelectItem key={size.value} value={size.value}>
+                            {size.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="how_found">Como nos conheceu?</Label>
+                    <Select 
+                      value={formData.how_found} 
+                      onValueChange={(value) => setFormData({ ...formData, how_found: value })}
+                    >
+                      <SelectTrigger id="how_found" className="bg-muted/50">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HOW_FOUND_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Row 4: Mensagem */}
+                <div className="space-y-2">
+                  <Label htmlFor="message">Mensagem (opcional)</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Conte-nos sobre sua necessidade de conformidade..."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="bg-muted/50 min-h-[100px] resize-none"
+                  />
                 </div>
 
                 <Button 
