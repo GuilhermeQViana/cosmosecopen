@@ -74,7 +74,7 @@ export function ROICalculatorSection() {
   }, [teamSize, hoursPerWeek, frameworks, vendors, hourlyRate]);
 
   const scrollToContact = () => {
-    document.getElementById('contato')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const formatCurrency = (value: number) => {
