@@ -53,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const emailResponse = await resend.emails.send({
-      from: "CosmoSec <noreply@cosmosec.com.br>",
+      from: "CosmoSec <contato@cosmosec.com.br>",
       to: ["contato@cosmosec.com.br"],
       subject: `🚀 Nova Solicitação de Demo: ${contactData.company}`,
       html: `
