@@ -1,68 +1,90 @@
 
 
-# Plano: Incorporar Formulário de Contato na Seção "Agende uma Demo"
+# Diagnóstico: Emails Não Chegando em contato@cosmosec.com.br
 
-## Situação Atual
+## Status Atual
 
-A seção `EnhancedCTASection` na página `/tour` exibe apenas um card com o botão "Agendar Agora" que redireciona o usuário para a landing page principal (`/#contact`). Isso causa fricção na jornada do lead que precisa sair da página atual.
+A Edge Function está funcionando corretamente:
+- Logs mostram sucesso: `Contact notification email sent successfully`
+- Resend retorna IDs de email válidos (ex: `c3f1f40f-3702-4189-93ca-66d694e11946`)
+- Teste confirmou status 200 com resposta positiva
 
-## Objetivo
+**O problema NÃO está no código** - está na configuração do Resend ou no servidor de email.
 
-Incorporar o formulário de contato diretamente na seção "Agende uma Demo" da página `/tour`, mantendo a mesma funcionalidade do formulário da landing principal:
-- Salvar dados no banco de dados
-- Enviar notificação por email para a equipe comercial
-- Feedback visual ao usuário
+---
 
-## Mudanças Propostas
+## Possíveis Causas
 
-### Layout do Formulário
+### 1. API Key com Escopo Incorreto
+A API key do Resend pode estar configurada para um domínio diferente de `cosmosec.com.br`.
 
-| Seção | Conteúdo |
-|-------|----------|
-| Cabeçalho | Ícone calendário + "Agende uma Demo" + subtítulo |
-| Formulário | Campos em grid responsivo |
-| Contatos Alternativos | Email e LinkedIn (abaixo do formulário) |
-| Rodapé | Link "Voltar para Home" |
+**Verificação:**
+1. Acesse https://resend.com/api-keys
+2. Confirme que a API key usada tem acesso ao domínio `cosmosec.com.br`
+3. Se necessário, crie uma nova API key específica para este domínio
 
-### Campos do Formulário
+### 2. Domínio Não Verificado no Resend
+O domínio `cosmosec.com.br` pode não estar verificado ou com registros DNS incorretos.
 
-| Campo | Tipo | Obrigatório |
-|-------|------|-------------|
-| Nome completo | Input texto | Sim |
-| Email corporativo | Input email | Sim |
-| Empresa | Input texto com ícone | Sim |
-| Cargo | Input texto | Não |
-| Tamanho da empresa | Select dropdown | Não |
-| Como nos conheceu | Select dropdown | Não |
-| Mensagem | Textarea | Não |
+**Verificação:**
+1. Acesse https://resend.com/domains
+2. Confirme que `cosmosec.com.br` aparece com status "Verified" (verde)
+3. Se não estiver, configure os registros DNS conforme instruções do Resend
 
-### Funcionalidades
+### 3. Emails Caindo em SPAM
+Emails do Resend podem estar sendo filtrados como spam.
 
-1. Validação de campos obrigatórios (nome, email, empresa)
-2. Salvamento na tabela `contact_requests`
-3. Disparo de email via Edge Function `send-contact-notification`
-4. Toast de sucesso/erro
-5. Reset do formulário após envio
+**Verificação:**
+1. Verifique a pasta de Spam/Lixo Eletrônico
+2. Procure por emails com assunto "🚀 Nova Solicitação de Demo:"
 
-## Arquivo a Modificar
+### 4. Conflito de Remetente/Destinatário
+Enviar email DE e PARA o mesmo endereço pode ser bloqueado por alguns provedores.
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/conheca/EnhancedCTASection.tsx` | Substituir card com botão por formulário completo |
+---
 
-## Design Visual
+## Ações Recomendadas
 
-O formulário seguirá o design system CosmoSec:
-- Card com glassmorphism (`bg-card/80 backdrop-blur-sm`)
-- Bordas com gradiente (`border-primary/20`)
-- Botão cosmic gradient
-- Efeitos nebula de fundo (já existentes)
-- Responsivo: grid de 2 colunas em desktop, 1 coluna em mobile
+| Prioridade | Ação | Local |
+|------------|------|-------|
+| 1 | Verificar pasta de SPAM | Caixa de email |
+| 2 | Confirmar verificação do domínio | https://resend.com/domains |
+| 3 | Verificar escopo da API key | https://resend.com/api-keys |
+| 4 | Testar envio pelo dashboard Resend | https://resend.com |
 
-## Resultado Esperado
+---
 
-- Lead permanece na página `/tour` durante todo o processo
-- Formulário funcional com mesmos campos da landing principal
-- Notificação por email para `contato@cosmosec.com.br`
-- Experiência fluida sem redirecionamentos
+## Teste Rápido Sugerido
+
+Envie um email de teste diretamente pelo painel do Resend:
+1. Acesse https://resend.com
+2. Use "Send Test Email"
+3. Configure:
+   - From: `contato@cosmosec.com.br`
+   - To: `contato@cosmosec.com.br`
+4. Se este teste também não chegar, o problema está na configuração do domínio/DNS
+
+---
+
+## Solução Alternativa (Se Necessário)
+
+Se o problema persistir, podemos alterar o remetente para usar um endereço diferente do destinatário:
+
+```text
+De: noreply@cosmosec.com.br → Para: contato@cosmosec.com.br
+```
+
+Isso evita o conflito de mesmo remetente/destinatário.
+
+---
+
+## Próximos Passos
+
+Por favor, verifique:
+
+1. **Sua pasta de SPAM** - os emails podem estar lá
+2. **Resend Dashboard** - confirme que o domínio está verificado (https://resend.com/domains)
+3. **API Key** - confirme que está com escopo para `cosmosec.com.br` (https://resend.com/api-keys)
+
+Após verificar, me informe o que encontrou para prosseguirmos com a solução.
 
