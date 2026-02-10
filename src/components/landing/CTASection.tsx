@@ -226,7 +226,7 @@ export function CTASection() {
           </Card>
 
           {/* Right Column - Contact Form */}
-          <Card className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border-primary/20 dark:border-primary/30">
+          <Card className="bg-card/80 dark:bg-card/60 border-primary/20 dark:border-primary/30">
             <CardContent className="p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
