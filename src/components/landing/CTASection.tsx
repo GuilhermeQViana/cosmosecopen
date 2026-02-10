@@ -226,7 +226,7 @@ export function CTASection() {
           </Card>
 
           {/* Right Column - Contact Form */}
-          <Card className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border-primary/20 dark:border-primary/30">
+          <Card className="bg-card/80 dark:bg-card/60 border-primary/20 dark:border-primary/30">
             <CardContent className="p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
@@ -238,7 +238,7 @@ export function CTASection() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
                 {/* Row 1: Nome + Email */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -250,8 +250,9 @@ export function CTASection() {
                       placeholder="Seu nome"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="bg-muted/50"
+                      className="bg-muted/50 pointer-events-auto"
                       required
+                      autoComplete="name"
                     />
                   </div>
 
@@ -265,8 +266,9 @@ export function CTASection() {
                       placeholder="seu@empresa.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="bg-muted/50"
+                      className="bg-muted/50 pointer-events-auto"
                       required
+                      autoComplete="email"
                     />
                   </div>
                 </div>
