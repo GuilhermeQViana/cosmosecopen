@@ -266,8 +266,9 @@ export function CTASection() {
                       placeholder="seu@empresa.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="bg-muted/50"
+                      className="bg-muted/50 pointer-events-auto"
                       required
+                      autoComplete="email"
                     />
                   </div>
                 </div>
