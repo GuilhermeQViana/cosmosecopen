@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Send, Building2, Eye, User, Briefcase } from 'lucide-react';
+import { ArrowRight, Send, Building2, Eye, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +25,53 @@ const HOW_FOUND_OPTIONS = [
   { value: 'evento', label: 'Evento/Webinar' },
   { value: 'outro', label: 'Outro' },
 ];
+
+const DASHBOARD_SCREENSHOTS = [
+  { src: '/screenshots/dashboard-1.png', title: 'Dashboard Executivo' },
+  { src: '/screenshots/dashboard-2.png', title: 'Métricas de Remediação' },
+  { src: '/screenshots/dashboard-3.png', title: 'Mapa de Calor de Riscos' },
+  { src: '/screenshots/dashboard-4.png', title: 'Tendências de Conformidade' },
+];
+
+function DashboardGallery() {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % DASHBOARD_SCREENSHOTS.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative mb-6 rounded-xl overflow-hidden border border-primary/20 bg-muted/30">
+      <div className="relative h-48">
+        {DASHBOARD_SCREENSHOTS.map((shot, i) => (
+          <img
+            key={shot.src}
+            src={shot.src}
+            alt={shot.title}
+            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-700 ${
+              i === current ? 'opacity-80 group-hover:opacity-100' : 'opacity-0'
+            }`}
+          />
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+          {DASHBOARD_SCREENSHOTS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`w-1.5 h-1.5 rounded-full transition-all ${
+                i === current ? 'bg-primary w-4' : 'bg-muted-foreground/40'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function CTASection() {
   const { toast } = useToast();
@@ -157,15 +204,8 @@ export function CTASection() {
                 </div>
               </div>
 
-              {/* Screenshot Preview */}
-              <div className="relative mb-6 rounded-xl overflow-hidden border border-primary/20 bg-muted/30">
-                <img 
-                  src="/screenshots/dashboard-1.png" 
-                  alt="Dashboard CosmoSec" 
-                  className="w-full h-48 object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-              </div>
+              {/* Screenshot Gallery */}
+              <DashboardGallery />
 
               <p className="text-muted-foreground mb-6">
                 Explore todas as funcionalidades: Dashboard Executivo, Diagnóstico de Controles, 
