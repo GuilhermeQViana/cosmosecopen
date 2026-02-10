@@ -157,15 +157,8 @@ export function CTASection() {
                 </div>
               </div>
 
-              {/* Screenshot Preview */}
-              <div className="relative mb-6 rounded-xl overflow-hidden border border-primary/20 bg-muted/30">
-                <img 
-                  src="/screenshots/dashboard-1.png" 
-                  alt="Dashboard CosmoSec" 
-                  className="w-full h-48 object-cover object-top opacity-80 group-hover:opacity-100 transition-opacity"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-              </div>
+              {/* Screenshot Gallery */}
+              <DashboardGallery />
 
               <p className="text-muted-foreground mb-6">
                 Explore todas as funcionalidades: Dashboard Executivo, Diagnóstico de Controles, 
