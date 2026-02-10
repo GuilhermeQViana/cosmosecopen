@@ -250,8 +250,9 @@ export function CTASection() {
                       placeholder="Seu nome"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="bg-muted/50"
+                      className="bg-muted/50 pointer-events-auto"
                       required
+                      autoComplete="name"
                     />
                   </div>
 
