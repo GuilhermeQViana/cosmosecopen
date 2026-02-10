@@ -238,7 +238,7 @@ export function CTASection() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
                 {/* Row 1: Nome + Email */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
