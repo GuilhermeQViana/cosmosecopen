@@ -143,6 +143,14 @@ export function VendorDetailSheet({
                     Due Diligence
                   </Button>
                 )}
+                <Button variant="outline" size="sm" onClick={() => setOffboardingOpen(true)}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Offboarding
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setPortalOpen(true)}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Portal
+                </Button>
               </div>
 
               {vendor.description && (
