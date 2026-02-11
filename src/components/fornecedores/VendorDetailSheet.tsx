@@ -116,8 +116,9 @@ export function VendorDetailSheet({
                     Due Diligence
                   </Button>
                 )}
+              </div>
 
-              {/* Description */}
+
               {vendor.description && (
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Descrição</h4>
