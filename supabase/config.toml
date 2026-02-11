@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.send-contact-notification]
 verify_jwt = false
+
+[functions.vendor-portal]
+verify_jwt = false

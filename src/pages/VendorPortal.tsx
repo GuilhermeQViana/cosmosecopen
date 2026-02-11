@@ -24,8 +24,18 @@ interface PortalData {
   expires_at: string;
   status: string;
   vendor_name?: string;
-  organization_name?: string;
 }
+
+const ASSESSMENT_QUESTIONS = [
+  { id: 'security_policy', label: 'Sua empresa possui uma Política de Segurança da Informação formal e atualizada?' },
+  { id: 'access_control', label: 'Existem controles de acesso baseados em privilégio mínimo?' },
+  { id: 'incident_response', label: 'Há um plano de resposta a incidentes documentado e testado?' },
+  { id: 'data_protection', label: 'Quais medidas de proteção de dados pessoais são implementadas (LGPD)?' },
+  { id: 'bcp', label: 'Existe um Plano de Continuidade de Negócios (BCP) documentado?' },
+  { id: 'certifications', label: 'Quais certificações de segurança a empresa possui? (ISO 27001, SOC2, etc.)' },
+  { id: 'third_party', label: 'Como é feita a gestão de terceiros e subcontratados em relação à segurança?' },
+  { id: 'training', label: 'Os colaboradores recebem treinamento periódico em segurança da informação?' },
+];
 
 export default function VendorPortal() {
   const { token } = useParams<{ token: string }>();
@@ -45,70 +55,68 @@ export default function VendorPortal() {
         return;
       }
 
-      // Fetch token data (public query - no auth needed for read)
-      const { data, error: fetchError } = await supabase
-        .from('vendor_portal_tokens')
-        .select('id, vendor_id, scope, expires_at, status')
-        .eq('token', token)
-        .maybeSingle();
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke('vendor-portal', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          body: undefined,
+        // @ts-ignore - passing query params via URL workaround
+        }) as any;
 
-      if (fetchError || !data) {
-        setError('Link não encontrado ou inválido.');
-        setLoading(false);
-        return;
+        // Use fetch directly for GET with query params
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vendor-portal?token=${token}`,
+          {
+            method: 'GET',
+            headers: {
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!res.ok) {
+          const err = await res.json();
+          setError(err.error || 'Link não encontrado ou inválido.');
+          setLoading(false);
+          return;
+        }
+
+        const portalResult = await res.json();
+
+        if (portalResult.status !== 'pendente') {
+          setSubmitted(true);
+        }
+
+        setPortalData(portalResult);
+      } catch {
+        setError('Erro ao carregar portal.');
       }
-
-      if (new Date(data.expires_at) < new Date()) {
-        setError('Este link expirou. Solicite um novo ao seu contato.');
-        setLoading(false);
-        return;
-      }
-
-      if (data.status !== 'pendente') {
-        setSubmitted(true);
-      }
-
-      // Get vendor name
-      const { data: vendor } = await supabase
-        .from('vendors')
-        .select('name')
-        .eq('id', data.vendor_id)
-        .maybeSingle();
-
-      setPortalData({
-        ...data,
-        vendor_name: vendor?.name || 'Fornecedor',
-      });
       setLoading(false);
     }
     loadPortal();
   }, [token]);
 
-  const ASSESSMENT_QUESTIONS = [
-    { id: 'security_policy', label: 'Sua empresa possui uma Política de Segurança da Informação formal e atualizada?' },
-    { id: 'access_control', label: 'Existem controles de acesso baseados em privilégio mínimo?' },
-    { id: 'incident_response', label: 'Há um plano de resposta a incidentes documentado e testado?' },
-    { id: 'data_protection', label: 'Quais medidas de proteção de dados pessoais são implementadas (LGPD)?' },
-    { id: 'bcp', label: 'Existe um Plano de Continuidade de Negócios (BCP) documentado?' },
-    { id: 'certifications', label: 'Quais certificações de segurança a empresa possui? (ISO 27001, SOC2, etc.)' },
-    { id: 'third_party', label: 'Como é feita a gestão de terceiros e subcontratados em relação à segurança?' },
-    { id: 'training', label: 'Os colaboradores recebem treinamento periódico em segurança da informação?' },
-  ];
-
   const handleSubmit = async () => {
     if (!portalData) return;
     setSubmitting(true);
     try {
-      const { error: updateError } = await supabase
-        .from('vendor_portal_tokens')
-        .update({
-          vendor_response: responses,
-          status: 'respondido',
-          used_at: new Date().toISOString(),
-        })
-        .eq('id', portalData.id);
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vendor-portal`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            portal_id: portalData.id,
+            responses,
+          }),
+        }
+      );
 
-      if (updateError) throw updateError;
+      if (!res.ok) throw new Error('Erro ao enviar');
       setSubmitted(true);
       toast({ title: 'Respostas enviadas com sucesso!' });
     } catch {
