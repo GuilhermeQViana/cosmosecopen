@@ -19,6 +19,8 @@ import { VendorActionPlanManager } from './VendorActionPlanManager';
 import { VendorContractManager } from './VendorContractManager';
 import { VendorIncidentLog } from './VendorIncidentLog';
 import { VendorSLATracker } from './VendorSLATracker';
+import { VendorOffboardingWizard } from './VendorOffboardingWizard';
+import { VendorPortalManager } from './VendorPortalManager';
 import {
   Building2,
   Calendar,
@@ -35,6 +37,8 @@ import {
   FileText,
   AlertTriangle,
   Gauge,
+  LogOut,
+  ExternalLink,
 } from 'lucide-react';
 
 interface VendorDetailSheetProps {
