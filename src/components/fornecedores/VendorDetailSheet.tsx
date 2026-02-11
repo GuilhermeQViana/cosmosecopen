@@ -65,6 +65,8 @@ export function VendorDetailSheet({
   const [contractsOpen, setContractsOpen] = useState(false);
   const [incidentsOpen, setIncidentsOpen] = useState(false);
   const [slasOpen, setSlasOpen] = useState(false);
+  const [offboardingOpen, setOffboardingOpen] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
 
   const { data: assessments } = useVendorAssessments(vendor?.id);
