@@ -4,13 +4,13 @@ import { useVendors } from '@/hooks/useVendors';
 import { Building2, ArrowRight } from 'lucide-react';
 
 const LIFECYCLE_STAGES = [
+  { value: 'inativo', label: 'Inativo', color: 'bg-gray-400' },
   { value: 'prospecto', label: 'Prospecto', color: 'bg-slate-400' },
   { value: 'due_diligence', label: 'Due Diligence', color: 'bg-blue-500' },
   { value: 'em_contratacao', label: 'Contratação', color: 'bg-indigo-500' },
-  { value: 'ativo', label: 'Ativo', color: 'bg-emerald-500' },
   { value: 'em_reavaliacao', label: 'Reavaliação', color: 'bg-amber-500' },
+  { value: 'ativo', label: 'Ativo', color: 'bg-emerald-500' },
   { value: 'em_offboarding', label: 'Offboarding', color: 'bg-orange-500' },
-  { value: 'inativo', label: 'Inativo', color: 'bg-gray-400' },
   { value: 'bloqueado', label: 'Bloqueado', color: 'bg-red-500' },
 ];
 
@@ -20,7 +20,7 @@ export function VendorPipelineFunnel() {
   const stageCounts = LIFECYCLE_STAGES.map((stage) => ({
     ...stage,
     count: vendors.filter((v) => v.lifecycle_stage === stage.value).length,
-  })).filter((s) => s.count > 0 || ['prospecto', 'due_diligence', 'ativo', 'em_offboarding', 'inativo'].includes(s.value));
+  }));
 
   return (
     <Card className="border-border/50">
