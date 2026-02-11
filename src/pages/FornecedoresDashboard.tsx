@@ -14,17 +14,19 @@ import {
   TrendingUp,
   Calendar,
   Settings,
-  Download
 } from 'lucide-react';
 import { useVendors, getRiskLevelFromScore } from '@/hooks/useVendors';
 import { useVendorRequirements } from '@/hooks/useVendorRequirements';
-import { format, addDays, isBefore, isAfter } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { addDays, isBefore, isAfter } from 'date-fns';
 import { VendorComplianceRadar } from '@/components/fornecedores/VendorComplianceRadar';
 import { VendorRiskHeatMap } from '@/components/fornecedores/VendorRiskHeatMap';
 import { VendorTrendChart } from '@/components/fornecedores/VendorTrendChart';
 import { VendorAlerts } from '@/components/fornecedores/VendorAlerts';
 import { VendorComparison } from '@/components/fornecedores/VendorComparison';
+import { VendorPipelineFunnel } from '@/components/fornecedores/VendorPipelineFunnel';
+import { VendorIncidentsSummary } from '@/components/fornecedores/VendorIncidentsSummary';
+import { VendorSLAComplianceCard } from '@/components/fornecedores/VendorSLAComplianceCard';
+import { VendorDueDiligenceSummary } from '@/components/fornecedores/VendorDueDiligenceSummary';
 
 export default function FornecedoresDashboard() {
   const navigate = useNavigate();
