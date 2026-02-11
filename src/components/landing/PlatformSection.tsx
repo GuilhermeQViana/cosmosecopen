@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Building2, Sparkles, CheckCircle2, ChevronDown, Eye } from 'lucide-react';
+import { Shield, Building2, Sparkles, CheckCircle2, ChevronDown, Eye, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ModuleScreenshotGallery, Screenshot } from './ModuleScreenshotGallery';
