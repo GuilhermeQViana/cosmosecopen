@@ -131,6 +131,7 @@ export function CTASection() {
           email: formData.email,
           company: formData.company,
           role: formData.role || undefined,
+          interest_type: formData.interest_type || undefined,
           company_size: formData.company_size || undefined,
           how_found: formData.how_found || undefined,
           message: formData.message || undefined,
