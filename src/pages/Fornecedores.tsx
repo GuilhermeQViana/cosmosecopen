@@ -227,6 +227,16 @@ export default function Fornecedores() {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'pipeline')} className="mr-2">
+              <TabsList className="h-9">
+                <TabsTrigger value="grid" className="px-3">
+                  <LayoutGrid className="h-4 w-4" />
+                </TabsTrigger>
+                <TabsTrigger value="pipeline" className="px-3">
+                  <Columns3 className="h-4 w-4" />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <Button
               variant="outline"
               size="sm"
