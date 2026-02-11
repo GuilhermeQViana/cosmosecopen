@@ -72,7 +72,7 @@ export function HeroSection() {
 
           {/* Trust Indicator */}
           <p className="text-sm text-muted-foreground">
-            Conformidade com NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893
+            NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893 • Multi-organizações
           </p>
         </div>
       </div>
