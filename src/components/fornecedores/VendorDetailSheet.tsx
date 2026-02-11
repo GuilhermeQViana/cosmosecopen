@@ -36,6 +36,7 @@ interface VendorDetailSheetProps {
   onEdit?: (vendor: Vendor) => void;
   onStartAssessment?: (vendor: Vendor) => void;
   onContinueAssessment?: (assessment: VendorAssessment) => void;
+  onStartDueDiligence?: (vendor: Vendor) => void;
 }
 
 export function VendorDetailSheet({
