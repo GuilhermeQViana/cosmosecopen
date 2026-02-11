@@ -26,6 +26,12 @@ const HOW_FOUND_OPTIONS = [
   { value: 'outro', label: 'Outro' },
 ];
 
+const INTEREST_TYPES = [
+  { value: 'empresa', label: 'Quero para minha empresa' },
+  { value: 'consultoria', label: 'Quero para minha consultoria/auditoria' },
+  { value: 'parceiro', label: 'Quero ser parceiro' },
+];
+
 const DASHBOARD_SCREENSHOTS = [
   { src: '/screenshots/dashboard-1.png', title: 'Dashboard Executivo' },
   { src: '/screenshots/dashboard-2.png', title: 'Métricas de Remediação' },
