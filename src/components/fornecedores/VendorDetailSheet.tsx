@@ -16,6 +16,9 @@ import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './Ve
 import { VendorLifecycleBadge, DataClassificationBadge } from './VendorLifecycleBadge';
 import { VendorEvidenceUpload } from './VendorEvidenceUpload';
 import { VendorActionPlanManager } from './VendorActionPlanManager';
+import { VendorContractManager } from './VendorContractManager';
+import { VendorIncidentLog } from './VendorIncidentLog';
+import { VendorSLATracker } from './VendorSLATracker';
 import {
   Building2,
   Calendar,
@@ -29,6 +32,9 @@ import {
   ListTodo,
   ArrowRight,
   Search,
+  FileText,
+  AlertTriangle,
+  Gauge,
 } from 'lucide-react';
 
 interface VendorDetailSheetProps {
@@ -52,6 +58,9 @@ export function VendorDetailSheet({
 }: VendorDetailSheetProps) {
   const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
   const [actionPlanOpen, setActionPlanOpen] = useState(false);
+  const [contractsOpen, setContractsOpen] = useState(false);
+  const [incidentsOpen, setIncidentsOpen] = useState(false);
+  const [slasOpen, setSlasOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
 
   const { data: assessments } = useVendorAssessments(vendor?.id);
@@ -110,6 +119,18 @@ export function VendorDetailSheet({
                   <ListTodo className="h-4 w-4 mr-2" />
                   Planos de Ação
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => setContractsOpen(true)}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Contratos
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setIncidentsOpen(true)}>
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Incidentes
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setSlasOpen(true)}>
+                  <Gauge className="h-4 w-4 mr-2" />
+                  SLAs
+                </Button>
                 {onStartDueDiligence && (
                   <Button variant="outline" size="sm" onClick={() => onStartDueDiligence(vendor)}>
                     <Search className="h-4 w-4 mr-2" />
@@ -118,7 +139,6 @@ export function VendorDetailSheet({
                 )}
               </div>
 
-
               {vendor.description && (
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Descrição</h4>
@@ -126,7 +146,6 @@ export function VendorDetailSheet({
                 </div>
               )}
 
-              {/* Category */}
               {vendor.category && (
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Categoria</h4>
@@ -268,6 +287,27 @@ export function VendorDetailSheet({
       <VendorActionPlanManager
         open={actionPlanOpen}
         onOpenChange={setActionPlanOpen}
+        vendor={vendor}
+      />
+
+      {/* Contract Manager */}
+      <VendorContractManager
+        open={contractsOpen}
+        onOpenChange={setContractsOpen}
+        vendor={vendor}
+      />
+
+      {/* Incident Log */}
+      <VendorIncidentLog
+        open={incidentsOpen}
+        onOpenChange={setIncidentsOpen}
+        vendor={vendor}
+      />
+
+      {/* SLA Tracker */}
+      <VendorSLATracker
+        open={slasOpen}
+        onOpenChange={setSlasOpen}
         vendor={vendor}
       />
     </>
