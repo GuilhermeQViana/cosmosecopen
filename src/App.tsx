@@ -40,6 +40,7 @@ import BrandAssets from "@/pages/BrandAssets";
 import TermosDeUso from "@/pages/TermosDeUso";
 import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import PoliticaLGPD from "@/pages/PoliticaLGPD";
+import VendorPortal from "@/pages/VendorPortal";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
