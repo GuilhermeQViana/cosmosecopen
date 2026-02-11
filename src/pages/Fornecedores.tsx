@@ -40,8 +40,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Building2, Download } from 'lucide-react';
+import { Plus, Search, Building2, Download, LayoutGrid, Columns3 } from 'lucide-react';
+import { VendorPipeline } from '@/components/fornecedores/VendorPipeline';
+import { DueDiligenceDialog } from '@/components/fornecedores/DueDiligenceDialog';
 
 const RISK_LEVEL_FILTERS = [
   { value: 'all', label: 'Todos os níveis' },
@@ -58,6 +61,7 @@ export default function Fornecedores() {
   const [criticalityFilter, setCriticalityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'pipeline'>('grid');
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
@@ -66,6 +70,7 @@ export default function Fornecedores() {
   const [assessmentVendor, setAssessmentVendor] = useState<Vendor | null>(null);
   const [activeAssessment, setActiveAssessment] = useState<VendorAssessment | null>(null);
   const [assessmentFormVendor, setAssessmentFormVendor] = useState<Vendor | null>(null);
+  const [ddVendor, setDdVendor] = useState<Vendor | null>(null);
 
   const { toast } = useToast();
   const { data: vendors, isLoading } = useVendors();
@@ -118,6 +123,11 @@ export default function Fornecedores() {
           contact_phone: data.contact_phone || null,
           contract_start: data.contract_start || null,
           contract_end: data.contract_end || null,
+          lifecycle_stage: (data as any).lifecycle_stage || 'prospecto',
+          data_classification: (data as any).data_classification || null,
+          service_type: (data as any).service_type || null,
+          contract_value: (data as any).contract_value || null,
+          contract_currency: (data as any).contract_currency || 'BRL',
         });
         toast({ title: 'Fornecedor criado com sucesso' });
       }
@@ -217,6 +227,16 @@ export default function Fornecedores() {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'pipeline')} className="mr-2">
+              <TabsList className="h-9">
+                <TabsTrigger value="grid" className="px-3">
+                  <LayoutGrid className="h-4 w-4" />
+                </TabsTrigger>
+                <TabsTrigger value="pipeline" className="px-3">
+                  <Columns3 className="h-4 w-4" />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <Button
               variant="outline"
               size="sm"
@@ -315,7 +335,7 @@ export default function Fornecedores() {
         </div>
       </AnimatedItem>
 
-      {/* Vendors Grid */}
+      {/* Vendors Grid or Pipeline */}
       <AnimatedItem animation="fade-up" delay={150}>
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -343,6 +363,8 @@ export default function Fornecedores() {
               )}
             </CardContent>
           </Card>
+        ) : viewMode === 'pipeline' ? (
+          <VendorPipeline vendors={filteredVendors} onViewDetails={setDetailVendor} />
         ) : (
           <StaggeredGrid columns={3} staggerDelay={60} animation="scale-in">
             {filteredVendors.map((vendor) => (
@@ -379,6 +401,17 @@ export default function Fornecedores() {
           handleOpenForm(v);
         }}
         onStartAssessment={handleStartAssessment}
+        onStartDueDiligence={(v) => {
+          setDetailVendor(null);
+          setDdVendor(v);
+        }}
+      />
+
+      {/* Due Diligence Dialog */}
+      <DueDiligenceDialog
+        open={!!ddVendor}
+        onOpenChange={(open) => !open && setDdVendor(null)}
+        vendor={ddVendor}
       />
 
       {/* Start Assessment Dialog */}

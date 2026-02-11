@@ -1403,6 +1403,113 @@ export type Database = {
           },
         ]
       }
+      vendor_due_diligence: {
+        Row: {
+          approved_by: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          inherent_risk_score: number | null
+          notes: string | null
+          organization_id: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          inherent_risk_score?: number | null
+          notes?: string | null
+          organization_id: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          inherent_risk_score?: number | null
+          notes?: string | null
+          organization_id?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_due_diligence_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_due_diligence_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_due_diligence_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          due_diligence_id: string
+          id: string
+          item_name: string
+          observations: string | null
+          order_index: number
+          status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          due_diligence_id: string
+          id?: string
+          item_name: string
+          observations?: string | null
+          order_index?: number
+          status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          due_diligence_id?: string
+          id?: string
+          item_name?: string
+          observations?: string | null
+          order_index?: number
+          status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_due_diligence_items_due_diligence_id_fkey"
+            columns: ["due_diligence_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_due_diligence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_evidence_vault: {
         Row: {
           category: string
@@ -1600,16 +1707,21 @@ export type Database = {
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          contract_currency: string
           contract_end: string | null
           contract_start: string | null
+          contract_value: number | null
           created_at: string | null
           created_by: string | null
           criticality: string
+          data_classification: string | null
           description: string | null
           id: string
+          lifecycle_stage: string
           name: string
           next_assessment_date: string | null
           organization_id: string
+          service_type: string | null
           status: string
           updated_at: string | null
         }
@@ -1619,16 +1731,21 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_currency?: string
           contract_end?: string | null
           contract_start?: string | null
+          contract_value?: number | null
           created_at?: string | null
           created_by?: string | null
           criticality?: string
+          data_classification?: string | null
           description?: string | null
           id?: string
+          lifecycle_stage?: string
           name: string
           next_assessment_date?: string | null
           organization_id: string
+          service_type?: string | null
           status?: string
           updated_at?: string | null
         }
@@ -1638,16 +1755,21 @@ export type Database = {
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_currency?: string
           contract_end?: string | null
           contract_start?: string | null
+          contract_value?: number | null
           created_at?: string | null
           created_by?: string | null
           criticality?: string
+          data_classification?: string | null
           description?: string | null
           id?: string
+          lifecycle_stage?: string
           name?: string
           next_assessment_date?: string | null
           organization_id?: string
+          service_type?: string | null
           status?: string
           updated_at?: string | null
         }

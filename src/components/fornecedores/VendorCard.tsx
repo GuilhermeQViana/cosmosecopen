@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Vendor } from '@/hooks/useVendors';
-import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
+import { VendorRiskBadge, VendorCriticalityBadge } from './VendorRiskBadge';
+import { VendorLifecycleBadge } from './VendorLifecycleBadge';
 import {
   Building2,
   MoreVertical,
@@ -110,7 +111,7 @@ export function VendorCard({
       <CardContent className="space-y-3 relative">
         {/* Status and Risk */}
         <div className="flex items-center gap-2 flex-wrap">
-          <VendorStatusBadge status={vendor.status} size="sm" />
+          <VendorLifecycleBadge stage={vendor.lifecycle_stage} size="sm" />
           {vendor.last_assessment && (
             <VendorRiskBadge
               score={vendor.last_assessment.overall_score}

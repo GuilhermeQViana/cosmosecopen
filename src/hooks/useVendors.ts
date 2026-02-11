@@ -16,6 +16,11 @@ export interface Vendor {
   contract_start: string | null;
   contract_end: string | null;
   next_assessment_date: string | null;
+  lifecycle_stage: string;
+  data_classification: string | null;
+  service_type: string | null;
+  contract_value: number | null;
+  contract_currency: string;
   organization_id: string;
   created_by: string | null;
   created_at: string;
@@ -55,6 +60,24 @@ export const VENDOR_STATUS = [
   { value: 'inativo', label: 'Inativo' },
   { value: 'em_avaliacao', label: 'Em Avaliação' },
   { value: 'bloqueado', label: 'Bloqueado' },
+];
+
+export const VENDOR_LIFECYCLE_STAGES = [
+  { value: 'prospecto', label: 'Prospecto', color: 'bg-blue-400', icon: 'search' },
+  { value: 'due_diligence', label: 'Due Diligence', color: 'bg-amber-500', icon: 'clipboard-check' },
+  { value: 'em_contratacao', label: 'Em Contratação', color: 'bg-purple-500', icon: 'file-text' },
+  { value: 'ativo', label: 'Ativo', color: 'bg-green-500', icon: 'check-circle' },
+  { value: 'em_reavaliacao', label: 'Em Reavaliação', color: 'bg-cyan-500', icon: 'refresh-cw' },
+  { value: 'em_offboarding', label: 'Em Offboarding', color: 'bg-orange-500', icon: 'log-out' },
+  { value: 'inativo', label: 'Inativo', color: 'bg-gray-400', icon: 'pause' },
+  { value: 'bloqueado', label: 'Bloqueado', color: 'bg-red-500', icon: 'shield-off' },
+];
+
+export const VENDOR_DATA_CLASSIFICATION = [
+  { value: 'publica', label: 'Pública', color: 'bg-green-500' },
+  { value: 'interna', label: 'Interna', color: 'bg-blue-500' },
+  { value: 'confidencial', label: 'Confidencial', color: 'bg-amber-500' },
+  { value: 'restrita', label: 'Restrita', color: 'bg-red-500' },
 ];
 
 export function getRiskLevelFromScore(score: number | null): string {
@@ -163,7 +186,7 @@ export function useCreateVendor() {
 
   return useMutation({
     mutationFn: async (
-      vendor: Omit<Vendor, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'created_by' | 'last_assessment' | 'assessments_count' | 'next_assessment_date'> & { next_assessment_date?: string | null }
+      vendor: Omit<Vendor, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'created_by' | 'last_assessment' | 'assessments_count' | 'next_assessment_date'> & { next_assessment_date?: string | null; lifecycle_stage?: string; data_classification?: string | null; service_type?: string | null; contract_value?: number | null; contract_currency?: string }
     ) => {
       if (!organization?.id) throw new Error('No organization');
 

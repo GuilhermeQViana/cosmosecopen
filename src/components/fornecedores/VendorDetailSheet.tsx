@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Vendor } from '@/hooks/useVendors';
 import { useVendorAssessments, VendorAssessment } from '@/hooks/useVendorAssessments';
 import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
+import { VendorLifecycleBadge, DataClassificationBadge } from './VendorLifecycleBadge';
 import { VendorEvidenceUpload } from './VendorEvidenceUpload';
 import { VendorActionPlanManager } from './VendorActionPlanManager';
 import {
@@ -27,6 +28,7 @@ import {
   Paperclip,
   ListTodo,
   ArrowRight,
+  Search,
 } from 'lucide-react';
 
 interface VendorDetailSheetProps {
@@ -36,6 +38,7 @@ interface VendorDetailSheetProps {
   onEdit?: (vendor: Vendor) => void;
   onStartAssessment?: (vendor: Vendor) => void;
   onContinueAssessment?: (assessment: VendorAssessment) => void;
+  onStartDueDiligence?: (vendor: Vendor) => void;
 }
 
 export function VendorDetailSheet({
@@ -45,6 +48,7 @@ export function VendorDetailSheet({
   onEdit,
   onStartAssessment,
   onContinueAssessment,
+  onStartDueDiligence,
 }: VendorDetailSheetProps) {
   const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
   const [actionPlanOpen, setActionPlanOpen] = useState(false);
@@ -72,8 +76,9 @@ export function VendorDetailSheet({
                 <p className="text-sm font-mono text-muted-foreground">{vendor.code}</p>
                 <SheetTitle className="text-xl font-space">{vendor.name}</SheetTitle>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <VendorStatusBadge status={vendor.status} />
+                  <VendorLifecycleBadge stage={vendor.lifecycle_stage} />
                   <VendorCriticalityBadge criticality={vendor.criticality} />
+                  <DataClassificationBadge classification={vendor.data_classification} />
                   {vendor.last_assessment && (
                     <VendorRiskBadge
                       score={vendor.last_assessment.overall_score}
@@ -105,9 +110,15 @@ export function VendorDetailSheet({
                   <ListTodo className="h-4 w-4 mr-2" />
                   Planos de Ação
                 </Button>
+                {onStartDueDiligence && (
+                  <Button variant="outline" size="sm" onClick={() => onStartDueDiligence(vendor)}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Due Diligence
+                  </Button>
+                )}
               </div>
 
-              {/* Description */}
+
               {vendor.description && (
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Descrição</h4>
