@@ -1403,6 +1403,93 @@ export type Database = {
           },
         ]
       }
+      vendor_contracts: {
+        Row: {
+          auto_renewal: boolean | null
+          billing_frequency: string | null
+          contract_number: string | null
+          contract_type: string
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          end_date: string | null
+          file_path: string | null
+          id: string
+          lgpd_clauses: boolean | null
+          notes: string | null
+          organization_id: string
+          renewal_date: string | null
+          security_clauses: boolean | null
+          sla_defined: boolean | null
+          start_date: string | null
+          status: string
+          updated_at: string | null
+          value: number | null
+          vendor_id: string
+        }
+        Insert: {
+          auto_renewal?: boolean | null
+          billing_frequency?: string | null
+          contract_number?: string | null
+          contract_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          end_date?: string | null
+          file_path?: string | null
+          id?: string
+          lgpd_clauses?: boolean | null
+          notes?: string | null
+          organization_id: string
+          renewal_date?: string | null
+          security_clauses?: boolean | null
+          sla_defined?: boolean | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+          value?: number | null
+          vendor_id: string
+        }
+        Update: {
+          auto_renewal?: boolean | null
+          billing_frequency?: string | null
+          contract_number?: string | null
+          contract_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          end_date?: string | null
+          file_path?: string | null
+          id?: string
+          lgpd_clauses?: boolean | null
+          notes?: string | null
+          organization_id?: string
+          renewal_date?: string | null
+          security_clauses?: boolean | null
+          sla_defined?: boolean | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+          value?: number | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_contracts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_contracts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_due_diligence: {
         Row: {
           approved_by: string | null
@@ -1643,6 +1730,84 @@ export type Database = {
           },
         ]
       }
+      vendor_incidents: {
+        Row: {
+          category: string
+          corrective_actions: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          impact_description: string | null
+          incident_date: string
+          organization_id: string
+          reported_by: string | null
+          reported_date: string | null
+          resolved_by: string | null
+          resolved_date: string | null
+          root_cause: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string | null
+          vendor_id: string
+        }
+        Insert: {
+          category?: string
+          corrective_actions?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_description?: string | null
+          incident_date?: string
+          organization_id: string
+          reported_by?: string | null
+          reported_date?: string | null
+          resolved_by?: string | null
+          resolved_date?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          vendor_id: string
+        }
+        Update: {
+          category?: string
+          corrective_actions?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_description?: string | null
+          incident_date?: string
+          organization_id?: string
+          reported_by?: string | null
+          reported_date?: string | null
+          resolved_by?: string | null
+          resolved_date?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_incidents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_incidents_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_requirements: {
         Row: {
           code: string
@@ -1696,6 +1861,79 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_slas: {
+        Row: {
+          compliance_status: string
+          contract_id: string | null
+          created_at: string | null
+          current_value: number | null
+          id: string
+          measured_at: string | null
+          metric_name: string
+          notes: string | null
+          organization_id: string
+          period: string
+          target_value: number
+          unit: string
+          updated_at: string | null
+          vendor_id: string
+        }
+        Insert: {
+          compliance_status?: string
+          contract_id?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          measured_at?: string | null
+          metric_name: string
+          notes?: string | null
+          organization_id: string
+          period?: string
+          target_value: number
+          unit?: string
+          updated_at?: string | null
+          vendor_id: string
+        }
+        Update: {
+          compliance_status?: string
+          contract_id?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          measured_at?: string | null
+          metric_name?: string
+          notes?: string | null
+          organization_id?: string
+          period?: string
+          target_value?: number
+          unit?: string
+          updated_at?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_slas_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_slas_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_slas_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
