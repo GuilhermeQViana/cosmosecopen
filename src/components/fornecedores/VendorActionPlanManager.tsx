@@ -495,14 +495,14 @@ export function VendorActionPlanManager({
             <div>
               <Label>Requisito Relacionado</Label>
               <Select
-                value={formData.requirement_id}
-                onValueChange={(value) => setFormData({ ...formData, requirement_id: value })}
+                value={formData.requirement_id || "none"}
+                onValueChange={(value) => setFormData({ ...formData, requirement_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Selecionar requisito..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {requirements?.map((req) => (
                     <SelectItem key={req.id} value={req.id}>
                       {req.code} - {req.name}
