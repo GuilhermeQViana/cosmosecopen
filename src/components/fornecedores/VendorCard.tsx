@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Vendor } from '@/hooks/useVendors';
-import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
+import { VendorRiskBadge, VendorCriticalityBadge } from './VendorRiskBadge';
+import { VendorLifecycleBadge } from './VendorLifecycleBadge';
 import {
   Building2,
   MoreVertical,
