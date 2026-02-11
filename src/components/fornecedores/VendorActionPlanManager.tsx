@@ -475,14 +475,14 @@ export function VendorActionPlanManager({
             <div>
               <Label>Responsável</Label>
               <Select
-                value={formData.assigned_to}
-                onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
+                value={formData.assigned_to || "none"}
+                onValueChange={(value) => setFormData({ ...formData, assigned_to: value === "none" ? "" : value })}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Selecionar responsável..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {teamMembers?.map((member) => (
                     <SelectItem key={member.user_id} value={member.user_id}>
                       {member.profile?.full_name || 'Usuário'}
