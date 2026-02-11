@@ -1,30 +1,22 @@
 
 
-## Corrigir Ordem do Pipeline de Fornecedores
+## Corrigir Pipeline para usar campo `status` ao invés de `lifecycle_stage`
 
 ### Problema
-Os estágios do pipeline estão ordenados como um fluxo de ciclo de vida, mas o correto é que **quanto mais à direita, mais importante/crítico o status**. Além disso, alguns estágios intermediários (Contratação, Reavaliação) ficam ocultos quando vazios.
+O pipeline está agrupando fornecedores pelo campo `lifecycle_stage`, mas os fornecedores Amazon e Google possuem `lifecycle_stage: "due_diligence"` enquanto seu `status` real é `"ativo"`. O pipeline deveria refletir o **status** atual do fornecedor.
 
 ### Solução
-Reordenar os estágios do **menos importante (esquerda) para o mais importante (direita)** e exibir todos os 8 estágios sempre visíveis:
+Alterar o `VendorPipelineFunnel.tsx` para usar o campo `status` dos fornecedores ao invés de `lifecycle_stage`. Os estágios do pipeline serão baseados nos valores possíveis de `status`: `ativo`, `inativo`, `em_avaliacao`, `bloqueado`.
 
+### Nova ordem (menos para mais importante):
 ```text
-Inativo → Prospecto → Due Diligence → Contratação → Reavaliação → Ativo → Offboarding → Bloqueado
+Inativo → Em Avaliação → Ativo → Bloqueado
 ```
-
-**Lógica da ordem:**
-- **Inativo** (menor relevância, fornecedor encerrado)
-- **Prospecto** (apenas candidato)
-- **Due Diligence** (em avaliação inicial)
-- **Contratação** (processo em andamento)
-- **Reavaliação** (requer atenção, revisão periódica)
-- **Ativo** (fornecedor operacional - alta importância)
-- **Offboarding** (processo crítico de desligamento)
-- **Bloqueado** (maior criticidade - risco ativo)
 
 ### Detalhes Técnicos
 **Arquivo:** `src/components/fornecedores/VendorPipelineFunnel.tsx`
 
-1. Reordenar o array `LIFECYCLE_STAGES` conforme a nova sequência de importância
-2. Remover o filtro que oculta estágios com contagem zero - todos os estágios serão sempre visíveis para dar contexto completo do pipeline
+1. Substituir o array `LIFECYCLE_STAGES` por um array baseado nos valores de `VENDOR_STATUS` (`ativo`, `inativo`, `em_avaliacao`, `bloqueado`)
+2. Alterar o filtro de `v.lifecycle_stage` para `v.status`
+3. Manter cores distintas para cada status
 
