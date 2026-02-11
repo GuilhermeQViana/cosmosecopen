@@ -56,14 +56,6 @@ export default function VendorPortal() {
       }
 
       try {
-        const { data, error: fnError } = await supabase.functions.invoke('vendor-portal', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          body: undefined,
-        // @ts-ignore - passing query params via URL workaround
-        }) as any;
-
-        // Use fetch directly for GET with query params
         const res = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vendor-portal?token=${token}`,
           {
