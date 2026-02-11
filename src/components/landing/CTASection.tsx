@@ -317,6 +317,28 @@ export function CTASection() {
                   </div>
                 </div>
 
+                {/* Tipo de Interesse */}
+                <div className="space-y-2">
+                  <Label htmlFor="interest_type">
+                    Tipo de interesse <span className="text-destructive">*</span>
+                  </Label>
+                  <Select 
+                    value={formData.interest_type} 
+                    onValueChange={(value) => setFormData({ ...formData, interest_type: value })}
+                  >
+                    <SelectTrigger id="interest_type" className="bg-muted/50">
+                      <SelectValue placeholder="Selecione o tipo de interesse" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INTEREST_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Row 3: Tamanho + Como conheceu */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
