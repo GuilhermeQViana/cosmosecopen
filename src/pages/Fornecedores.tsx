@@ -61,6 +61,7 @@ export default function Fornecedores() {
   const [criticalityFilter, setCriticalityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'pipeline'>('grid');
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
@@ -69,6 +70,7 @@ export default function Fornecedores() {
   const [assessmentVendor, setAssessmentVendor] = useState<Vendor | null>(null);
   const [activeAssessment, setActiveAssessment] = useState<VendorAssessment | null>(null);
   const [assessmentFormVendor, setAssessmentFormVendor] = useState<Vendor | null>(null);
+  const [ddVendor, setDdVendor] = useState<Vendor | null>(null);
 
   const { toast } = useToast();
   const { data: vendors, isLoading } = useVendors();
