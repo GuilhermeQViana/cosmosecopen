@@ -335,7 +335,7 @@ export default function Fornecedores() {
         </div>
       </AnimatedItem>
 
-      {/* Vendors Grid */}
+      {/* Vendors Grid or Pipeline */}
       <AnimatedItem animation="fade-up" delay={150}>
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -363,6 +363,8 @@ export default function Fornecedores() {
               )}
             </CardContent>
           </Card>
+        ) : viewMode === 'pipeline' ? (
+          <VendorPipeline vendors={filteredVendors} onViewDetails={setDetailVendor} />
         ) : (
           <StaggeredGrid columns={3} staggerDelay={60} animation="scale-in">
             {filteredVendors.map((vendor) => (
