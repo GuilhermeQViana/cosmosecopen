@@ -186,7 +186,7 @@ export function useCreateVendor() {
 
   return useMutation({
     mutationFn: async (
-      vendor: Omit<Vendor, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'created_by' | 'last_assessment' | 'assessments_count' | 'next_assessment_date'> & { next_assessment_date?: string | null }
+      vendor: Omit<Vendor, 'id' | 'created_at' | 'updated_at' | 'organization_id' | 'created_by' | 'last_assessment' | 'assessments_count' | 'next_assessment_date'> & { next_assessment_date?: string | null; lifecycle_stage?: string; data_classification?: string | null; service_type?: string | null; contract_value?: number | null; contract_currency?: string }
     ) => {
       if (!organization?.id) throw new Error('No organization');
 
