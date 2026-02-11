@@ -48,7 +48,7 @@ export function HeroSection() {
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-            A plataforma GRC + VRM que une governança de segurança e gestão de terceiros em um só lugar.
+            A plataforma GRC + VRM para empresas, consultorias e auditores que precisam dominar conformidade de ponta a ponta.
           </p>
 
           {/* CTA Buttons */}
