@@ -16,6 +16,11 @@ export interface Vendor {
   contract_start: string | null;
   contract_end: string | null;
   next_assessment_date: string | null;
+  lifecycle_stage: string;
+  data_classification: string | null;
+  service_type: string | null;
+  contract_value: number | null;
+  contract_currency: string;
   organization_id: string;
   created_by: string | null;
   created_at: string;
