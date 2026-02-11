@@ -14,17 +14,19 @@ import {
   TrendingUp,
   Calendar,
   Settings,
-  Download
 } from 'lucide-react';
 import { useVendors, getRiskLevelFromScore } from '@/hooks/useVendors';
 import { useVendorRequirements } from '@/hooks/useVendorRequirements';
-import { format, addDays, isBefore, isAfter } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { addDays, isBefore, isAfter } from 'date-fns';
 import { VendorComplianceRadar } from '@/components/fornecedores/VendorComplianceRadar';
 import { VendorRiskHeatMap } from '@/components/fornecedores/VendorRiskHeatMap';
 import { VendorTrendChart } from '@/components/fornecedores/VendorTrendChart';
 import { VendorAlerts } from '@/components/fornecedores/VendorAlerts';
 import { VendorComparison } from '@/components/fornecedores/VendorComparison';
+import { VendorPipelineFunnel } from '@/components/fornecedores/VendorPipelineFunnel';
+import { VendorIncidentsSummary } from '@/components/fornecedores/VendorIncidentsSummary';
+import { VendorSLAComplianceCard } from '@/components/fornecedores/VendorSLAComplianceCard';
+import { VendorDueDiligenceSummary } from '@/components/fornecedores/VendorDueDiligenceSummary';
 
 export default function FornecedoresDashboard() {
   const navigate = useNavigate();
@@ -147,6 +149,16 @@ export default function FornecedoresDashboard() {
         ))}
       </div>
 
+      {/* Pipeline Funnel */}
+      <VendorPipelineFunnel />
+
+      {/* New Phase 4 Widgets */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <VendorIncidentsSummary />
+        <VendorSLAComplianceCard />
+        <VendorDueDiligenceSummary />
+      </div>
+
       {/* Charts Row 1 */}
       <div className="grid gap-6 lg:grid-cols-2">
         <VendorComplianceRadar showAllVendors />
@@ -161,8 +173,6 @@ export default function FornecedoresDashboard() {
 
       {/* Comparison Chart */}
       <VendorComparison />
-
-      {/* Quick Actions */}
       <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
