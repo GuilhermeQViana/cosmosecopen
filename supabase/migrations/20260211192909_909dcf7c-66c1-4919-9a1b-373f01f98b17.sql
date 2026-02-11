@@ -1,0 +1,1 @@
+ALTER TABLE public.contact_requests ADD COLUMN interest_type TEXT;

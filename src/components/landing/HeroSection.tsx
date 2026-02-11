@@ -48,7 +48,7 @@ export function HeroSection() {
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-            A plataforma GRC + VRM que une governança de segurança e gestão de terceiros em um só lugar.
+            A plataforma GRC + VRM para empresas, consultorias e auditores que precisam dominar conformidade de ponta a ponta.
           </p>
 
           {/* CTA Buttons */}
@@ -72,7 +72,7 @@ export function HeroSection() {
 
           {/* Trust Indicator */}
           <p className="text-sm text-muted-foreground">
-            Conformidade com NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893
+            NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893 • Multi-organizações
           </p>
         </div>
       </div>

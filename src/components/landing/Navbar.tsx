@@ -20,6 +20,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: '#platform', label: 'Plataforma' },
+    { href: '#audience', label: 'Para Quem' },
     { href: '/tour', label: 'Recursos', isRoute: true },
     { href: '#contact', label: 'Contato' },
   ];

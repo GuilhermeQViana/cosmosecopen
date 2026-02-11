@@ -31,6 +31,14 @@ const faqs = [
     question: 'Quanto tempo leva a implantação?',
     answer: 'O tempo de implantação varia conforme a complexidade da organização. Em geral, a configuração inicial leva de 1 a 2 semanas, incluindo treinamento da equipe e importação de dados existentes. Nossa equipe de Customer Success acompanha todo o processo.',
   },
+  {
+    question: 'A CosmoSec funciona para consultorias e auditores externos?',
+    answer: 'Sim. A plataforma permite gerenciar múltiplas organizações em um único painel, ideal para consultores que atendem vários clientes. Você pode padronizar diagnósticos, gerar relatórios com a identidade da sua consultoria e manter trilha de auditoria separada por cliente.',
+  },
+  {
+    question: 'Existe um programa de parceiros?',
+    answer: 'Sim. Consultores, auditores e empresas de tecnologia podem se cadastrar no nosso programa de parceiros para obter condições comerciais especiais, suporte prioritário, materiais de co-marketing e acesso antecipado a novos recursos. Entre em contato pelo formulário para saber mais.',
+  },
 ];
 
 export function FAQSection() {

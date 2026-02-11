@@ -13,6 +13,7 @@ interface ContactRequest {
   email: string;
   company: string;
   role?: string;
+  interest_type?: string;
   company_size?: string;
   how_found?: string;
   message?: string;
@@ -26,10 +27,15 @@ const HOW_FOUND_LABELS: Record<string, string> = {
   outro: 'Outro',
 };
 
+const INTEREST_TYPE_LABELS: Record<string, string> = {
+  empresa: 'Para minha empresa',
+  consultoria: 'Para minha consultoria/auditoria',
+  parceiro: 'Quero ser parceiro',
+};
+
 const handler = async (req: Request): Promise<Response> => {
   console.log("Received contact notification request");
 
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -43,6 +49,10 @@ const handler = async (req: Request): Promise<Response> => {
       ? HOW_FOUND_LABELS[contactData.how_found] || contactData.how_found 
       : 'Não informado';
 
+    const interestTypeLabel = contactData.interest_type 
+      ? INTEREST_TYPE_LABELS[contactData.interest_type] || contactData.interest_type 
+      : 'Não informado';
+
     const currentDate = new Date().toLocaleString('pt-BR', {
       timeZone: 'America/Sao_Paulo',
       day: '2-digit',
@@ -52,11 +62,14 @@ const handler = async (req: Request): Promise<Response> => {
       minute: '2-digit',
     });
 
+    const subjectEmoji = contactData.interest_type === 'parceiro' ? '🤝' : '🚀';
+    const subjectType = contactData.interest_type === 'parceiro' ? 'de Parceria' : 'de Demo';
+
     const emailResponse = await resend.emails.send({
       from: "CosmoSec <contato@cosmosec.com.br>",
       to: ["contato@cosmosec.com.br"],
       reply_to: contactData.email,
-      subject: `🚀 Nova Solicitação de Demo: ${contactData.company}`,
+      subject: `${subjectEmoji} Nova Solicitação ${subjectType}: ${contactData.company}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -67,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
           <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px 12px 0 0; padding: 30px; text-align: center;">
             <h1 style="color: #fff; margin: 0; font-size: 24px;">🛡️ CosmoSec</h1>
-            <p style="color: #94a3b8; margin: 10px 0 0 0; font-size: 14px;">Nova Solicitação de Demonstração</p>
+            <p style="color: #94a3b8; margin: 10px 0 0 0; font-size: 14px;">Nova Solicitação ${subjectType}</p>
           </div>
           
           <div style="background: #fff; padding: 30px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -100,6 +113,12 @@ const handler = async (req: Request): Promise<Response> => {
                 <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
                   <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Cargo</strong><br>
                   <span style="color: #0f172a; font-size: 16px;">${contactData.role || 'Não informado'}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Tipo de Interesse</strong><br>
+                  <span style="color: #0f172a; font-size: 16px; font-weight: 600;">${interestTypeLabel}</span>
                 </td>
               </tr>
               <tr>

@@ -26,6 +26,12 @@ const HOW_FOUND_OPTIONS = [
   { value: 'outro', label: 'Outro' },
 ];
 
+const INTEREST_TYPES = [
+  { value: 'empresa', label: 'Quero para minha empresa' },
+  { value: 'consultoria', label: 'Quero para minha consultoria/auditoria' },
+  { value: 'parceiro', label: 'Quero ser parceiro' },
+];
+
 const DASHBOARD_SCREENSHOTS = [
   { src: '/screenshots/dashboard-1.png', title: 'Dashboard Executivo' },
   { src: '/screenshots/dashboard-2.png', title: 'Métricas de Remediação' },
@@ -81,6 +87,7 @@ export function CTASection() {
     email: '',
     company: '',
     role: '',
+    interest_type: '',
     company_size: '',
     how_found: '',
     message: '',
@@ -109,6 +116,7 @@ export function CTASection() {
           email: formData.email,
           company: formData.company,
           role: formData.role || null,
+          interest_type: formData.interest_type || null,
           company_size: formData.company_size || null,
           how_found: formData.how_found || null,
           message: formData.message || null,
@@ -123,6 +131,7 @@ export function CTASection() {
           email: formData.email,
           company: formData.company,
           role: formData.role || undefined,
+          interest_type: formData.interest_type || undefined,
           company_size: formData.company_size || undefined,
           how_found: formData.how_found || undefined,
           message: formData.message || undefined,
@@ -143,6 +152,7 @@ export function CTASection() {
         email: '', 
         company: '', 
         role: '', 
+        interest_type: '',
         company_size: '', 
         how_found: '', 
         message: '' 
@@ -305,6 +315,28 @@ export function CTASection() {
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Tipo de Interesse */}
+                <div className="space-y-2">
+                  <Label htmlFor="interest_type">
+                    Tipo de interesse <span className="text-destructive">*</span>
+                  </Label>
+                  <Select 
+                    value={formData.interest_type} 
+                    onValueChange={(value) => setFormData({ ...formData, interest_type: value })}
+                  >
+                    <SelectTrigger id="interest_type" className="bg-muted/50">
+                      <SelectValue placeholder="Selecione o tipo de interesse" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INTEREST_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Row 3: Tamanho + Como conheceu */}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Building2, Sparkles, CheckCircle2, ChevronDown, Eye } from 'lucide-react';
+import { Shield, Building2, Sparkles, CheckCircle2, ChevronDown, Eye, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ModuleScreenshotGallery, Screenshot } from './ModuleScreenshotGallery';
@@ -77,7 +77,21 @@ const platforms: Platform[] = [
       'Recomendações priorizadas',
     ],
     gradient: 'from-primary via-secondary to-primary',
-    screenshots: [], // Placeholder - aguardando screenshots do usuário
+    screenshots: [],
+  },
+  {
+    id: 'consultoria',
+    icon: ClipboardCheck,
+    title: 'Consultoria & Auditoria',
+    description: 'Gerencie múltiplos clientes em um único painel com padronização e escalabilidade.',
+    features: [
+      'Painel multi-organizações',
+      'Relatórios com branding personalizado',
+      'Templates de diagnóstico reutilizáveis',
+      'Trilha de auditoria por cliente',
+    ],
+    gradient: 'from-emerald-500 to-teal-500',
+    screenshots: [],
   },
 ];
 
@@ -101,12 +115,12 @@ export function PlatformSection() {
             <span className="text-gradient-cosmic">Segurança Completa.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Consolide sua governança de segurança e gestão de fornecedores em uma única solução.
+            Consolide sua governança de segurança, gestão de fornecedores e operações de consultoria em uma única solução.
           </p>
         </div>
 
         {/* Platform Cards */}
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto">
           {platforms.map((platform) => {
             const isExpanded = expandedId === platform.id;
             const hasScreenshots = platform.screenshots.length > 0;

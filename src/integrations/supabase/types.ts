@@ -397,6 +397,7 @@ export type Database = {
           email: string
           how_found: string | null
           id: string
+          interest_type: string | null
           message: string | null
           name: string
           notes: string | null
@@ -412,6 +413,7 @@ export type Database = {
           email: string
           how_found?: string | null
           id?: string
+          interest_type?: string | null
           message?: string | null
           name: string
           notes?: string | null
@@ -427,6 +429,7 @@ export type Database = {
           email?: string
           how_found?: string | null
           id?: string
+          interest_type?: string | null
           message?: string | null
           name?: string
           notes?: string | null
