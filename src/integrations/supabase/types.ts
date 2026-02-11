@@ -1808,6 +1808,167 @@ export type Database = {
           },
         ]
       }
+      vendor_offboarding: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          initiated_at: string | null
+          initiated_by: string | null
+          notes: string | null
+          organization_id: string
+          reason: string
+          status: string
+          updated_at: string | null
+          vendor_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          initiated_at?: string | null
+          initiated_by?: string | null
+          notes?: string | null
+          organization_id: string
+          reason?: string
+          status?: string
+          updated_at?: string | null
+          vendor_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          initiated_at?: string | null
+          initiated_by?: string | null
+          notes?: string | null
+          organization_id?: string
+          reason?: string
+          status?: string
+          updated_at?: string | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_offboarding_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_offboarding_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_offboarding_tasks: {
+        Row: {
+          category: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          id: string
+          observations: string | null
+          offboarding_id: string
+          order_index: number
+          status: string
+          task_name: string
+        }
+        Insert: {
+          category: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          id?: string
+          observations?: string | null
+          offboarding_id: string
+          order_index?: number
+          status?: string
+          task_name: string
+        }
+        Update: {
+          category?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          id?: string
+          observations?: string | null
+          offboarding_id?: string
+          order_index?: number
+          status?: string
+          task_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_offboarding_tasks_offboarding_id_fkey"
+            columns: ["offboarding_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_offboarding"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_portal_tokens: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          expires_at: string
+          id: string
+          organization_id: string
+          scope: string
+          status: string
+          token: string
+          used_at: string | null
+          vendor_id: string
+          vendor_response: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          organization_id: string
+          scope?: string
+          status?: string
+          token?: string
+          used_at?: string | null
+          vendor_id: string
+          vendor_response?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          organization_id?: string
+          scope?: string
+          status?: string
+          token?: string
+          used_at?: string | null
+          vendor_id?: string
+          vendor_response?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_portal_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_portal_tokens_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_requirements: {
         Row: {
           code: string

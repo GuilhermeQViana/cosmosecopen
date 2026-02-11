@@ -40,6 +40,7 @@ import BrandAssets from "@/pages/BrandAssets";
 import TermosDeUso from "@/pages/TermosDeUso";
 import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import PoliticaLGPD from "@/pages/PoliticaLGPD";
+import VendorPortal from "@/pages/VendorPortal";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
                   <Route path="/termos" element={<TermosDeUso />} />
                   <Route path="/privacidade" element={<PoliticaPrivacidade />} />
                   <Route path="/lgpd" element={<PoliticaLGPD />} />
+                  <Route path="/vendor-portal/:token" element={<VendorPortal />} />
                   
                   {/* Módulo Frameworks (GRC) */}
                   <Route element={<AppLayout />}>

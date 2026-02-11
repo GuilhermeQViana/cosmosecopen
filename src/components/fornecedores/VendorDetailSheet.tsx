@@ -19,6 +19,8 @@ import { VendorActionPlanManager } from './VendorActionPlanManager';
 import { VendorContractManager } from './VendorContractManager';
 import { VendorIncidentLog } from './VendorIncidentLog';
 import { VendorSLATracker } from './VendorSLATracker';
+import { VendorOffboardingWizard } from './VendorOffboardingWizard';
+import { VendorPortalManager } from './VendorPortalManager';
 import {
   Building2,
   Calendar,
@@ -35,6 +37,8 @@ import {
   FileText,
   AlertTriangle,
   Gauge,
+  LogOut,
+  ExternalLink,
 } from 'lucide-react';
 
 interface VendorDetailSheetProps {
@@ -61,6 +65,8 @@ export function VendorDetailSheet({
   const [contractsOpen, setContractsOpen] = useState(false);
   const [incidentsOpen, setIncidentsOpen] = useState(false);
   const [slasOpen, setSlasOpen] = useState(false);
+  const [offboardingOpen, setOffboardingOpen] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
 
   const { data: assessments } = useVendorAssessments(vendor?.id);
@@ -137,6 +143,14 @@ export function VendorDetailSheet({
                     Due Diligence
                   </Button>
                 )}
+                <Button variant="outline" size="sm" onClick={() => setOffboardingOpen(true)}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Offboarding
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setPortalOpen(true)}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Portal
+                </Button>
               </div>
 
               {vendor.description && (
@@ -308,6 +322,20 @@ export function VendorDetailSheet({
       <VendorSLATracker
         open={slasOpen}
         onOpenChange={setSlasOpen}
+        vendor={vendor}
+      />
+
+      {/* Offboarding Wizard */}
+      <VendorOffboardingWizard
+        open={offboardingOpen}
+        onOpenChange={setOffboardingOpen}
+        vendor={vendor}
+      />
+
+      {/* Portal Manager */}
+      <VendorPortalManager
+        open={portalOpen}
+        onOpenChange={setPortalOpen}
         vendor={vendor}
       />
     </>
