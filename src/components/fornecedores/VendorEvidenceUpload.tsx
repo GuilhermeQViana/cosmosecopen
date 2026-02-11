@@ -335,12 +335,12 @@ export function VendorEvidenceUpload({
 
                   <div>
                     <Label className="text-xs">Requisito Relacionado (opcional)</Label>
-                    <Select value={requirementId} onValueChange={setRequirementId}>
+                <Select value={requirementId || "none"} onValueChange={(v) => setRequirementId(v === "none" ? "" : v)}>
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Selecionar requisito..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Nenhum</SelectItem>
+                        <SelectItem value="none">Nenhum</SelectItem>
                         {requirements?.map((req) => (
                           <SelectItem key={req.id} value={req.id}>
                             {req.code} - {req.name}

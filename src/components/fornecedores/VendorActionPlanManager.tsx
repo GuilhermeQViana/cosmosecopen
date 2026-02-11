@@ -475,14 +475,14 @@ export function VendorActionPlanManager({
             <div>
               <Label>Responsável</Label>
               <Select
-                value={formData.assigned_to}
-                onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
+                value={formData.assigned_to || "none"}
+                onValueChange={(value) => setFormData({ ...formData, assigned_to: value === "none" ? "" : value })}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Selecionar responsável..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {teamMembers?.map((member) => (
                     <SelectItem key={member.user_id} value={member.user_id}>
                       {member.profile?.full_name || 'Usuário'}
@@ -495,14 +495,14 @@ export function VendorActionPlanManager({
             <div>
               <Label>Requisito Relacionado</Label>
               <Select
-                value={formData.requirement_id}
-                onValueChange={(value) => setFormData({ ...formData, requirement_id: value })}
+                value={formData.requirement_id || "none"}
+                onValueChange={(value) => setFormData({ ...formData, requirement_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Selecionar requisito..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {requirements?.map((req) => (
                     <SelectItem key={req.id} value={req.id}>
                       {req.code} - {req.name}
