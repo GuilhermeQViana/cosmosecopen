@@ -77,7 +77,21 @@ const platforms: Platform[] = [
       'Recomendações priorizadas',
     ],
     gradient: 'from-primary via-secondary to-primary',
-    screenshots: [], // Placeholder - aguardando screenshots do usuário
+    screenshots: [],
+  },
+  {
+    id: 'consultoria',
+    icon: ClipboardCheck,
+    title: 'Consultoria & Auditoria',
+    description: 'Gerencie múltiplos clientes em um único painel com padronização e escalabilidade.',
+    features: [
+      'Painel multi-organizações',
+      'Relatórios com branding personalizado',
+      'Templates de diagnóstico reutilizáveis',
+      'Trilha de auditoria por cliente',
+    ],
+    gradient: 'from-emerald-500 to-teal-500',
+    screenshots: [],
   },
 ];
 
