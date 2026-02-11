@@ -115,7 +115,7 @@ export function PlatformSection() {
             <span className="text-gradient-cosmic">Segurança Completa.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Consolide sua governança de segurança e gestão de fornecedores em uma única solução.
+            Consolide sua governança de segurança, gestão de fornecedores e operações de consultoria em uma única solução.
           </p>
         </div>
 
