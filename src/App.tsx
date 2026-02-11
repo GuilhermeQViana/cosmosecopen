@@ -71,6 +71,7 @@ const App = () => (
                   <Route path="/termos" element={<TermosDeUso />} />
                   <Route path="/privacidade" element={<PoliticaPrivacidade />} />
                   <Route path="/lgpd" element={<PoliticaLGPD />} />
+                  <Route path="/vendor-portal/:token" element={<VendorPortal />} />
                   
                   {/* Módulo Frameworks (GRC) */}
                   <Route element={<AppLayout />}>
