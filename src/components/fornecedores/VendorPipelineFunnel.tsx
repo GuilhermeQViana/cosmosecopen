@@ -3,14 +3,10 @@ import { Badge } from '@/components/ui/badge';
 import { useVendors } from '@/hooks/useVendors';
 import { Building2, ArrowRight } from 'lucide-react';
 
-const LIFECYCLE_STAGES = [
+const STATUS_STAGES = [
   { value: 'inativo', label: 'Inativo', color: 'bg-gray-400' },
-  { value: 'prospecto', label: 'Prospecto', color: 'bg-slate-400' },
-  { value: 'due_diligence', label: 'Due Diligence', color: 'bg-blue-500' },
-  { value: 'em_contratacao', label: 'Contratação', color: 'bg-indigo-500' },
-  { value: 'em_reavaliacao', label: 'Reavaliação', color: 'bg-amber-500' },
+  { value: 'em_avaliacao', label: 'Em Avaliação', color: 'bg-amber-500' },
   { value: 'ativo', label: 'Ativo', color: 'bg-emerald-500' },
-  { value: 'em_offboarding', label: 'Offboarding', color: 'bg-orange-500' },
   { value: 'bloqueado', label: 'Bloqueado', color: 'bg-red-500' },
 ];
 
