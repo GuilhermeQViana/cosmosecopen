@@ -149,6 +149,16 @@ export default function FornecedoresDashboard() {
         ))}
       </div>
 
+      {/* Pipeline Funnel */}
+      <VendorPipelineFunnel />
+
+      {/* New Phase 4 Widgets */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <VendorIncidentsSummary />
+        <VendorSLAComplianceCard />
+        <VendorDueDiligenceSummary />
+      </div>
+
       {/* Charts Row 1 */}
       <div className="grid gap-6 lg:grid-cols-2">
         <VendorComplianceRadar showAllVendors />
@@ -163,8 +173,6 @@ export default function FornecedoresDashboard() {
 
       {/* Comparison Chart */}
       <VendorComparison />
-
-      {/* Quick Actions */}
       <Card className="border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
