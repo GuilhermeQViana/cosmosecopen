@@ -87,6 +87,7 @@ export function CTASection() {
     email: '',
     company: '',
     role: '',
+    interest_type: '',
     company_size: '',
     how_found: '',
     message: '',
