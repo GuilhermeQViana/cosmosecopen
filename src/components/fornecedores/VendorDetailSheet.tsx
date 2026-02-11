@@ -324,6 +324,20 @@ export function VendorDetailSheet({
         onOpenChange={setSlasOpen}
         vendor={vendor}
       />
+
+      {/* Offboarding Wizard */}
+      <VendorOffboardingWizard
+        open={offboardingOpen}
+        onOpenChange={setOffboardingOpen}
+        vendor={vendor}
+      />
+
+      {/* Portal Manager */}
+      <VendorPortalManager
+        open={portalOpen}
+        onOpenChange={setPortalOpen}
+        vendor={vendor}
+      />
     </>
   );
 }
