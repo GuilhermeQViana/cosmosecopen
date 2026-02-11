@@ -20,7 +20,7 @@ export function VendorPipelineFunnel() {
   const stageCounts = LIFECYCLE_STAGES.map((stage) => ({
     ...stage,
     count: vendors.filter((v) => v.lifecycle_stage === stage.value).length,
-  })).filter((s) => s.count > 0 || ['prospecto', 'due_diligence', 'ativo', 'em_offboarding', 'inativo'].includes(s.value));
+  }));
 
   return (
     <Card className="border-border/50">
