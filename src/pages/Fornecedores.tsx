@@ -40,8 +40,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Building2, Download } from 'lucide-react';
+import { Plus, Search, Building2, Download, LayoutGrid, Columns3 } from 'lucide-react';
+import { VendorPipeline } from '@/components/fornecedores/VendorPipeline';
+import { DueDiligenceDialog } from '@/components/fornecedores/DueDiligenceDialog';
 
 const RISK_LEVEL_FILTERS = [
   { value: 'all', label: 'Todos os níveis' },
