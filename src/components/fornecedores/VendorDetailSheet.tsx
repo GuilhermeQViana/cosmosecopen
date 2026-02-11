@@ -76,8 +76,9 @@ export function VendorDetailSheet({
                 <p className="text-sm font-mono text-muted-foreground">{vendor.code}</p>
                 <SheetTitle className="text-xl font-space">{vendor.name}</SheetTitle>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <VendorStatusBadge status={vendor.status} />
+                  <VendorLifecycleBadge stage={vendor.lifecycle_stage} />
                   <VendorCriticalityBadge criticality={vendor.criticality} />
+                  <DataClassificationBadge classification={vendor.data_classification} />
                   {vendor.last_assessment && (
                     <VendorRiskBadge
                       score={vendor.last_assessment.overall_score}
