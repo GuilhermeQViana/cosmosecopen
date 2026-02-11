@@ -401,6 +401,17 @@ export default function Fornecedores() {
           handleOpenForm(v);
         }}
         onStartAssessment={handleStartAssessment}
+        onStartDueDiligence={(v) => {
+          setDetailVendor(null);
+          setDdVendor(v);
+        }}
+      />
+
+      {/* Due Diligence Dialog */}
+      <DueDiligenceDialog
+        open={!!ddVendor}
+        onOpenChange={(open) => !open && setDdVendor(null)}
+        vendor={ddVendor}
       />
 
       {/* Start Assessment Dialog */}

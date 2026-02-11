@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Vendor } from '@/hooks/useVendors';
 import { useVendorAssessments, VendorAssessment } from '@/hooks/useVendorAssessments';
 import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
+import { VendorLifecycleBadge, DataClassificationBadge } from './VendorLifecycleBadge';
 import { VendorEvidenceUpload } from './VendorEvidenceUpload';
 import { VendorActionPlanManager } from './VendorActionPlanManager';
 import {
@@ -27,6 +28,7 @@ import {
   Paperclip,
   ListTodo,
   ArrowRight,
+  Search,
 } from 'lucide-react';
 
 interface VendorDetailSheetProps {
