@@ -110,7 +110,12 @@ export function VendorDetailSheet({
                   <ListTodo className="h-4 w-4 mr-2" />
                   Planos de Ação
                 </Button>
-              </div>
+                {onStartDueDiligence && (
+                  <Button variant="outline" size="sm" onClick={() => onStartDueDiligence(vendor)}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Due Diligence
+                  </Button>
+                )}
 
               {/* Description */}
               {vendor.description && (
