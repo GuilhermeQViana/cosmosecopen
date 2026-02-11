@@ -46,6 +46,7 @@ export function VendorDetailSheet({
   onEdit,
   onStartAssessment,
   onContinueAssessment,
+  onStartDueDiligence,
 }: VendorDetailSheetProps) {
   const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
   const [actionPlanOpen, setActionPlanOpen] = useState(false);
