@@ -123,6 +123,11 @@ export default function Fornecedores() {
           contact_phone: data.contact_phone || null,
           contract_start: data.contract_start || null,
           contract_end: data.contract_end || null,
+          lifecycle_stage: (data as any).lifecycle_stage || 'prospecto',
+          data_classification: (data as any).data_classification || null,
+          service_type: (data as any).service_type || null,
+          contract_value: (data as any).contract_value || null,
+          contract_currency: (data as any).contract_currency || 'BRL',
         });
         toast({ title: 'Fornecedor criado com sucesso' });
       }
