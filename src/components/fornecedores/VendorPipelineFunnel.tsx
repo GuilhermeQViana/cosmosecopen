@@ -13,9 +13,9 @@ const STATUS_STAGES = [
 export function VendorPipelineFunnel() {
   const { data: vendors = [] } = useVendors();
 
-  const stageCounts = LIFECYCLE_STAGES.map((stage) => ({
+  const stageCounts = STATUS_STAGES.map((stage) => ({
     ...stage,
-    count: vendors.filter((v) => v.lifecycle_stage === stage.value).length,
+    count: vendors.filter((v) => v.status === stage.value).length,
   }));
 
   return (
