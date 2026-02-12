@@ -1,44 +1,36 @@
 
 
-## Atualizar Termos de Uso - Modelo Consultivo com Contrato
+## Reestruturar Editor de Politicas - Implementacao
 
-### Contexto
+### Arquivos a criar/modificar
 
-A estrategia comercial migrou de autoatendimento (trial + assinatura mensal) para um modelo consultivo (demonstracao + contrato). Os Termos de Uso ainda mencionam "periodo de teste gratuito de 7 dias" e "assinatura cobrada mensalmente", o que nao reflete mais a realidade.
+**1. NOVO: `src/components/politicas/PolicyStatusBar.tsx`**
+- Barra de status inferior com contagem de palavras/caracteres
+- Indicador de versao, tempo desde ultima edicao, status de salvamento
 
-### Mudancas no arquivo `src/pages/TermosDeUso.tsx`
+**2. ATUALIZAR: `src/components/politicas/PolicyEditorToolbar.tsx`**
+- Adicionar tooltips em todos os botoes usando `TooltipProvider`/`Tooltip`
+- Adicionar botoes de imagem (`ImageIcon`) e linha horizontal (`Minus`)
+- Toolbar com `sticky top-0 z-10` para ficar fixa durante scroll
 
-**1. Secao 1 - Aceitacao dos Termos**
-- Adicionar referencia a formalizacao via contrato: "Ao assinar o contrato de prestacao de servicos e/ou acessar a plataforma..."
+**3. ATUALIZAR: `src/components/politicas/PolicyMetadataPanel.tsx`**
+- Remover campo titulo duplicado (titulo ja esta inline no header)
+- Reordenar: Status primeiro, depois Categoria, Descricao
+- Campos secundarios (datas, tags) dentro de `Collapsible` para economizar espaco
 
-**2. Secao 3 - Elegibilidade**
-- Adicionar item: "Passou pelo processo de demonstracao e formalizou a contratacao"
+**4. REESCREVER: `src/pages/PoliticaEditor.tsx`**
+- Substituir grid CSS fixo por `ResizablePanelGroup` horizontal com handle arrastavel
+- Painel editor: default 70%, min 50%
+- Painel sidebar: default 30%, com botao para colapsar/expandir usando estado local
+- Sidebar com tabs por icones (`Settings`, `Link2`, `History`, `MessageSquare`) com tooltips
+- Header com breadcrumb (`Politicas > Central > [Titulo]`)
+- Titulo editavel inline no header (manter)
+- Integrar `PolicyStatusBar` no rodape do painel do editor
+- Placeholder atualizado: "Comece a escrever ou use a IA para gerar conteudo..."
+- Garantir `relative z-20 pointer-events-auto` em todos os containers de input para interatividade sobre fundos animados
 
-**3. Secao 7 - Renomear de "Pagamentos e Assinatura" para "Contratacao e Pagamentos"**
-- Remover mencao a "periodo de teste gratuito de 7 dias"
-- Remover "assinatura cobrada mensalmente via cartao de credito"
-- Novo conteudo refletindo modelo contratual:
-  - Acesso condicionado a formalizacao de contrato de prestacao de servicos
-  - Planos mensais ou anuais conforme proposta comercial
-  - Valores e condicoes definidos em proposta comercial individualizada
-  - Pagamento via boleto, Pix ou cartao de credito
-  - Renovacao automatica salvo manifestacao contraria com 30 dias de antecedencia
-  - Rescisao conforme clausulas do contrato firmado
+### Garantias de interatividade
+- Todos os inputs, selects, popovers e calendarios terao `pointer-events-auto` e `z-index` adequado
+- ResizablePanel usa `overflow-auto` para scroll interno
+- Sidebar colapsavel via botao toggle (nao desaparece, apenas esconde)
 
-**4. Secao 6 - Propriedade Intelectual**
-- Adicionar clausula sobre conteudo gerado por IA: "Conteudos gerados pelas funcionalidades de IA da plataforma (politicas, planos de acao, relatorios) sao de propriedade do cliente, cabendo ao CosmoSec apenas o papel de ferramenta facilitadora."
-
-**5. Secao 8 - Disponibilidade (adicionar SLA)**
-- Adicionar referencia a SLA contratual: "Niveis de servico (SLA) especificos podem ser definidos em contrato."
-
-**6. Secao 9 - Limitacao de Responsabilidade**
-- Reforcar que IA e ferramenta de apoio: "Os conteudos gerados por inteligencia artificial sao sugestoes e devem ser revisados por profissionais qualificados antes de sua adocao."
-
-**7. Nova Secao - "Confidencialidade e Protecao de Dados" (antes da secao de Lei Aplicavel)**
-- Referencia cruzada com a Politica de Privacidade (/privacidade) e LGPD (/lgpd)
-- Compromisso de confidencialidade sobre dados inseridos na plataforma
-- Tratamento de dados conforme LGPD
-
-### Resultado
-
-Os Termos de Uso passarao a refletir o modelo comercial consultivo baseado em contrato, sem mencoes a trial ou autoatendimento, e com clausulas adequadas para IA generativa e protecao de dados.
