@@ -444,13 +444,30 @@ export function VendorReassessmentSchedule({ onNewScheduleOpen }: VendorReassess
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Frequência rápida</label>
+              <div className="flex flex-wrap gap-2">
+                {FREQUENCY_OPTIONS.map(opt => (
+                  <Button
+                    key={opt.months}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setNewScheduleDate(addMonths(new Date(), opt.months))}
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
             <div className="flex justify-center">
               <CalendarUI
                 mode="single"
                 selected={newScheduleDate}
                 onSelect={setNewScheduleDate}
                 disabled={(date) => date < new Date()}
-                className="rounded-md border"
+                className="rounded-md border pointer-events-auto"
               />
             </div>
             {newScheduleDate && (
