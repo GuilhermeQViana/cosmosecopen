@@ -1,47 +1,38 @@
 
 
-## Corrigir Parsing de Campos Multilinha no CSV
+## Corrigir Validacao de Criticidade na Importacao
 
 ### Problema
 
-O arquivo Excel possui textos longos com quebras de linha na coluna `name` (ex: "Art. 22-B O servico prestado..."). Quando o `parseExcelToCSV` converte para CSV, esses valores ficam entre aspas com `\n` dentro. Porem, o parser atual faz `content.split(/\r?\n/)` quebrando TODAS as linhas, inclusive as que estao dentro de campos entre aspas. Resultado: os campos `code` e `name` ficam vazios ou errados porque a linha foi cortada no meio.
+A tabela `controls` possui uma constraint (`controls_criticality_check`) que aceita apenas os valores: **baixo**, **medio**, **alto**, **critico**.
+
+Porem, o sistema tem dois problemas:
+1. O template CSV de exemplo usa valores errados (`alta`, `media` em vez de `alto`, `medio`)
+2. A importacao nao valida nem normaliza o campo `criticality` antes de inserir no banco
 
 ### Solucao
 
 **Arquivo: `src/hooks/useImportControls.ts`**
 
-Substituir o `split(/\r?\n/)` por uma funcao `splitCSVLines` que respeita campos entre aspas:
+1. Criar mapa de normalizacao que converte variacoes comuns para os valores aceitos:
+   - `alta` / `alto` -> `alto`
+   - `media` / `medio` / `média` -> `medio`
+   - `baixa` / `baixo` -> `baixo`
+   - `critica` / `critico` / `crítico` / `crítica` -> `critico`
 
-1. Criar funcao `splitCSVLines(content: string): string[]` que percorre caractere a caractere, rastreando se esta dentro de aspas ou nao, e so quebra a linha quando encontra `\n` FORA de aspas.
+2. Na funcao `parseCSV`, antes de montar o objeto do controle, normalizar o valor de `criticality` usando esse mapa. Se o valor nao corresponder a nenhum aceito, definir como `undefined` (campo opcional) para evitar o erro de constraint.
 
-2. Usar essa funcao em `extractHeaders` e `parseCSV` no lugar de `split(/\r?\n/)`.
+3. Corrigir os exemplos no template CSV (`generateCSVTemplate`) para usar `alto` e `medio` em vez de `alta` e `media`.
 
-3. A logica sera:
-   - Percorrer cada caractere do conteudo
-   - Manter flag `inQuotes` que alterna ao encontrar `"`
-   - Quando encontrar `\n` ou `\r\n` e `inQuotes === false`, finalizar a linha atual e iniciar nova
-   - Quando encontrar `\n` dentro de aspas, manter como parte do campo atual
-
-### Mudanca no Codigo
+### Mudancas
 
 ```text
-Nova funcao: splitCSVLines(content)
-  - Itera caractere a caractere
-  - Rastreia estado inQuotes
-  - Quebra linha apenas quando \n esta fora de aspas
-  - Retorna array de linhas intactas (campos multilinha preservados)
+parseCSV():
+  - Adicionar normalizacao: criticality = normalizeCriticality(row.criticality)
+  - Se valor invalido, setar undefined
 
-Atualizar: extractHeaders()
-  - Trocar content.split(/\r?\n/) por splitCSVLines(content)
-
-Atualizar: parseCSV()
-  - Trocar cleanContent.split(/\r?\n/) por splitCSVLines(cleanContent)
-
-Atualizar: detectDelimiter()
-  - Trocar content.split(/\r?\n/) por splitCSVLines(content)
+generateCSVTemplate():
+  - Trocar 'alta' por 'alto'
+  - Trocar 'media' por 'medio'
 ```
-
-### Resultado
-
-Campos com texto multilinha (como os artigos do Excel) serao preservados intactos, e o mapeamento de `code` e `name` funcionara corretamente.
 
