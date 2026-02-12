@@ -12,24 +12,31 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { GitBranch, Plus, Trash2, Loader2, Pencil, Copy, Star, MoreVertical, Clock, CheckCircle2, XCircle, AlertTriangle, FileText } from 'lucide-react';
-import { usePolicyWorkflows, type PolicyWorkflow, type PendingApprovalWithPolicy } from '@/hooks/usePolicyWorkflows';
+import { GitBranch, Plus, Trash2, Loader2, Pencil, Copy, Star, MoreVertical, Clock, CheckCircle2, XCircle, AlertTriangle, FileText, X } from 'lucide-react';
+import { usePolicyWorkflows, type PolicyWorkflow, type PendingApprovalWithPolicy, type WorkflowApprover } from '@/hooks/usePolicyWorkflows';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { WorkflowStepsPreview } from '@/components/politicas/WorkflowStepsPreview';
 import { ApprovalActionDialog } from '@/components/politicas/ApprovalActionDialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const emptyForm = {
+const SUGGESTED_DEPARTMENTS = ['TI', 'Jurídico', 'Compliance', 'RH', 'Financeiro', 'Diretoria', 'Operações', 'Segurança'];
+
+type WorkflowForm = {
+  name: string;
+  description: string | null;
+  approvers: WorkflowApprover[];
+  is_default: boolean;
+  sla_days: number | null;
+  notify_approver: boolean;
+};
+
+const emptyForm: WorkflowForm = {
   name: '',
-  description: null as string | null,
-  approval_levels: 1,
-  level1_role: 'admin',
-  level1_approver_id: null as string | null,
-  level2_role: null as string | null,
-  level2_approver_id: null as string | null,
+  description: null,
+  approvers: [{ level: 1, approver_id: null, department: '' }],
   is_default: false,
-  sla_days: null as number | null,
+  sla_days: null,
   notify_approver: true,
 };
 
@@ -45,6 +52,11 @@ export default function PolicyWorkflows() {
   const [historyFilter, setHistoryFilter] = useState<string>('todas');
 
   const admins = members?.filter(m => m.role === 'admin') || [];
+  const memberNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    members?.forEach(m => { if (m.user_id && m.profile?.full_name) map[m.user_id] = m.profile.full_name; });
+    return map;
+  }, [members]);
 
   // Metrics
   const completedThisMonth = useMemo(() => {
@@ -82,11 +94,7 @@ export default function PolicyWorkflows() {
     setForm({
       name: wf.name,
       description: wf.description,
-      approval_levels: wf.approval_levels,
-      level1_role: wf.level1_role || 'admin',
-      level1_approver_id: wf.level1_approver_id,
-      level2_role: wf.level2_role,
-      level2_approver_id: wf.level2_approver_id,
+      approvers: wf.approvers.length > 0 ? wf.approvers : [{ level: 1, approver_id: wf.level1_approver_id, department: '' }],
       is_default: wf.is_default,
       sla_days: wf.sla_days,
       notify_approver: wf.notify_approver,
@@ -96,10 +104,18 @@ export default function PolicyWorkflows() {
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
+    const payload = {
+      ...form,
+      approval_levels: form.approvers.length,
+      level1_role: 'admin' as string | null,
+      level1_approver_id: form.approvers[0]?.approver_id ?? null,
+      level2_role: form.approvers.length >= 2 ? 'admin' : null,
+      level2_approver_id: form.approvers[1]?.approver_id ?? null,
+    };
     if (editingId) {
-      await updateWorkflow.mutateAsync({ id: editingId, ...form });
+      await updateWorkflow.mutateAsync({ id: editingId, ...payload });
     } else {
-      await createWorkflow.mutateAsync(form);
+      await createWorkflow.mutateAsync(payload);
     }
     setDialogOpen(false);
   };
@@ -233,7 +249,12 @@ export default function PolicyWorkflows() {
                     {wf.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{wf.description}</p>}
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
-                    <WorkflowStepsPreview levels={wf.approval_levels} />
+                    <WorkflowStepsPreview 
+                      levels={wf.approval_levels} 
+                      approvers={wf.approvers} 
+                      compact 
+                      memberNames={memberNames}
+                    />
                     <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                       <Badge variant="outline" className="text-xs">{wf.approval_levels} {wf.approval_levels === 1 ? 'nível' : 'níveis'}</Badge>
                       {wf.sla_days && <Badge variant="outline" className="text-xs"><Clock className="w-3 h-3 mr-1" />SLA: {wf.sla_days}d</Badge>}
@@ -367,48 +388,86 @@ export default function PolicyWorkflows() {
               <Label>Descrição (opcional)</Label>
               <Textarea value={form.description || ''} onChange={(e) => setForm(f => ({ ...f, description: e.target.value || null }))} placeholder="Descreva o propósito deste workflow..." className="mt-1" rows={2} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Níveis de Aprovação</Label>
-                <Select value={String(form.approval_levels)} onValueChange={(v) => setForm(f => ({ ...f, approval_levels: Number(v) }))}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 Nível</SelectItem>
-                    <SelectItem value="2">2 Níveis</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>SLA (dias)</Label>
-                <Input type="number" min={1} value={form.sla_days ?? ''} onChange={(e) => setForm(f => ({ ...f, sla_days: e.target.value ? Number(e.target.value) : null }))} placeholder="Ex: 5" className="mt-1" />
-              </div>
-            </div>
             <div>
-              <Label>Aprovador Nível 1 (opcional)</Label>
-              <Select value={form.level1_approver_id || 'auto'} onValueChange={(v) => setForm(f => ({ ...f, level1_approver_id: v === 'auto' ? null : v }))}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Qualquer admin" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Qualquer Admin</SelectItem>
-                  {admins.map(m => (
-                    <SelectItem key={m.user_id} value={m.user_id}>{m.profile?.full_name || 'Sem nome'}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>SLA (dias)</Label>
+              <Input type="number" min={1} value={form.sla_days ?? ''} onChange={(e) => setForm(f => ({ ...f, sla_days: e.target.value ? Number(e.target.value) : null }))} placeholder="Ex: 5" className="mt-1" />
             </div>
-            {form.approval_levels === 2 && (
-              <div>
-                <Label>Aprovador Nível 2 (opcional)</Label>
-                <Select value={form.level2_approver_id || 'auto'} onValueChange={(v) => setForm(f => ({ ...f, level2_approver_id: v === 'auto' ? null : v }))}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Qualquer admin" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto">Qualquer Admin</SelectItem>
-                    {admins.map(m => (
-                      <SelectItem key={m.user_id} value={m.user_id}>{m.profile?.full_name || 'Sem nome'}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+            {/* Dynamic Approvers */}
+            <div>
+              <Label>Aprovadores</Label>
+              <div className="space-y-3 mt-2">
+                {form.approvers.map((approver, idx) => (
+                  <div key={idx} className="border rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Nível {idx + 1}</span>
+                      {form.approvers.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => setForm(f => ({
+                            ...f,
+                            approvers: f.approvers.filter((_, i) => i !== idx).map((a, i) => ({ ...a, level: i + 1 })),
+                          }))}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-xs">Aprovador</Label>
+                      <Select
+                        value={approver.approver_id || 'auto'}
+                        onValueChange={(v) => setForm(f => ({
+                          ...f,
+                          approvers: f.approvers.map((a, i) => i === idx ? { ...a, approver_id: v === 'auto' ? null : v } : a),
+                        }))}
+                      >
+                        <SelectTrigger className="mt-1"><SelectValue placeholder="Qualquer admin" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Qualquer Admin</SelectItem>
+                          {admins.map(m => (
+                            <SelectItem key={m.user_id} value={m.user_id}>{m.profile?.full_name || 'Sem nome'}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Área / Departamento</Label>
+                      <Input
+                        value={approver.department}
+                        onChange={(e) => setForm(f => ({
+                          ...f,
+                          approvers: f.approvers.map((a, i) => i === idx ? { ...a, department: e.target.value } : a),
+                        }))}
+                        placeholder="Ex: Jurídico, TI, Compliance..."
+                        list="dept-suggestions"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+              {form.approvers.length < 5 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 w-full"
+                  onClick={() => setForm(f => ({
+                    ...f,
+                    approvers: [...f.approvers, { level: f.approvers.length + 1, approver_id: null, department: '' }],
+                  }))}
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1.5" /> Adicionar Aprovador
+                </Button>
+              )}
+              <datalist id="dept-suggestions">
+                {SUGGESTED_DEPARTMENTS.map(d => <option key={d} value={d} />)}
+              </datalist>
+            </div>
             <div className="flex items-center justify-between border rounded-lg p-3">
               <div>
                 <p className="text-sm font-medium">Workflow padrão</p>
