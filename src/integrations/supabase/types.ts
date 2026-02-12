@@ -2026,6 +2026,60 @@ export type Database = {
           },
         ]
       }
+      vendor_risk_analyses: {
+        Row: {
+          analyzed_by: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          recommendation: string
+          risk_score: number
+          summary: string
+          top_concerns: string[]
+          trend: string
+          vendor_id: string
+        }
+        Insert: {
+          analyzed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          recommendation: string
+          risk_score: number
+          summary: string
+          top_concerns?: string[]
+          trend: string
+          vendor_id: string
+        }
+        Update: {
+          analyzed_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          recommendation?: string
+          risk_score?: number
+          summary?: string
+          top_concerns?: string[]
+          trend?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_risk_analyses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_risk_analyses_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_slas: {
         Row: {
           compliance_status: string
