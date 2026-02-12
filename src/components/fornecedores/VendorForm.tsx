@@ -122,7 +122,38 @@ export function VendorForm({
 
   const handleSubmit = async (data: VendorFormData) => {
     await onSubmit(data);
+    setAiSuggestion(null);
     onOpenChange(false);
+  };
+
+  const handleSuggestCriticality = async () => {
+    const values = form.getValues();
+    setAiLoading(true);
+    setAiSuggestion(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('classify-vendor-criticality', {
+        body: {
+          name: values.name,
+          description: values.description,
+          category: values.category,
+          service_type: '',
+          data_classification: '',
+        },
+      });
+      if (error) throw error;
+      setAiSuggestion(data);
+    } catch (err: any) {
+      toast({ title: err?.message || 'Erro ao classificar criticidade', variant: 'destructive' });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAcceptSuggestion = () => {
+    if (aiSuggestion) {
+      form.setValue('criticality', aiSuggestion.criticality);
+      setAiSuggestion(null);
+    }
   };
 
   return (
