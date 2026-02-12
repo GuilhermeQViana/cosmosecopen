@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Building, ArrowRight, ArrowLeft, Sparkles, Loader2 } from 'lucide-react';
+import { Shield, Building, ArrowRight, ArrowLeft, Sparkles, Loader2, FileText } from 'lucide-react';
 import { StarField } from '@/components/ui/star-field';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +26,15 @@ const modules = [
     colorClass: 'from-purple-500/20 to-purple-500/5 border-purple-500/30 text-purple-500',
     bgGlow: 'bg-purple-500/20',
     route: '/vrm',
+  },
+  {
+    id: 'policies',
+    title: 'Gestão de Políticas',
+    description: 'Repositório centralizado de políticas corporativas com editor rico, fluxos de aprovação, campanhas de aceite e vínculo com frameworks.',
+    icon: FileText,
+    colorClass: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
+    bgGlow: 'bg-emerald-500/20',
+    route: '/policies',
   },
 ];
 
@@ -95,7 +104,7 @@ export default function SelecionarModulo() {
         </div>
 
         {/* Module Cards */}
-        <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
+        <div className="grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
           {modules.map((module, index) => {
             const IconComponent = module.icon;
             
