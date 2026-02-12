@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { toast } from 'sonner';
 
+export type WorkflowApprover = {
+  level: number;
+  approver_id: string | null;
+  department: string;
+};
+
 export type PolicyWorkflow = {
   id: string;
   organization_id: string;
@@ -13,6 +19,7 @@ export type PolicyWorkflow = {
   level1_approver_id: string | null;
   level2_role: string | null;
   level2_approver_id: string | null;
+  approvers: WorkflowApprover[];
   is_default: boolean;
   sla_days: number | null;
   notify_approver: boolean;
@@ -57,6 +64,7 @@ export function usePolicyWorkflows() {
         is_default: d.is_default ?? false,
         sla_days: d.sla_days ?? null,
         notify_approver: d.notify_approver ?? true,
+        approvers: Array.isArray(d.approvers) ? d.approvers : [],
       })) as PolicyWorkflow[];
     },
     enabled: !!orgId,
@@ -110,9 +118,10 @@ export function usePolicyWorkflows() {
   const createWorkflow = useMutation({
     mutationFn: async (input: Omit<PolicyWorkflow, 'id' | 'organization_id' | 'created_at' | 'updated_at'>) => {
       if (!orgId) throw new Error('Sem organização');
+      const { approvers, ...rest } = input;
       const { data, error } = await supabase
         .from('policy_workflows')
-        .insert({ ...input, organization_id: orgId } as any)
+        .insert({ ...rest, approvers: JSON.parse(JSON.stringify(approvers || [])), approval_levels: (approvers || []).length || rest.approval_levels, organization_id: orgId } as any)
         .select()
         .single();
       if (error) throw error;
@@ -124,7 +133,12 @@ export function usePolicyWorkflows() {
 
   const updateWorkflow = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<PolicyWorkflow> & { id: string }) => {
-      const { error } = await supabase.from('policy_workflows').update(updates as any).eq('id', id);
+      const payload: any = { ...updates };
+      if (updates.approvers) {
+        payload.approvers = JSON.parse(JSON.stringify(updates.approvers));
+        payload.approval_levels = updates.approvers.length;
+      }
+      const { error } = await supabase.from('policy_workflows').update(payload).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { invalidateAll(); toast.success('Workflow atualizado'); },
@@ -154,6 +168,7 @@ export function usePolicyWorkflows() {
           level1_approver_id: wf.level1_approver_id,
           level2_role: wf.level2_role,
           level2_approver_id: wf.level2_approver_id,
+          approvers: JSON.parse(JSON.stringify(wf.approvers || [])),
           is_default: false,
           sla_days: wf.sla_days,
           notify_approver: wf.notify_approver,

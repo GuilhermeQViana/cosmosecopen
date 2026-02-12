@@ -1349,6 +1349,7 @@ export type Database = {
       policy_workflows: {
         Row: {
           approval_levels: number
+          approvers: Json
           created_at: string
           description: string | null
           id: string
@@ -1365,6 +1366,7 @@ export type Database = {
         }
         Insert: {
           approval_levels?: number
+          approvers?: Json
           created_at?: string
           description?: string | null
           id?: string
@@ -1381,6 +1383,7 @@ export type Database = {
         }
         Update: {
           approval_levels?: number
+          approvers?: Json
           created_at?: string
           description?: string | null
           id?: string
