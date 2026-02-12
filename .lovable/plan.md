@@ -1,30 +1,35 @@
 
 
-## Drag-and-Drop no Pipeline de Ciclo de Vida
+## Simplificar a Agenda de Reavaliacao
 
-### Objetivo
-Permitir que o usuario mude o estagio do ciclo de vida de um fornecedor simplesmente arrastando o card de uma coluna para outra no pipeline existente (pagina `/vrm/fornecedores`, modo pipeline).
+### Problema Atual
+A pagina de reavaliacao possui muitos elementos visuais: 4 cards de estatisticas, um calendario completo, uma lista de proximas reavaliacoes, uma secao de fornecedores sem agenda e um dialog com calendario para agendar. Isso torna a experiencia pesada e complexa.
 
-### Abordagem
-Usar a API nativa de HTML5 Drag and Drop (sem dependencia extra) no componente `VendorPipeline.tsx`, que ja exibe os fornecedores em colunas por `lifecycle_stage`.
+### Solucao
+Simplificar o componente `VendorReassessmentSchedule.tsx` mantendo apenas o essencial:
 
-### Alteracoes
+1. **Remover os 4 cards de estatisticas** no topo (atrasadas, proximos 30 dias, agendadas, sem agenda) - informacao redundante com a lista
+2. **Manter o calendario** mas em tamanho compacto
+3. **Unificar a lista**: juntar "proximas reavaliacoes" e "sem agenda" em uma unica lista com tabs ou separacao visual simples
+4. **Simplificar o dialog de agendamento**: remover o card de "frequencia sugerida" e deixar apenas o seletor de data com um botao de salvar
 
-**Arquivo:** `src/components/fornecedores/VendorPipeline.tsx`
+### Layout Simplificado
 
-1. Tornar cada card de fornecedor **draggable** com `draggable="true"` e `onDragStart` armazenando o `vendor.id`
-2. Tornar cada coluna de estagio uma **drop zone** com `onDragOver` (preventDefault) e `onDrop`
-3. No `onDrop`, chamar `useUpdateVendor` para atualizar o campo `lifecycle_stage` do fornecedor com o valor do estagio da coluna de destino
-4. Feedback visual: destacar a coluna de destino durante o arrasto (borda colorida ou fundo mais claro)
-5. Exibir um toast de confirmacao apos a mudanca
-
-**Arquivo:** `src/pages/Fornecedores.tsx`
-
-- Nenhuma alteracao necessaria - o `VendorPipeline` ja recebe os vendors e sera auto-suficiente com o drag-and-drop
+```text
++------------------------------------------+
+| Calendario (compacto)  |  Lista unica    |
+|                        |  - Atrasadas    |
+|                        |  - Agendadas    |
+|                        |  - Sem agenda   |
++------------------------------------------+
+```
 
 ### Detalhes Tecnicos
-- Usar `useRef` para armazenar o ID do fornecedor sendo arrastado
-- Usar estado local para controlar qual coluna esta sendo destacada (highlight on hover)
-- Chamar `useUpdateVendor().mutateAsync({ id, lifecycle_stage: newStage })` no drop
-- O React Query invalidara automaticamente o cache apos o update, atualizando a visualizacao
-- Animacao sutil de transicao com classes Tailwind (`transition-all`, `ring-2`, `ring-primary`)
+
+**Arquivo:** `src/components/fornecedores/VendorReassessmentSchedule.tsx`
+
+1. Remover o bloco `grid grid-cols-2 md:grid-cols-4` com os 4 stat cards (linhas 135-191)
+2. Unificar todas as listas em um unico card com secoes visuais (atrasadas em vermelho, agendadas normal, sem agenda em amarelo)
+3. Simplificar o dialog removendo o card de frequencia sugerida e deixando apenas calendario + botao
+4. Manter toda a logica de agendamento funcional (handleSchedule, openScheduleDialog)
+
