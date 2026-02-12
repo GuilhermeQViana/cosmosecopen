@@ -289,11 +289,11 @@ export function ROICalculatorSection() {
                   </li>
                   <li className="flex items-start gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Avaliação padronizada de {vendors} fornecedores</span>
+                    <span>Políticas e relatórios gerados por IA</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Geração automática de relatórios e evidências</span>
+                    <span>Due Diligence e avaliação de {vendors} fornecedores</span>
                   </li>
                 </ul>
               </div>

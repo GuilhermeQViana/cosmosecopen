@@ -8,6 +8,7 @@ export function Footer() {
   const footerLinks = {
     produto: [
       { label: 'Plataforma', href: '#platform' },
+      { label: 'Gestão de Políticas', href: '#platform' },
       { label: 'Conheça a CosmoSec', href: '/tour', isRoute: true },
       { label: 'Contato', href: '#contact' },
     ],

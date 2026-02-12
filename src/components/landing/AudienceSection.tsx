@@ -6,16 +6,17 @@ const audiences = [
   {
     icon: Building2,
     title: 'Para sua empresa',
-    subtitle: 'Controle interno de conformidade e fornecedores',
-    badge: 'GRC + VRM',
+    subtitle: 'Controle interno de conformidade, políticas e fornecedores',
+    badge: 'GRC + VRM + Políticas',
     cta: 'Agendar Demonstração',
     gradient: 'from-primary to-primary/70',
     benefits: [
-      'Diagnóstico completo de frameworks (NIST, ISO, BCB)',
+      'Diagnóstico completo de frameworks (NIST, ISO, BCB e custom)',
       'Gestão centralizada de riscos e evidências',
-      'Avaliação e monitoramento de fornecedores',
-      'Planos de ação automatizados com IA',
-      'Preparação contínua para auditorias externas',
+      'Gestão de políticas com fluxos de aprovação e aceite',
+      'Due Diligence e monitoramento contínuo de fornecedores',
+      'Planos de ação e relatórios automatizados com IA',
+      '6 tipos de relatórios executivos (Compliance, Riscos, Gap Analysis...)',
     ],
   },
   {
@@ -28,7 +29,8 @@ const audiences = [
     benefits: [
       'Painel consolidado multi-cliente',
       'Relatórios PDF com branding da sua consultoria',
-      'Templates de diagnóstico padronizados e reutilizáveis',
+      'Templates de políticas e diagnósticos reutilizáveis',
+      'Campanhas de aceite de políticas por cliente',
       'Visão comparativa de maturidade entre clientes',
       'Programa de parceiros com condições especiais',
     ],

@@ -9,7 +9,7 @@ import { HelpCircle } from 'lucide-react';
 const faqs = [
   {
     question: 'O que é a CosmoSec?',
-    answer: 'A CosmoSec é uma plataforma completa de Governança, Risco e Conformidade (GRC) que integra gestão de frameworks de segurança e avaliação de riscos de terceiros (VRM) em uma única solução. Permite diagnosticar controles, gerenciar riscos, armazenar evidências e criar planos de ação automatizados com IA.',
+    answer: 'A CosmoSec é uma plataforma completa de Governança, Risco e Conformidade (GRC) que integra gestão de frameworks, políticas de segurança, avaliação de riscos de terceiros (VRM) e relatórios automatizados em uma única solução. Permite diagnosticar controles, gerenciar riscos, armazenar evidências, criar e aprovar políticas, e gerar planos de ação com IA.',
   },
   {
     question: 'Quais frameworks são suportados?',
@@ -17,7 +17,15 @@ const faqs = [
   },
   {
     question: 'O que é o módulo VRM?',
-    answer: 'O módulo de Vendor Risk Management (VRM) permite avaliar e monitorar riscos de segurança de terceiros e fornecedores. Inclui 45 requisitos padrão divididos em 4 domínios: Segurança da Informação, Cyber Security, Privacidade (LGPD) e Continuidade de Negócios.',
+    answer: 'O módulo de Vendor Risk Management (VRM) oferece o ciclo completo de gestão de terceiros: Due Diligence, 45+ requisitos de avaliação em 4 domínios, SLA Tracking, gestão de contratos, portal de fornecedores, registro de incidentes, pipeline visual e wizard de offboarding.',
+  },
+  {
+    question: 'Como funciona o módulo de Gestão de Políticas?',
+    answer: 'O módulo inclui editor rich-text com geração por IA, fluxos de aprovação multi-nível, campanhas de aceite com rastreamento de aderência, templates reutilizáveis, versionamento completo com histórico e exportação para PDF. Todo o ciclo de vida da política é gerenciado em um único lugar.',
+  },
+  {
+    question: 'Quais relatórios posso gerar?',
+    answer: 'A plataforma oferece 6 tipos de relatórios automatizados: Conformidade, Riscos, Evidências, Planos de Ação, Executivo e Gap Analysis. Todos podem ser exportados em PDF/HTML e, para consultorias, incluem branding personalizado.',
   },
   {
     question: 'Como funciona a contratação?',
@@ -33,7 +41,7 @@ const faqs = [
   },
   {
     question: 'A CosmoSec funciona para consultorias e auditores externos?',
-    answer: 'Sim. A plataforma permite gerenciar múltiplas organizações em um único painel, ideal para consultores que atendem vários clientes. Você pode padronizar diagnósticos, gerar relatórios com a identidade da sua consultoria e manter trilha de auditoria separada por cliente.',
+    answer: 'Sim. A plataforma permite gerenciar múltiplas organizações em um único painel, ideal para consultores que atendem vários clientes. Você pode padronizar diagnósticos, gerar relatórios com a identidade da sua consultoria, reutilizar templates de políticas e manter trilha de auditoria separada por cliente.',
   },
   {
     question: 'Existe um programa de parceiros?',

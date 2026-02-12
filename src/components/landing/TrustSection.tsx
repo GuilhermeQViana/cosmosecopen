@@ -6,14 +6,16 @@ const frameworks = [
   { label: 'NIST CSF 2.0', description: 'Framework de Cibersegurança' },
   { label: 'ISO 27001:2022', description: 'Gestão de Segurança' },
   { label: 'BCB/CMN 4.893', description: 'Regulação Financeira' },
+  { label: 'Gestão de Políticas', description: 'Ciclo de vida completo' },
   { label: 'VRM Integrado', description: 'Gestão de Terceiros', isHighlight: true },
+  { label: 'Frameworks Custom', description: 'Criação e importação CSV', isHighlight: true },
 ];
 
 const metrics = [
   { value: 70, suffix: '%', label: 'Redução de tempo em auditorias' },
   { value: 50, suffix: 'h', label: 'Economia mensal por equipe' },
   { value: 45, suffix: '+', label: 'Requisitos VRM padrão' },
-  { value: 100, suffix: '%', label: 'Trilha de auditoria' },
+  { value: 6, suffix: '', label: 'Tipos de relatórios automatizados' },
 ];
 
 function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
