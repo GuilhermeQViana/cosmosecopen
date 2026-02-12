@@ -7,8 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, FileText } from 'lucide-react';
 import { NotificationCenter } from './NotificationCenter';
 import { StarField } from '@/components/ui/star-field';
-import { PageTransition } from './PageTransition';
-import { GlobalCosmicLoader } from './GlobalCosmicLoader';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { PaymentFailedBanner } from '@/components/subscription/PaymentFailedBanner';
 import { SubscriptionRequired } from '@/components/subscription/SubscriptionRequired';
@@ -101,11 +99,8 @@ export function PolicyLayout() {
             </Breadcrumb>
             <NotificationCenter />
           </header>
-          <GlobalCosmicLoader />
-          <main className="flex-1 p-6 overflow-auto relative z-10">
-            <PageTransition>
-              <Outlet />
-            </PageTransition>
+          <main className="flex-1 p-6 overflow-auto relative z-10 animate-fade-in">
+            <Outlet />
           </main>
         </SidebarInset>
       </div>
