@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,8 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { Vendor, VENDOR_CATEGORIES, VENDOR_CRITICALITY, VENDOR_STATUS } from '@/hooks/useVendors';
-import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Sparkles, Check, X } from 'lucide-react';
 
 const vendorFormSchema = z.object({
   code: z.string().min(1, 'Código é obrigatório'),
@@ -64,6 +67,9 @@ export function VendorForm({
   isLoading,
 }: VendorFormProps) {
   const isEdit = !!vendor;
+  const { toast } = useToast();
+  const [aiSuggestion, setAiSuggestion] = useState<{ criticality: string; justification: string } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const form = useForm<VendorFormData>({
     resolver: zodResolver(vendorFormSchema),
@@ -116,7 +122,38 @@ export function VendorForm({
 
   const handleSubmit = async (data: VendorFormData) => {
     await onSubmit(data);
+    setAiSuggestion(null);
     onOpenChange(false);
+  };
+
+  const handleSuggestCriticality = async () => {
+    const values = form.getValues();
+    setAiLoading(true);
+    setAiSuggestion(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('classify-vendor-criticality', {
+        body: {
+          name: values.name,
+          description: values.description,
+          category: values.category,
+          service_type: '',
+          data_classification: '',
+        },
+      });
+      if (error) throw error;
+      setAiSuggestion(data);
+    } catch (err: any) {
+      toast({ title: err?.message || 'Erro ao classificar criticidade', variant: 'destructive' });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAcceptSuggestion = () => {
+    if (aiSuggestion) {
+      form.setValue('criticality', aiSuggestion.criticality);
+      setAiSuggestion(null);
+    }
   };
 
   return (
@@ -205,7 +242,20 @@ export function VendorForm({
                 name="criticality"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Criticidade</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Criticidade</FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs gap-1 text-primary"
+                        onClick={handleSuggestCriticality}
+                        disabled={aiLoading || !form.getValues('name')}
+                      >
+                        {aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Sugerir IA
+                      </Button>
+                    </div>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -220,6 +270,25 @@ export function VendorForm({
                         ))}
                       </SelectContent>
                     </Select>
+                    {aiSuggestion && (
+                      <div className="mt-1 p-2 rounded-md bg-primary/5 border border-primary/20 text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1">
+                            <Sparkles className="h-3 w-3 text-primary" />
+                            Sugestão: <strong className="capitalize">{VENDOR_CRITICALITY.find(c => c.value === aiSuggestion.criticality)?.label || aiSuggestion.criticality}</strong>
+                          </span>
+                          <div className="flex gap-1">
+                            <Button type="button" variant="ghost" size="icon" className="h-5 w-5" onClick={handleAcceptSuggestion}>
+                              <Check className="h-3 w-3 text-green-500" />
+                            </Button>
+                            <Button type="button" variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAiSuggestion(null)}>
+                              <X className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground">{aiSuggestion.justification}</p>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

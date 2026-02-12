@@ -75,7 +75,7 @@ serve(async (req) => {
     // Calculate domain scores
     const domainScores: Record<string, number> = {};
     Object.entries(responsesByDomain).forEach(([domain, domainResponses]) => {
-      const avg = (domainResponses as Array<{ compliance_level: number }>).reduce((sum, r) => sum + (r.compliance_level / 5) * 100, 0) / domainResponses.length;
+      const avg = (domainResponses as Array<{ compliance_level: number }>).reduce((sum: number, r: { compliance_level: number }) => sum + (r.compliance_level / 5) * 100, 0) / domainResponses.length;
       domainScores[domain] = Math.round(avg);
     });
 
@@ -95,6 +95,81 @@ serve(async (req) => {
       if (score >= 40) return "#f97316";
       return "#ef4444";
     };
+
+    // Generate AI Executive Summary
+    let aiAnalysisHtml = '';
+    try {
+      const apiKey = Deno.env.get("LOVABLE_API_KEY");
+      if (apiKey) {
+        const aiPrompt = `Você é um especialista em gestão de riscos de terceiros. Analise os dados de avaliação do fornecedor:
+
+**Fornecedor:** ${assessment.vendor?.name} (Score: ${assessment.overall_score ?? 0}%)
+**Domínios:** ${Object.entries(domainScores).map(([d, s]) => `${d}: ${s}%`).join(', ')}
+**Total de Requisitos Avaliados:** ${responses?.length || 0}
+**Requisitos Críticos (< 40%):** ${responses?.filter((r: any) => (r.compliance_level / 5) * 100 < 40).length || 0}
+
+Forneça: top 3 pontos fortes, top 3 áreas críticas e 3 recomendações priorizadas.`;
+
+        const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [{ role: "user", content: aiPrompt }],
+            tools: [{
+              type: "function",
+              function: {
+                name: "executive_summary",
+                description: "Resumo executivo da avaliação",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    strengths: { type: "array", items: { type: "string" } },
+                    critical_areas: { type: "array", items: { type: "string" } },
+                    recommendations: { type: "array", items: { type: "string" } },
+                    confidence_level: { type: "string", enum: ["alto", "medio", "baixo"] },
+                  },
+                  required: ["strengths", "critical_areas", "recommendations", "confidence_level"],
+                  additionalProperties: false,
+                },
+              },
+            }],
+            tool_choice: { type: "function", function: { name: "executive_summary" } },
+          }),
+        });
+
+        if (aiResp.ok) {
+          const aiData = await aiResp.json();
+          const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+          if (toolCall?.function?.arguments) {
+            const summary = JSON.parse(toolCall.function.arguments);
+            aiAnalysisHtml = `
+    <div class="section">
+      <h2 class="section-title">🤖 Análise Executiva (IA)</h2>
+      <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          <div>
+            <h4 style="color: #22c55e; font-size: 14px; margin-bottom: 10px;">✅ Pontos Fortes</h4>
+            <ul style="font-size: 13px; padding-left: 16px;">${summary.strengths.map((s: string) => `<li style="margin-bottom: 6px;">${s}</li>`).join('')}</ul>
+          </div>
+          <div>
+            <h4 style="color: #ef4444; font-size: 14px; margin-bottom: 10px;">⚠️ Áreas Críticas</h4>
+            <ul style="font-size: 13px; padding-left: 16px;">${summary.critical_areas.map((s: string) => `<li style="margin-bottom: 6px;">${s}</li>`).join('')}</ul>
+          </div>
+        </div>
+        <div>
+          <h4 style="color: #6366f1; font-size: 14px; margin-bottom: 10px;">💡 Recomendações Priorizadas</h4>
+          <ol style="font-size: 13px; padding-left: 16px;">${summary.recommendations.map((s: string) => `<li style="margin-bottom: 6px;">${s}</li>`).join('')}</ol>
+        </div>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 16px; font-style: italic;">Análise gerada por inteligência artificial • Nível de confiança: ${summary.confidence_level}</p>
+      </div>
+    </div>`;
+          }
+        }
+      }
+    } catch (aiError) {
+      console.error("AI analysis error (non-blocking):", aiError);
+    }
 
     // Generate HTML report
     const html = `
@@ -244,6 +319,8 @@ serve(async (req) => {
       <h1 class="title">Relatório de Avaliação de Fornecedor</h1>
       <p class="subtitle">Gerado em ${new Date().toLocaleDateString('pt-BR', { dateStyle: 'long' })}</p>
     </div>
+    
+    ${aiAnalysisHtml}
     
     <div class="score-card">
       <div class="score-label">Score Geral de Conformidade</div>

@@ -30,6 +30,7 @@ import { VendorIncidentLog } from './VendorIncidentLog';
 import { VendorSLATracker } from './VendorSLATracker';
 import { VendorOffboardingWizard } from './VendorOffboardingWizard';
 import { VendorPortalManager } from './VendorPortalManager';
+import { VendorAIRiskWidget } from './VendorAIRiskWidget';
 import { toast } from 'sonner';
 import {
   Building2,
@@ -141,6 +142,9 @@ export function VendorDetailSheet({
 
           <ScrollArea className="h-[calc(100vh-12rem)] mt-6 -mx-6 px-6">
             <div className="space-y-6">
+              {/* AI Risk Widget */}
+              <VendorAIRiskWidget vendor={vendor} />
+
               {/* Actions */}
               <div className="flex gap-2 flex-wrap">
                 {onEdit && (

@@ -50,3 +50,18 @@ verify_jwt = false
 
 [functions.vendor-portal]
 verify_jwt = false
+
+[functions.analyze-vendor-incident]
+verify_jwt = false
+
+[functions.classify-vendor-criticality]
+verify_jwt = false
+
+[functions.assist-due-diligence]
+verify_jwt = false
+
+[functions.generate-vendor-action-plans]
+verify_jwt = false
+
+[functions.vendor-risk-analysis]
+verify_jwt = false

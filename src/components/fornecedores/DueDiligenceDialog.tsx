@@ -30,6 +30,7 @@ import {
 } from '@/hooks/useDueDiligence';
 import { InherentRiskCalculator } from './InherentRiskCalculator';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   ClipboardCheck,
   Loader2,
@@ -44,6 +45,7 @@ import {
   Scale,
   Settings,
   Calculator,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,6 +65,12 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
   nao_aplicavel: MinusCircle,
 };
 
+interface AIAssistance {
+  questions: string[];
+  red_flags: string[];
+  approval_criteria: string[];
+}
+
 interface DueDiligenceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -71,6 +79,9 @@ interface DueDiligenceDialogProps {
 
 export function DueDiligenceDialog({ open, onOpenChange, vendor }: DueDiligenceDialogProps) {
   const [showRiskCalculator, setShowRiskCalculator] = useState(false);
+  const [aiCache, setAiCache] = useState<Record<string, AIAssistance>>({});
+  const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
+  const [expandedAiItem, setExpandedAiItem] = useState<string | null>(null);
   const { toast } = useToast();
 
   const { data: ddList, isLoading: ddLoading } = useDueDiligence(vendor?.id ?? null);
@@ -120,6 +131,33 @@ export function DueDiligenceDialog({ open, onOpenChange, vendor }: DueDiligenceD
     await updateDd.mutateAsync({ id: activeDd.id, inherent_risk_score: score });
     setShowRiskCalculator(false);
     toast({ title: 'Risk Score calculado', description: `Score: ${score.toFixed(0)}%` });
+  };
+
+  const handleAIAssist = async (item: DueDiligenceItem) => {
+    if (aiCache[item.id]) {
+      setExpandedAiItem(expandedAiItem === item.id ? null : item.id);
+      return;
+    }
+
+    setLoadingItemId(item.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('assist-due-diligence', {
+        body: {
+          item_name: item.item_name,
+          item_category: item.category,
+          item_description: item.description,
+          vendor_name: vendor.name,
+          vendor_category: vendor.category,
+        },
+      });
+      if (error) throw error;
+      setAiCache((prev) => ({ ...prev, [item.id]: data }));
+      setExpandedAiItem(item.id);
+    } catch (err: any) {
+      toast({ title: err?.message || 'Erro ao gerar assistência', variant: 'destructive' });
+    } finally {
+      setLoadingItemId(null);
+    }
   };
 
   const groupedItems = items?.reduce((acc, item) => {
@@ -242,7 +280,9 @@ export function DueDiligenceDialog({ open, onOpenChange, vendor }: DueDiligenceD
                       <div className="space-y-2">
                         {catItems.map((item) => {
                           const StatusIcon = STATUS_ICONS[item.status] || Clock;
-                          const statusInfo = DD_ITEM_STATUS.find((s) => s.value === item.status);
+                          const isLoadingThis = loadingItemId === item.id;
+                          const aiData = aiCache[item.id];
+                          const isAiExpanded = expandedAiItem === item.id;
 
                           return (
                             <div
@@ -267,22 +307,66 @@ export function DueDiligenceDialog({ open, onOpenChange, vendor }: DueDiligenceD
                                     )}
                                   </div>
                                 </div>
-                                <Select
-                                  value={item.status}
-                                  onValueChange={(v) => handleItemStatusChange(item, v)}
-                                >
-                                  <SelectTrigger className="w-[120px] h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {DD_ITEM_STATUS.map((s) => (
-                                      <SelectItem key={s.value} value={s.value}>
-                                        {s.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => handleAIAssist(item)}
+                                    disabled={isLoadingThis}
+                                  >
+                                    {isLoadingThis ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <Sparkles className={cn("h-3.5 w-3.5", aiData ? "text-primary" : "text-muted-foreground")} />
+                                    )}
+                                  </Button>
+                                  <Select
+                                    value={item.status}
+                                    onValueChange={(v) => handleItemStatusChange(item, v)}
+                                  >
+                                    <SelectTrigger className="w-[120px] h-8 text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {DD_ITEM_STATUS.map((s) => (
+                                        <SelectItem key={s.value} value={s.value}>
+                                          {s.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </div>
+
+                              {/* AI Assistance Card */}
+                              {aiData && isAiExpanded && (
+                                <div className="p-3 rounded-md bg-primary/5 border border-primary/20 space-y-2 text-xs">
+                                  <div className="flex items-center gap-1 text-primary font-medium">
+                                    <Sparkles className="h-3 w-3" />
+                                    Assistente IA
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-muted-foreground mb-1">❓ Perguntas Investigativas:</p>
+                                    <ul className="space-y-1 ml-3">
+                                      {aiData.questions.map((q, i) => <li key={i}>{q}</li>)}
+                                    </ul>
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-muted-foreground mb-1">🚩 Red Flags:</p>
+                                    <ul className="space-y-1 ml-3">
+                                      {aiData.red_flags.map((f, i) => <li key={i} className="text-destructive">{f}</li>)}
+                                    </ul>
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-muted-foreground mb-1">✅ Critérios de Aprovação:</p>
+                                    <ul className="space-y-1 ml-3">
+                                      {aiData.approval_criteria.map((c, i) => <li key={i}>{c}</li>)}
+                                    </ul>
+                                  </div>
+                                </div>
+                              )}
+
                               <Textarea
                                 placeholder="Observações..."
                                 value={item.observations || ''}
