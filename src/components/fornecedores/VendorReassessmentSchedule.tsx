@@ -103,6 +103,13 @@ export function VendorReassessmentSchedule({ onNewScheduleOpen }: VendorReassess
     setScheduleDialogOpen(true);
   };
 
+  const FREQUENCY_OPTIONS = [
+    { label: 'Mensal', months: 1 },
+    { label: 'Trimestral', months: 3 },
+    { label: 'Semestral', months: 6 },
+    { label: 'Anual', months: 12 },
+  ];
+
   const handleSchedule = async () => {
     if (!selectedVendor || !selectedDate) return;
     setIsScheduling(true);
