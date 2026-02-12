@@ -1,84 +1,42 @@
 
+## Corrigir Deteccao de Delimitador no Import CSV
 
-## Aprovadores Dinamicos com Area/Departamento
+### Problema
 
-### O que muda
+O `detectDelimiter` exige que TODAS as linhas tenham contagem similar do delimitador (+-1). Quando o Excel omite colunas vazias no final das linhas de dados, a contagem de ponto-e-virgula nas linhas de dados fica menor que no cabecalho, o que faz o algoritmo rejeitar o `;` e cair no default `,` — resultando em 1 unica coluna.
 
-Atualmente o workflow suporta no maximo 2 niveis fixos (colunas `level1_approver_id`, `level2_approver_id`). Vamos substituir esse modelo rigido por um sistema flexivel que permite N aprovadores, cada um com sua area/departamento.
+### Solucao
 
-### Mudancas no Banco de Dados
+**Arquivo: `src/hooks/useImportControls.ts`** — Funcao `detectDelimiter`
 
-**Nova coluna JSONB** em `policy_workflows`:
-- `approvers` (jsonb, default '[]') - Array de objetos com a estrutura:
+Tornar a deteccao mais robusta com estas mudancas:
 
-```text
-[
-  { "level": 1, "approver_id": "uuid-ou-null", "department": "Tecnologia da Informacao" },
-  { "level": 2, "approver_id": "uuid-ou-null", "department": "Juridico" },
-  { "level": 3, "approver_id": "uuid-ou-null", "department": "Diretoria" }
-]
-```
+1. **Fallback por contagem do cabecalho**: Se nenhum delimitador passar no teste de consistencia, usar o delimitador com maior contagem na primeira linha (cabecalho). Se o cabecalho tem 9 ponto-e-virgulas e 0 virgulas, ponto-e-virgula vence independente da consistencia.
 
-As colunas antigas (`level1_role`, `level1_approver_id`, `level2_role`, `level2_approver_id`) serao mantidas para compatibilidade mas nao serao mais usadas pela interface.
+2. **Consistencia mais tolerante**: Aceitar linhas de dados com ate 50% menos delimitadores que o cabecalho (em vez de apenas +-1), pois o Excel frequentemente omite colunas vazias no final.
 
-### Mudancas nos Arquivos
+3. **Priorizar maioria**: Se 3 de 4 linhas de dados sao consistentes, considerar o delimitador como valido (em vez de exigir 100%).
 
-**1. `src/hooks/usePolicyWorkflows.ts`**
-- Adicionar tipo `WorkflowApprover` com campos `level`, `approver_id`, `department`
-- Atualizar tipo `PolicyWorkflow` com campo `approvers: WorkflowApprover[]`
-- Na query, parsear o campo JSONB automaticamente
-- Atualizar mutations de create/update/duplicate para salvar o array `approvers` e sincronizar `approval_levels` com o tamanho do array
-
-**2. `src/pages/PolicyWorkflows.tsx`**
-- Substituir o seletor fixo "1 ou 2 niveis" por um sistema dinamico de aprovadores
-- No dialog de criacao/edicao, adicionar:
-  - Lista de aprovadores com botao "+ Adicionar Aprovador"
-  - Cada aprovador tera: campo de selecao do membro, campo de texto para Area/Departamento, e botao de remover
-  - Limite de ate 5 niveis
-- Nos cards de workflow, exibir nomes e areas dos aprovadores
-- O campo `approval_levels` sera calculado automaticamente pelo tamanho do array
-
-**3. `src/components/politicas/WorkflowStepsPreview.tsx`**
-- Receber array de `approvers` em vez de apenas `levels: number`
-- Exibir nome do aprovador e area em cada step (quando disponivel)
-- Manter modo compacto para os cards
-
-### Layout do Dialog (Novo)
+### Mudanca no Codigo
 
 ```text
-+------------------------------------------+
-| Editar Workflow                        X |
-+------------------------------------------+
-| Nome do Workflow                         |
-| [Politica de ciber                     ] |
-|                                          |
-| Descricao (opcional)                     |
-| [                                      ] |
-|                                          |
-| SLA (dias)        Notificar [ON]         |
-| [11           ]                          |
-|                                          |
-| Aprovadores                              |
-| +--------------------------------------+ |
-| | Nivel 1                         [x]  | |
-| | Aprovador: [Guilherme Viana     v]   | |
-| | Area:      [Tecnologia da Informacao]| |
-| +--------------------------------------+ |
-| | Nivel 2                         [x]  | |
-| | Aprovador: [Qualquer Admin      v]   | |
-| | Area:      [Juridico               ] | |
-| +--------------------------------------+ |
-| [+ Adicionar Aprovador]                  |
-|                                          |
-| Workflow padrao                    [OFF] |
-|                                          |
-| [        Salvar Alteracoes             ] |
-+------------------------------------------+
+Antes:
+  - isConsistent exige ALL linhas com +-1 do cabecalho
+  - Se nenhum delimitador e consistente, retorna ','
+
+Depois:
+  - isConsistent aceita linhas com contagem >= metade do cabecalho
+  - Se nenhum delimitador e consistente, usa o com maior contagem no cabecalho
+  - Adiciona fallback explicito: se header tem 0 virgulas mas N ponto-e-virgulas, usa ponto-e-virgula
 ```
 
-### Secao Tecnica
+**Arquivo: `src/components/configuracoes/CSVFieldMapper.tsx`** — Funcao `autoMapFields`
 
-- A migracao SQL adicionara a coluna `approvers JSONB DEFAULT '[]'` e populara dados existentes migrando os valores de `level1/level2` para o novo formato JSON
-- O `WorkflowStepsPreview` aceitara tanto `levels: number` (retrocompatibilidade) quanto `approvers: WorkflowApprover[]` (novo formato)
-- O `approval_levels` continuara sendo salvo como numero inteiro (derivado do tamanho do array) para manter compatibilidade com `policy_approvals`
-- Lista de departamentos sugeridos via datalist HTML (nao bloqueante - aceita texto livre): TI, Juridico, Compliance, RH, Financeiro, Diretoria, Operacoes, Seguranca
+Adicionar matching mais flexivel para que os headers do arquivo (ex: `code`, `name`, `weight`) sejam mapeados mesmo com pequenas variacoes:
+
+- Adicionar busca por "starts with" e "contains" alem de match exato nos sinonimos
+- Isso garante que mesmo com acentos ou underscores extras o mapeamento automatico funcione
+
+### Resultado
+
+O arquivo CSV com separador `;` sera corretamente detectado, as 10 colunas serao identificadas, e o mapeamento automatico associara cada coluna ao campo correto do sistema.
