@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +10,8 @@ import { useVendorContracts } from '@/hooks/useVendorContracts';
 import { useDueDiligence } from '@/hooks/useDueDiligence';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useOrganization } from '@/contexts/OrganizationContext';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Sparkles,
   Loader2,
@@ -20,7 +22,10 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  Clock,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface RiskAnalysis {
   risk_score: number;
@@ -30,21 +35,54 @@ interface RiskAnalysis {
   summary: string;
 }
 
+interface SavedAnalysis extends RiskAnalysis {
+  id: string;
+  created_at: string;
+}
+
 interface VendorAIRiskWidgetProps {
   vendor: Vendor;
 }
 
 export function VendorAIRiskWidget({ vendor }: VendorAIRiskWidgetProps) {
-  const [analysis, setAnalysis] = useState<RiskAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const { toast } = useToast();
+  const { organization } = useOrganization();
+  const queryClient = useQueryClient();
 
   const { data: assessments } = useVendorAssessments(vendor.id);
   const { data: incidents } = useVendorIncidents(vendor.id);
   const { data: slas } = useVendorSLAs(vendor.id);
   const { data: contracts } = useVendorContracts(vendor.id);
   const { data: ddList } = useDueDiligence(vendor.id);
+
+  // Load saved analysis from database
+  const { data: savedAnalysis } = useQuery({
+    queryKey: ['vendor-risk-analysis', vendor.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('vendor_risk_analyses')
+        .select('*')
+        .eq('vendor_id', vendor.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        risk_score: data.risk_score,
+        trend: data.trend as RiskAnalysis['trend'],
+        top_concerns: data.top_concerns,
+        recommendation: data.recommendation,
+        summary: data.summary,
+        created_at: data.created_at,
+      } as SavedAnalysis;
+    },
+  });
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -74,7 +112,33 @@ export function VendorAIRiskWidget({ vendor }: VendorAIRiskWidgetProps) {
       });
 
       if (error) throw error;
-      setAnalysis(data);
+
+      // Save analysis to database
+      if (organization?.id) {
+        const { data: session } = await supabase.auth.getSession();
+        const userId = session?.session?.user?.id;
+
+        const { error: saveError } = await supabase
+          .from('vendor_risk_analyses')
+          .insert({
+            vendor_id: vendor.id,
+            organization_id: organization.id,
+            risk_score: data.risk_score,
+            trend: data.trend,
+            top_concerns: data.top_concerns,
+            recommendation: data.recommendation,
+            summary: data.summary,
+            analyzed_by: userId || null,
+          });
+
+        if (saveError) {
+          console.error('Error saving analysis:', saveError);
+        }
+
+        // Invalidate cache to reload saved analysis
+        queryClient.invalidateQueries({ queryKey: ['vendor-risk-analysis', vendor.id] });
+      }
+
       setExpanded(true);
     } catch (err: any) {
       toast({ title: err?.message || 'Erro ao analisar risco', variant: 'destructive' });
@@ -82,6 +146,8 @@ export function VendorAIRiskWidget({ vendor }: VendorAIRiskWidgetProps) {
       setLoading(false);
     }
   };
+
+  const analysis = savedAnalysis;
 
   const getTrendIcon = (trend: string) => {
     if (trend === 'melhorando') return <TrendingUp className="h-4 w-4 text-green-500" />;
@@ -149,6 +215,7 @@ export function VendorAIRiskWidget({ vendor }: VendorAIRiskWidgetProps) {
             size="icon"
             className="h-6 w-6"
             onClick={(e) => { e.stopPropagation(); handleAnalyze(); }}
+            title="Reanalisar"
           >
             <RefreshCw className="h-3 w-3" />
           </Button>
@@ -186,6 +253,15 @@ export function VendorAIRiskWidget({ vendor }: VendorAIRiskWidgetProps) {
             <p className="text-xs font-medium text-muted-foreground mb-1">💡 Recomendação:</p>
             <p className="text-xs">{analysis.recommendation}</p>
           </div>
+
+          {analysis.created_at && (
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-1 border-t border-border/30">
+              <Clock className="h-3 w-3" />
+              <span>
+                Análise realizada em {format(new Date(analysis.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>
