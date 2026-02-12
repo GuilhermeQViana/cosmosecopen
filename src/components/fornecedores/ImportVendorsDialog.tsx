@@ -9,8 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useDropzone } from 'react-dropzone';
 import {
   Upload, Download, FileSpreadsheet, ArrowRight, ArrowLeft, CheckCircle2,
-  AlertTriangle, Sparkles, X, Loader2, Check
+  AlertTriangle, Sparkles, X, Loader2, Check, ChevronDown, BookOpen
 } from 'lucide-react';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { VENDOR_CATEGORIES, VENDOR_CRITICALITY, VENDOR_STATUS, VENDOR_DATA_CLASSIFICATION } from '@/hooks/useVendors';
 import { cn } from '@/lib/utils';
 import {
   useImportVendors,
@@ -187,6 +189,100 @@ export function ImportVendorsDialog({ open, onOpenChange }: ImportVendorsDialogP
                 Baixar Template
               </Button>
             </div>
+
+            <Collapsible>
+              <div className="border rounded-lg">
+                <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-muted/30 transition-colors rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Guia de preenchimento dos campos</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="px-4 pb-4">
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Campo</TableHead>
+                            <TableHead className="w-28">Obrigatório</TableHead>
+                            <TableHead>Formato / Valores aceitos</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">codigo</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Texto livre. Ex: VND-001. Se vazio, será gerado automaticamente</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">nome</TableCell>
+                            <TableCell><Badge variant="destructive" className="text-xs">Sim</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Texto livre. Nome do fornecedor. Ex: Amazon AWS</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">descricao</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Texto livre. Descrição do serviço prestado</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">categoria</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{VENDOR_CATEGORIES.join(', ')}</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">criticidade</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{VENDOR_CRITICALITY.join(', ')} <span className="italic">(padrão: media)</span></TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">status</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{VENDOR_STATUS.join(', ')} <span className="italic">(padrão: ativo)</span></TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">contato_nome</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Texto livre. Nome da pessoa de contato</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">contato_email</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Email válido. Ex: joao@empresa.com</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">contato_telefone</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Texto livre. Ex: 11999990000</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">inicio_contrato</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Data no formato AAAA-MM-DD. Ex: 2024-01-15</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">fim_contrato</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Data no formato AAAA-MM-DD. Ex: 2026-12-31</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">tipo_servico</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">Texto livre. Ex: cloud, consultoria, SaaS</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-mono text-xs">classificacao_dados</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">Não</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{VENDOR_DATA_CLASSIFICATION.join(', ')} <span className="italic">(padrão: nenhum)</span></TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
           </div>
         )}
 
