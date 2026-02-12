@@ -1,35 +1,29 @@
 
 
-## Simplificar a Agenda de Reavaliacao
+## Adicionar Agendamento de Reavaliacao no Detalhe do Fornecedor
 
-### Problema Atual
-A pagina de reavaliacao possui muitos elementos visuais: 4 cards de estatisticas, um calendario completo, uma lista de proximas reavaliacoes, uma secao de fornecedores sem agenda e um dialog com calendario para agendar. Isso torna a experiencia pesada e complexa.
+### Objetivo
+Adicionar um botao "Agendar Reavaliacao" no painel lateral do fornecedor (VendorDetailSheet) com um dialog inline para selecionar a data. Ao salvar, a data sera persistida no campo `next_assessment_date` do fornecedor e refletida automaticamente na pagina de Agenda (`/vrm/agenda`).
 
-### Solucao
-Simplificar o componente `VendorReassessmentSchedule.tsx` mantendo apenas o essencial:
+### Alteracoes
 
-1. **Remover os 4 cards de estatisticas** no topo (atrasadas, proximos 30 dias, agendadas, sem agenda) - informacao redundante com a lista
-2. **Manter o calendario** mas em tamanho compacto
-3. **Unificar a lista**: juntar "proximas reavaliacoes" e "sem agenda" em uma unica lista com tabs ou separacao visual simples
-4. **Simplificar o dialog de agendamento**: remover o card de "frequencia sugerida" e deixar apenas o seletor de data com um botao de salvar
+**Arquivo:** `src/components/fornecedores/VendorDetailSheet.tsx`
 
-### Layout Simplificado
+1. Importar `Calendar as CalendarUI` de `@/components/ui/calendar`, `Dialog` e componentes relacionados, `useUpdateVendor`, `format` do date-fns, e o icone `CalendarClock`
+2. Adicionar estados: `scheduleOpen` (boolean), `selectedDate` (Date), `isScheduling` (boolean)
+3. Adicionar um novo botao na area de acoes: **"Reavaliacao"** com icone `CalendarClock`
+4. Criar um Dialog simples (igual ao da agenda) com:
+   - Titulo: "Agendar Reavaliacao"
+   - Descricao com nome do fornecedor
+   - Calendario para selecionar data (desabilitando datas passadas)
+   - Botoes Cancelar e Agendar
+5. No submit, chamar `useUpdateVendor` com `{ id: vendor.id, next_assessment_date: formato-yyyy-MM-dd }`
+6. Exibir a data da proxima reavaliacao na secao de Contrato (se existir), mostrando "Proxima reavaliacao: dd de MMMM de yyyy"
 
-```text
-+------------------------------------------+
-| Calendario (compacto)  |  Lista unica    |
-|                        |  - Atrasadas    |
-|                        |  - Agendadas    |
-|                        |  - Sem agenda   |
-+------------------------------------------+
-```
+### Como reflete na Agenda
+A pagina `/vrm/agenda` usa o componente `VendorReassessmentSchedule` que ja le o campo `next_assessment_date` de todos os fornecedores via `useVendors()`. Como ambos usam o mesmo hook React Query, ao salvar a data no detalhe do fornecedor, o cache sera invalidado e a agenda atualizara automaticamente -- sem nenhuma alteracao necessaria na pagina de agenda.
 
 ### Detalhes Tecnicos
-
-**Arquivo:** `src/components/fornecedores/VendorReassessmentSchedule.tsx`
-
-1. Remover o bloco `grid grid-cols-2 md:grid-cols-4` com os 4 stat cards (linhas 135-191)
-2. Unificar todas as listas em um unico card com secoes visuais (atrasadas em vermelho, agendadas normal, sem agenda em amarelo)
-3. Simplificar o dialog removendo o card de frequencia sugerida e deixando apenas calendario + botao
-4. Manter toda a logica de agendamento funcional (handleSchedule, openScheduleDialog)
-
+- Reutilizar a mesma logica de agendamento que ja existe em `VendorReassessmentSchedule` (calcular data sugerida baseada na criticidade)
+- O Dialog sera auto-contido dentro do `VendorDetailSheet`, sem criar componente separado
+- Apenas 1 arquivo precisa ser alterado: `src/components/fornecedores/VendorDetailSheet.tsx`
