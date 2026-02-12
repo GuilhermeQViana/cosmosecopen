@@ -259,7 +259,15 @@ export function VendorDetailSheet({
                       </span>
                     </div>
                   )}
-                  {!vendor.contract_start && !vendor.contract_end && (
+                  {vendor.next_assessment_date && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <CalendarClock className="h-4 w-4 text-primary" />
+                      <span className="text-primary font-medium">
+                        Próxima reavaliação: {format(new Date(vendor.next_assessment_date + 'T00:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      </span>
+                    </div>
+                  )}
+                  {!vendor.contract_start && !vendor.contract_end && !vendor.next_assessment_date && (
                     <p className="text-sm text-muted-foreground italic">Datas de contrato não definidas</p>
                   )}
                 </div>
