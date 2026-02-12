@@ -1,106 +1,111 @@
 
+## Reestruturar Fluxos de Aprovacao - UI/UX Aprimorado + Novas Funcionalidades
 
-## Aprimorar o Gerador de Politicas com IA - Mais Opcoes de Instrucoes
+### Problemas Atuais
 
-### Problema Atual
+1. **Pagina basica demais** - apenas lista cards simples sem metricas ou contexto visual
+2. **Sem edicao** - workflows so podem ser criados ou excluidos, nao editados
+3. **Sem vinculo com politicas** - nao ha como saber quais politicas usam cada workflow
+4. **Sem visibilidade de aprovacoes** - nenhuma aba ou secao mostra aprovacoes pendentes/historico
+5. **Dialog de criacao minimalista** - sem descricao, sem prazo de SLA, sem notificacoes
+6. **Sem workflow padrao** - nao ha como definir um workflow como padrao para novas politicas
+7. **Cards sem informacao util** - mostram apenas nome e niveis, sem contagem de uso ou status
 
-O dialog de geracao por IA possui apenas 3 campos: Setor, Nivel de Rigor e Instrucoes Adicionais (texto livre). Isso limita o controle do usuario sobre o conteudo gerado e exige que ele escreva manualmente detalhes que poderiam ser selecionaveis.
+### Novas Funcionalidades
 
-### Novos Campos Propostos
+**1. Dashboard de metricas no topo**
+- Total de workflows ativos
+- Aprovacoes pendentes (contagem de `policy_approvals` com status `pendente`)
+- Aprovacoes concluidas (ultimo mes)
+- Tempo medio de aprovacao
 
-**1. Idioma da Politica** (Select)
-- Portugues (Brasil) (padrao)
-- Ingles
-- Espanhol
+**2. Edicao de workflows**
+- Reutilizar o dialog de criacao como dialog de edicao (pre-preencher campos)
+- Botao de editar no card do workflow (icone `Pencil`)
 
-**2. Porte da Empresa** (Select)
-- Startup / Pequena empresa
-- Media empresa
-- Grande empresa / Corporacao
-- Multinacional
+**3. Descricao e configuracoes adicionais no workflow**
+- Campo de descricao (opcional) no dialog de criacao/edicao
+- Toggle "Workflow padrao" - define como padrao para novas politicas (apenas 1 por org)
+- Campo de SLA (prazo maximo em dias para aprovacao)
+- Checkbox "Notificar aprovador por email" (visual apenas, para futuro)
 
-**3. Frameworks de Referencia** (Multi-select com checkboxes)
-- ISO 27001
-- NIST CSF
-- SOC 2
-- LGPD
-- GDPR
-- PCI DSS
-- HIPAA
-- CIS Controls
-- Nenhum especifico
+**4. Aba de Aprovacoes Pendentes**
+- Nova secao com tabs: "Workflows" | "Aprovacoes Pendentes" | "Historico"
+- Tab "Aprovacoes Pendentes": lista politicas aguardando aprovacao com botoes aprovar/rejeitar
+- Tab "Historico": lista de aprovacoes passadas com filtros por status
 
-**4. Publico-alvo da Politica** (Select)
-- Todos os colaboradores
-- Equipe de TI / Seguranca
-- Alta gestao / Diretoria
-- Terceiros / Fornecedores
+**5. Cards de workflow aprimorados**
+- Badge "Padrao" quando for o workflow padrao
+- Contagem de politicas vinculadas (query simples)
+- Visualizacao de fluxo com steps visuais (Nivel 1 -> Nivel 2 -> Aprovada)
+- Data de criacao formatada
+- Menu de acoes (Editar, Duplicar, Definir como padrao, Excluir)
 
-**5. Tom da Escrita** (Select)
-- Formal / Juridico
-- Tecnico
-- Acessivel / Didatico
+**6. Empty state interativo**
+- Botao direto no empty state para criar primeiro workflow
+- Dicas contextuais sobre como funciona a aprovacao
 
-**6. Extensao do Documento** (Select)
-- Resumido (1-2 paginas)
-- Padrao (3-5 paginas)
-- Detalhado (6+ paginas)
+### Mudancas por Arquivo
 
-### Mudancas nos Arquivos
+**Banco de dados - Migracao SQL**
+- Adicionar colunas na tabela `policy_workflows`:
+  - `description` (text, nullable)
+  - `is_default` (boolean, default false)
+  - `sla_days` (integer, nullable)
+  - `notify_approver` (boolean, default true)
 
-**`src/components/politicas/AIWriterDialog.tsx`**
-- Adicionar os 6 novos campos com seus respectivos estados
-- Expandir o dialog para `max-w-lg` para acomodar mais campos
-- Organizar campos em grid 2 colunas para campos menores (Idioma + Porte, Publico + Tom, Extensao + Rigor)
-- Manter Setor, Frameworks e Instrucoes Adicionais em largura total
-- Frameworks como grupo de checkboxes (multi-select)
-- Passar todos os novos valores no body da chamada ao edge function
+**`src/hooks/usePolicyWorkflows.ts`**
+- Atualizar tipo `PolicyWorkflow` com novos campos
+- Adicionar mutation `duplicateWorkflow`
+- Adicionar mutation `setDefaultWorkflow` (remove default dos outros, seta no selecionado)
+- Adicionar query `pendingApprovalsCount` para metricas
+- Adicionar query para buscar aprovacoes pendentes de toda a org (nao apenas por policy)
 
-**`supabase/functions/generate-policy/index.ts`**
-- Extrair os novos campos do request body: `language`, `companySize`, `frameworks`, `audience`, `tone`, `length`
-- Incorporar cada campo no prompt enviado a IA:
-  - Idioma: "Escreva a politica em [idioma]"
-  - Porte: "Considere uma empresa de porte [porte]"
-  - Frameworks: "A politica deve estar alinhada com os frameworks: [lista]"
-  - Publico-alvo: "O publico-alvo desta politica e: [publico]"
-  - Tom: "Utilize um tom [tom] na redacao"
-  - Extensao: "A politica deve ter extensao [extensao]"
-- Aumentar `max_tokens` para 6000 quando extensao for "Detalhado"
+**`src/pages/PolicyWorkflows.tsx` (REESCREVER)**
+- Adicionar metricas no topo (4 cards de stats)
+- Sistema de tabs: "Workflows" | "Pendentes" | "Historico"
+- Tab Workflows: grid de cards aprimorados com menu de acoes (dropdown)
+- Tab Pendentes: tabela com politica, versao, nivel, aprovador, data, acoes (aprovar/rejeitar)
+- Tab Historico: tabela com filtro por status (aprovada/rejeitada/todas)
+- Dialog de criacao/edicao expandido com novos campos
+- Dialog de aprovacao/rejeicao com campo de comentarios
 
-### Layout do Dialog Atualizado
+**Novos componentes auxiliares:**
+- `src/components/politicas/WorkflowStepsPreview.tsx` - Visualizacao do fluxo com steps conectados (Nivel 1 -> Nivel 2 -> Aprovada)
+- `src/components/politicas/ApprovalActionDialog.tsx` - Dialog para aprovar/rejeitar com comentarios obrigatorios na rejeicao
+
+### Layout Visual Proposto
 
 ```text
-+------------------------------------------+
-| [*] Gerar com IA                    [x]  |
-|                                          |
-| [info: IA vai reescrever...]             |
-|                                          |
-| Setor da Empresa                         |
-| [_____________________________ v]        |
-|                                          |
-| Idioma           Porte da Empresa        |
-| [________ v]     [______________ v]      |
-|                                          |
-| Nivel de Rigor   Tom da Escrita          |
-| [________ v]     [______________ v]      |
-|                                          |
-| Publico-alvo     Extensao                |
-| [________ v]     [______________ v]      |
-|                                          |
-| Frameworks de Referencia                 |
-| [x] ISO 27001  [ ] NIST CSF  [x] LGPD   |
-| [ ] SOC 2      [ ] GDPR      [ ] PCI    |
-| [ ] HIPAA      [ ] CIS       [ ] Nenhum |
-|                                          |
-| Instrucoes Adicionais (opcional)         |
-| [________________________________]       |
-| [________________________________]       |
-|                                          |
-|              [Cancelar]  [* Gerar]       |
-+------------------------------------------+
++-------------------------------------------------------------------+
+| Fluxos de Aprovacao                          [+ Novo Workflow]     |
+| Gerencie workflows e acompanhe aprovacoes                          |
++-------------------------------------------------------------------+
+| [Workflows ativos] [Pendentes] [Aprovadas (mes)] [Tempo medio]    |
+|     3                  5            12              2.3 dias       |
++-------------------------------------------------------------------+
+| [Workflows]  [Pendentes (5)]  [Historico]                          |
++-------------------------------------------------------------------+
+|                                                                    |
+| +--Card Workflow--+  +--Card Workflow--+  +--Card Workflow--+      |
+| | Aprovacao Padrao|  | Aprovacao LGPD  |  | Dupla Revisao   |      |
+| | [Padrao] 2niveis|  | 1 nivel         |  | 2 niveis        |      |
+| | [N1]->[N2]->[OK]|  | [N1]->[OK]      |  | [N1]->[N2]->[OK]|      |
+| | 5 politicas     |  | 2 politicas     |  | 0 politicas     |      |
+| | SLA: 5 dias     |  | SLA: 3 dias     |  | Sem SLA         |      |
+| | [...menu]       |  | [...menu]       |  | [...menu]       |      |
+| +-----------------+  +-----------------+  +-----------------+      |
++-------------------------------------------------------------------+
 ```
 
 ### Resultado
 
-O usuario tera controle granular sobre 8 parametros de geracao (vs. 3 atuais), produzindo politicas mais alinhadas com o contexto real da organizacao sem precisar descrever tudo manualmente nas instrucoes adicionais.
+A pagina passara de um simples CRUD de workflows para um hub completo de governanca de aprovacoes, com visibilidade de aprovacoes pendentes, metricas, edicao inline, e fluxo visual dos niveis de aprovacao.
 
+### Secao Tecnica
+
+- A migracao SQL adicionara 4 colunas com valores default para nao quebrar dados existentes
+- O `is_default` sera gerenciado via transacao: ao setar um workflow como padrao, os outros sao atualizados para `false`
+- Aprovacoes pendentes serao buscadas com join em `policies` para exibir titulo da politica
+- O componente `WorkflowStepsPreview` usara flex com setas CSS entre badges de nivel
+- O dialog de aprovacao tera `Textarea` obrigatoria para rejeicao e opcional para aprovacao
