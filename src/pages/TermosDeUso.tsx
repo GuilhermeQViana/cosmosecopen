@@ -63,12 +63,14 @@ export default function TermosDeUso() {
                 O CosmoSec é uma plataforma de Governança, Riscos e Conformidade (GRC) que oferece:
               </p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                <li>Gestão de conformidade com frameworks de segurança (NIST CSF, ISO 27001, BCB/CMN)</li>
+                <li>Gestão de conformidade com frameworks de segurança (NIST CSF, ISO 27001, BCB/CMN, entre outros)</li>
                 <li>Gestão de riscos de segurança da informação</li>
-                <li>Gestão de fornecedores e terceiros (VRM)</li>
+                <li>Gestão de fornecedores e terceiros (VRM), incluindo due diligence, SLA tracking e portal de fornecedores</li>
+                <li>Gestão de políticas com editor inteligente, fluxos de aprovação, campanhas de aceite e versionamento</li>
                 <li>Repositório de evidências e documentação</li>
                 <li>Planos de ação e remediação</li>
-                <li>Relatórios e dashboards executivos</li>
+                <li>Relatórios e dashboards executivos gerados por inteligência artificial</li>
+                <li>Funcionalidades assistidas por IA, incluindo geração de políticas, planos de ação e análise de riscos</li>
               </ul>
             </section>
 
