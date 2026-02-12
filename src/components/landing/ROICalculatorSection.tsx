@@ -7,7 +7,8 @@ import {
   DollarSign,
   ArrowRight,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  FileText
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,6 +21,7 @@ export function ROICalculatorSection() {
   const [teamSize, setTeamSize] = useState(3);
   const [hoursPerWeek, setHoursPerWeek] = useState(20);
   const [frameworks, setFrameworks] = useState(2);
+  const [policies, setPolicies] = useState(5);
   const [vendors, setVendors] = useState(15);
   const [hourlyRate, setHourlyRate] = useState(150);
 
@@ -33,9 +35,10 @@ export function ROICalculatorSection() {
     // Efficiency gains with CosmoSec
     const automationSavingsPercent = 0.45; // 45% time savings from automation
     const multiFrameworkSavingsPercent = Math.min(0.15 * (frameworks - 1), 0.30); // 15% per additional framework, max 30%
+    const policySavingsPercent = policies > 0 ? Math.min(0.05 + policies * 0.01, 0.15) : 0; // 5% base + 1% per policy, max 15%
     const vendorSavingsPercent = vendors > 10 ? 0.10 : 0.05; // 10% if more than 10 vendors
 
-    const totalSavingsPercent = automationSavingsPercent + multiFrameworkSavingsPercent + vendorSavingsPercent;
+    const totalSavingsPercent = automationSavingsPercent + multiFrameworkSavingsPercent + policySavingsPercent + vendorSavingsPercent;
     
     // Savings
     const hoursSaved = Math.round(currentAnnualHours * totalSavingsPercent);
@@ -71,7 +74,7 @@ export function ROICalculatorSection() {
       productivityGain,
       totalSavingsPercent
     };
-  }, [teamSize, hoursPerWeek, frameworks, vendors, hourlyRate]);
+  }, [teamSize, hoursPerWeek, frameworks, policies, vendors, hourlyRate]);
 
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
@@ -186,6 +189,27 @@ export function ROICalculatorSection() {
                 />
               </div>
 
+              {/* Policies */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Políticas gerenciadas
+                  </Label>
+                  <span className="text-sm font-medium text-foreground bg-primary/10 px-2 py-1 rounded">
+                    {policies}
+                  </span>
+                </div>
+                <Slider
+                  value={[policies]}
+                  onValueChange={(value) => setPolicies(value[0])}
+                  min={0}
+                  max={30}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+
               {/* Vendors */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -289,7 +313,7 @@ export function ROICalculatorSection() {
                   </li>
                   <li className="flex items-start gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Políticas e relatórios gerados por IA</span>
+                    <span>Criação e gestão de {policies} políticas com IA</span>
                   </li>
                   <li className="flex items-start gap-2 text-sm text-muted-foreground">
                     <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
