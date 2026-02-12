@@ -384,6 +384,38 @@ export function VendorDetailSheet({
         onOpenChange={setPortalOpen}
         vendor={vendor}
       />
+
+      {/* Schedule Reassessment Dialog */}
+      <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Agendar Reavaliação</DialogTitle>
+            <DialogDescription>
+              Selecione a data da próxima reavaliação para <strong>{vendor.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-2">
+            <CalendarUI
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              locale={ptBR}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScheduleOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleScheduleReassessment}
+              disabled={!selectedDate || updateVendor.isPending}
+            >
+              {updateVendor.isPending ? 'Agendando...' : 'Agendar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
