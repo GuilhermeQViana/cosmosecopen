@@ -10,7 +10,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Vendor } from '@/hooks/useVendors';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Calendar as CalendarUI } from '@/components/ui/calendar';
+import { Vendor, useUpdateVendor } from '@/hooks/useVendors';
 import { useVendorAssessments, VendorAssessment } from '@/hooks/useVendorAssessments';
 import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
 import { VendorLifecycleBadge, DataClassificationBadge } from './VendorLifecycleBadge';
@@ -21,9 +30,11 @@ import { VendorIncidentLog } from './VendorIncidentLog';
 import { VendorSLATracker } from './VendorSLATracker';
 import { VendorOffboardingWizard } from './VendorOffboardingWizard';
 import { VendorPortalManager } from './VendorPortalManager';
+import { toast } from 'sonner';
 import {
   Building2,
   Calendar,
+  CalendarClock,
   Mail,
   Phone,
   User,
@@ -68,14 +79,37 @@ export function VendorDetailSheet({
   const [offboardingOpen, setOffboardingOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const { data: assessments } = useVendorAssessments(vendor?.id);
+  const updateVendor = useUpdateVendor();
 
   if (!vendor) return null;
 
   const handleOpenEvidences = (assessmentId: string) => {
     setSelectedAssessmentId(assessmentId);
     setEvidenceDialogOpen(true);
+  };
+
+  const handleScheduleReassessment = async () => {
+    if (!selectedDate || !vendor) return;
+    try {
+      await updateVendor.mutateAsync({
+        id: vendor.id,
+        next_assessment_date: format(selectedDate, 'yyyy-MM-dd'),
+      });
+      toast.success('Reavaliação agendada com sucesso!');
+      setScheduleOpen(false);
+      setSelectedDate(undefined);
+    } catch {
+      toast.error('Erro ao agendar reavaliação');
+    }
+  };
+
+  const openScheduleDialog = () => {
+    setSelectedDate(vendor.next_assessment_date ? new Date(vendor.next_assessment_date + 'T00:00:00') : undefined);
+    setScheduleOpen(true);
   };
 
   return (
@@ -146,6 +180,10 @@ export function VendorDetailSheet({
                 <Button variant="outline" size="sm" onClick={() => setOffboardingOpen(true)}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Offboarding
+                </Button>
+                <Button variant="outline" size="sm" onClick={openScheduleDialog}>
+                  <CalendarClock className="h-4 w-4 mr-2" />
+                  Reavaliação
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setPortalOpen(true)}>
                   <ExternalLink className="h-4 w-4 mr-2" />
@@ -221,7 +259,15 @@ export function VendorDetailSheet({
                       </span>
                     </div>
                   )}
-                  {!vendor.contract_start && !vendor.contract_end && (
+                  {vendor.next_assessment_date && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <CalendarClock className="h-4 w-4 text-primary" />
+                      <span className="text-primary font-medium">
+                        Próxima reavaliação: {format(new Date(vendor.next_assessment_date + 'T00:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      </span>
+                    </div>
+                  )}
+                  {!vendor.contract_start && !vendor.contract_end && !vendor.next_assessment_date && (
                     <p className="text-sm text-muted-foreground italic">Datas de contrato não definidas</p>
                   )}
                 </div>
@@ -338,6 +384,38 @@ export function VendorDetailSheet({
         onOpenChange={setPortalOpen}
         vendor={vendor}
       />
+
+      {/* Schedule Reassessment Dialog */}
+      <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Agendar Reavaliação</DialogTitle>
+            <DialogDescription>
+              Selecione a data da próxima reavaliação para <strong>{vendor.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-2">
+            <CalendarUI
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              locale={ptBR}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScheduleOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleScheduleReassessment}
+              disabled={!selectedDate || updateVendor.isPending}
+            >
+              {updateVendor.isPending ? 'Agendando...' : 'Agendar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
