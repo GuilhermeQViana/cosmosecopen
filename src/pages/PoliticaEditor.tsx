@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -11,13 +12,14 @@ import TableHeader from '@tiptap/extension-table-header';
 import Image from '@tiptap/extension-image';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Loader2, Save, ArrowLeft, Send, CheckCircle } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, Send, Sparkles, Download } from 'lucide-react';
 import { usePolicy, usePolicies } from '@/hooks/usePolicies';
 import { PolicyEditorToolbar } from '@/components/politicas/PolicyEditorToolbar';
 import { PolicyMetadataPanel } from '@/components/politicas/PolicyMetadataPanel';
 import { PolicyVersionHistory } from '@/components/politicas/PolicyVersionHistory';
 import { PolicyComments } from '@/components/politicas/PolicyComments';
 import { PolicyLinkages } from '@/components/politicas/PolicyLinkages';
+import { AIWriterDialog } from '@/components/politicas/AIWriterDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import type { Policy } from '@/hooks/usePolicies';
@@ -29,6 +31,9 @@ export default function PoliticaEditor() {
   const isNew = id === 'nova';
   const { data: existingPolicy, isLoading } = usePolicy(isNew ? undefined : id);
   const { createPolicy, updatePolicy } = usePolicies();
+
+  const [showAIWriter, setShowAIWriter] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   const [metadata, setMetadata] = useState<Partial<Policy>>({
     title: '',
@@ -121,6 +126,27 @@ export default function PoliticaEditor() {
     toast.success('Política enviada para revisão');
   }, [id, isNew, updatePolicy]);
 
+  const handleExportPDF = useCallback(async () => {
+    if (!id || isNew) return;
+    setExportingPDF(true);
+    try {
+      const response = await supabase.functions.invoke('export-policy-pdf', {
+        body: { policyId: id },
+      });
+      if (response.error) throw response.error;
+      const html = response.data;
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const w = window.open(url, '_blank');
+      if (w) w.onload = () => w.print();
+      toast.success('Documento aberto para impressão/PDF');
+    } catch (error) {
+      toast.error('Erro ao exportar política');
+    } finally {
+      setExportingPDF(false);
+    }
+  }, [id, isNew]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -138,9 +164,18 @@ export default function PoliticaEditor() {
           <ArrowLeft className="w-4 h-4" /> Voltar
         </Button>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowAIWriter(true)} className="gap-2">
+            <Sparkles className="w-4 h-4" /> IA
+          </Button>
+          {!isNew && (
+            <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF} className="gap-2">
+              {exportingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              PDF
+            </Button>
+          )}
           {metadata.status === 'rascunho' && !isNew && (
             <Button variant="outline" onClick={handleSubmitForReview} className="gap-2">
-              <Send className="w-4 h-4" /> Enviar para Revisão
+              <Send className="w-4 h-4" /> Revisão
             </Button>
           )}
           <Button onClick={handleSave} disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700 gap-2">
@@ -197,6 +232,14 @@ export default function PoliticaEditor() {
           </Tabs>
         </div>
       </div>
+
+      <AIWriterDialog
+        open={showAIWriter}
+        onOpenChange={setShowAIWriter}
+        onGenerated={(content) => editor?.commands.setContent(content)}
+        currentTitle={metadata.title || undefined}
+        currentContent={editor?.getHTML()}
+      />
     </div>
   );
 }
