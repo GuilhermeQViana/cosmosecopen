@@ -75,7 +75,7 @@ serve(async (req) => {
     // Calculate domain scores
     const domainScores: Record<string, number> = {};
     Object.entries(responsesByDomain).forEach(([domain, domainResponses]) => {
-      const avg = (domainResponses as Array<{ compliance_level: number }>).reduce((sum, r) => sum + (r.compliance_level / 5) * 100, 0) / domainResponses.length;
+      const avg = (domainResponses as Array<{ compliance_level: number }>).reduce((sum: number, r: { compliance_level: number }) => sum + (r.compliance_level / 5) * 100, 0) / domainResponses.length;
       domainScores[domain] = Math.round(avg);
     });
 
