@@ -43,20 +43,26 @@ A política deve incluir:
 
 Responda APENAS com o HTML da política, sem explicações adicionais.`;
 
-    const response = await fetch('https://api.lovable.dev/v1/chat', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 4000,
       }),
     });
 
+    if (response.status === 429) {
+      throw new Error('Limite de requisições excedido. Tente novamente em alguns instantes.');
+    }
+    if (response.status === 402) {
+      throw new Error('Créditos de IA insuficientes.');
+    }
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI error:', errorText);
