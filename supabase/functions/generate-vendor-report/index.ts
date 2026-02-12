@@ -320,6 +320,8 @@ Forneça: top 3 pontos fortes, top 3 áreas críticas e 3 recomendações priori
       <p class="subtitle">Gerado em ${new Date().toLocaleDateString('pt-BR', { dateStyle: 'long' })}</p>
     </div>
     
+    ${aiAnalysisHtml}
+    
     <div class="score-card">
       <div class="score-label">Score Geral de Conformidade</div>
       <div class="score-value">${assessment.overall_score ?? 0}%</div>

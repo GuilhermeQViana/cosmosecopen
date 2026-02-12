@@ -242,7 +242,20 @@ export function VendorForm({
                 name="criticality"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Criticidade</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Criticidade</FormLabel>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs gap-1 text-primary"
+                        onClick={handleSuggestCriticality}
+                        disabled={aiLoading || !form.getValues('name')}
+                      >
+                        {aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Sugerir IA
+                      </Button>
+                    </div>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -257,6 +270,25 @@ export function VendorForm({
                         ))}
                       </SelectContent>
                     </Select>
+                    {aiSuggestion && (
+                      <div className="mt-1 p-2 rounded-md bg-primary/5 border border-primary/20 text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1">
+                            <Sparkles className="h-3 w-3 text-primary" />
+                            Sugestão: <strong className="capitalize">{VENDOR_CRITICALITY.find(c => c.value === aiSuggestion.criticality)?.label || aiSuggestion.criticality}</strong>
+                          </span>
+                          <div className="flex gap-1">
+                            <Button type="button" variant="ghost" size="icon" className="h-5 w-5" onClick={handleAcceptSuggestion}>
+                              <Check className="h-3 w-3 text-green-500" />
+                            </Button>
+                            <Button type="button" variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAiSuggestion(null)}>
+                              <X className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground">{aiSuggestion.justification}</p>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
