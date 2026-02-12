@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,8 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { Vendor, VENDOR_CATEGORIES, VENDOR_CRITICALITY, VENDOR_STATUS } from '@/hooks/useVendors';
-import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Sparkles, Check, X } from 'lucide-react';
 
 const vendorFormSchema = z.object({
   code: z.string().min(1, 'Código é obrigatório'),
