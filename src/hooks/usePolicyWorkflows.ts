@@ -7,11 +7,15 @@ export type PolicyWorkflow = {
   id: string;
   organization_id: string;
   name: string;
+  description: string | null;
   approval_levels: number;
   level1_role: string | null;
   level1_approver_id: string | null;
   level2_role: string | null;
   level2_approver_id: string | null;
+  is_default: boolean;
+  sla_days: number | null;
+  notify_approver: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -26,6 +30,10 @@ export type PolicyApproval = {
   comments: string | null;
   approved_at: string | null;
   created_at: string;
+};
+
+export type PendingApprovalWithPolicy = PolicyApproval & {
+  policy_title: string;
 };
 
 export function usePolicyWorkflows() {
@@ -43,38 +51,83 @@ export function usePolicyWorkflows() {
         .eq('organization_id', orgId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as PolicyWorkflow[];
+      return (data as any[]).map(d => ({
+        ...d,
+        description: d.description ?? null,
+        is_default: d.is_default ?? false,
+        sla_days: d.sla_days ?? null,
+        notify_approver: d.notify_approver ?? true,
+      })) as PolicyWorkflow[];
     },
     enabled: !!orgId,
   });
+
+  const pendingApprovalsQuery = useQuery({
+    queryKey: ['pending-approvals-org', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      const { data, error } = await supabase
+        .from('policy_approvals')
+        .select('*, policies!inner(title, organization_id)')
+        .eq('status', 'pendente')
+        .eq('policies.organization_id', orgId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data as any[]).map(d => ({
+        ...d,
+        policy_title: (d.policies as any)?.title || 'Sem título',
+      })) as PendingApprovalWithPolicy[];
+    },
+    enabled: !!orgId,
+  });
+
+  const approvalHistoryQuery = useQuery({
+    queryKey: ['approval-history-org', orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      const { data, error } = await supabase
+        .from('policy_approvals')
+        .select('*, policies!inner(title, organization_id)')
+        .neq('status', 'pendente')
+        .eq('policies.organization_id', orgId)
+        .order('approved_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data as any[]).map(d => ({
+        ...d,
+        policy_title: (d.policies as any)?.title || 'Sem título',
+      })) as PendingApprovalWithPolicy[];
+    },
+    enabled: !!orgId,
+  });
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['policy-workflows', orgId] });
+    queryClient.invalidateQueries({ queryKey: ['pending-approvals-org', orgId] });
+    queryClient.invalidateQueries({ queryKey: ['approval-history-org', orgId] });
+  };
 
   const createWorkflow = useMutation({
     mutationFn: async (input: Omit<PolicyWorkflow, 'id' | 'organization_id' | 'created_at' | 'updated_at'>) => {
       if (!orgId) throw new Error('Sem organização');
       const { data, error } = await supabase
         .from('policy_workflows')
-        .insert({ ...input, organization_id: orgId })
+        .insert({ ...input, organization_id: orgId } as any)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policy-workflows', orgId] });
-      toast.success('Workflow criado');
-    },
+    onSuccess: () => { invalidateAll(); toast.success('Workflow criado'); },
     onError: (err: Error) => toast.error(err.message),
   });
 
   const updateWorkflow = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<PolicyWorkflow> & { id: string }) => {
-      const { error } = await supabase.from('policy_workflows').update(updates).eq('id', id);
+      const { error } = await supabase.from('policy_workflows').update(updates as any).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policy-workflows', orgId] });
-      toast.success('Workflow atualizado');
-    },
+    onSuccess: () => { invalidateAll(); toast.success('Workflow atualizado'); },
     onError: (err: Error) => toast.error(err.message),
   });
 
@@ -83,49 +136,54 @@ export function usePolicyWorkflows() {
       const { error } = await supabase.from('policy_workflows').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policy-workflows', orgId] });
-      toast.success('Workflow excluído');
-    },
+    onSuccess: () => { invalidateAll(); toast.success('Workflow excluído'); },
     onError: (err: Error) => toast.error(err.message),
   });
 
-  return { workflows: workflowsQuery.data || [], isLoading: workflowsQuery.isLoading, createWorkflow, updateWorkflow, deleteWorkflow };
-}
-
-export function usePolicyApprovals(policyId?: string) {
-  const queryClient = useQueryClient();
-
-  const approvalsQuery = useQuery({
-    queryKey: ['policy-approvals', policyId],
-    queryFn: async () => {
-      if (!policyId) return [];
+  const duplicateWorkflow = useMutation({
+    mutationFn: async (wf: PolicyWorkflow) => {
+      if (!orgId) throw new Error('Sem organização');
       const { data, error } = await supabase
-        .from('policy_approvals')
-        .select('*')
-        .eq('policy_id', policyId)
-        .order('created_at', { ascending: true });
+        .from('policy_workflows')
+        .insert({
+          organization_id: orgId,
+          name: `${wf.name} (cópia)`,
+          description: wf.description,
+          approval_levels: wf.approval_levels,
+          level1_role: wf.level1_role,
+          level1_approver_id: wf.level1_approver_id,
+          level2_role: wf.level2_role,
+          level2_approver_id: wf.level2_approver_id,
+          is_default: false,
+          sla_days: wf.sla_days,
+          notify_approver: wf.notify_approver,
+        } as any)
+        .select()
+        .single();
       if (error) throw error;
-      return data as PolicyApproval[];
+      return data;
     },
-    enabled: !!policyId,
+    onSuccess: () => { invalidateAll(); toast.success('Workflow duplicado'); },
+    onError: (err: Error) => toast.error(err.message),
   });
 
-  const submitForApproval = useMutation({
-    mutationFn: async ({ policyId, versionNumber, approverId }: { policyId: string; versionNumber: number; approverId?: string }) => {
-      const { error } = await supabase.from('policy_approvals').insert({
-        policy_id: policyId,
-        version_number: versionNumber,
-        approval_level: 1,
-        approver_id: approverId || null,
-        status: 'pendente',
-      });
-      if (error) throw error;
+  const setDefaultWorkflow = useMutation({
+    mutationFn: async (id: string) => {
+      if (!orgId) throw new Error('Sem organização');
+      // Remove default from all
+      const { error: e1 } = await supabase
+        .from('policy_workflows')
+        .update({ is_default: false } as any)
+        .eq('organization_id', orgId);
+      if (e1) throw e1;
+      // Set new default
+      const { error: e2 } = await supabase
+        .from('policy_workflows')
+        .update({ is_default: true } as any)
+        .eq('id', id);
+      if (e2) throw e2;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policy-approvals', policyId] });
-      toast.success('Enviado para aprovação');
-    },
+    onSuccess: () => { invalidateAll(); toast.success('Workflow padrão definido'); },
     onError: (err: Error) => toast.error(err.message),
   });
 
@@ -140,12 +198,20 @@ export function usePolicyApprovals(policyId?: string) {
       }).eq('id', approvalId);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['policy-approvals', policyId] });
-      toast.success('Decisão registrada');
-    },
+    onSuccess: () => { invalidateAll(); toast.success('Decisão registrada'); },
     onError: (err: Error) => toast.error(err.message),
   });
 
-  return { approvals: approvalsQuery.data || [], isLoading: approvalsQuery.isLoading, submitForApproval, handleApproval };
+  return {
+    workflows: workflowsQuery.data || [],
+    isLoading: workflowsQuery.isLoading,
+    pendingApprovals: pendingApprovalsQuery.data || [],
+    approvalHistory: approvalHistoryQuery.data || [],
+    createWorkflow,
+    updateWorkflow,
+    deleteWorkflow,
+    duplicateWorkflow,
+    setDefaultWorkflow,
+    handleApproval,
+  };
 }

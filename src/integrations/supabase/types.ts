@@ -1350,37 +1350,49 @@ export type Database = {
         Row: {
           approval_levels: number
           created_at: string
+          description: string | null
           id: string
+          is_default: boolean
           level1_approver_id: string | null
           level1_role: string | null
           level2_approver_id: string | null
           level2_role: string | null
           name: string
+          notify_approver: boolean
           organization_id: string
+          sla_days: number | null
           updated_at: string
         }
         Insert: {
           approval_levels?: number
           created_at?: string
+          description?: string | null
           id?: string
+          is_default?: boolean
           level1_approver_id?: string | null
           level1_role?: string | null
           level2_approver_id?: string | null
           level2_role?: string | null
           name: string
+          notify_approver?: boolean
           organization_id: string
+          sla_days?: number | null
           updated_at?: string
         }
         Update: {
           approval_levels?: number
           created_at?: string
+          description?: string | null
           id?: string
+          is_default?: boolean
           level1_approver_id?: string | null
           level1_role?: string | null
           level2_approver_id?: string | null
           level2_role?: string | null
           name?: string
+          notify_approver?: boolean
           organization_id?: string
+          sla_days?: number | null
           updated_at?: string
         }
         Relationships: [
