@@ -1,32 +1,44 @@
 
 
-## Adicionar "Politicas" ao Calculo de ROI
+## Atualizar Termos de Uso - Modelo Consultivo com Contrato
 
-### O que muda
+### Contexto
 
-Adicionar um novo slider **"Politicas gerenciadas"** ao painel de inputs e incluir seu impacto no calculo de economia. A criacao e gestao manual de politicas consome tempo significativo (redacao, revisao, aprovacao, versionamento), e a automacao por IA da CosmoSec reduz drasticamente esse esforco.
+A estrategia comercial migrou de autoatendimento (trial + assinatura mensal) para um modelo consultivo (demonstracao + contrato). Os Termos de Uso ainda mencionam "periodo de teste gratuito de 7 dias" e "assinatura cobrada mensalmente", o que nao reflete mais a realidade.
 
-### Mudancas no arquivo `src/components/landing/ROICalculatorSection.tsx`
+### Mudancas no arquivo `src/pages/TermosDeUso.tsx`
 
-**1. Novo estado**
-- `policies` com valor inicial `5`, range de 0 a 30, step 1
+**1. Secao 1 - Aceitacao dos Termos**
+- Adicionar referencia a formalizacao via contrato: "Ao assinar o contrato de prestacao de servicos e/ou acessar a plataforma..."
 
-**2. Novo slider no painel de inputs**
-- Icone `FileText` do lucide-react
-- Label: "Politicas gerenciadas"
-- Posicionado entre "Frameworks gerenciados" e "Fornecedores avaliados"
+**2. Secao 3 - Elegibilidade**
+- Adicionar item: "Passou pelo processo de demonstracao e formalizou a contratacao"
 
-**3. Logica de calculo atualizada**
-- Adicionar `policySavingsPercent`: economia baseada no volume de politicas
-  - Logica: cada politica criada/gerida manualmente consome ~8h (redacao, revisao, aprovacao). Com IA, reduz para ~2h (75% de economia por politica)
-  - Formula: `policies > 0 ? Math.min(0.05 + policies * 0.01, 0.15) : 0` (5% base + 1% por politica, max 15%)
-- Somar `policySavingsPercent` ao `totalSavingsPercent`
-- Incluir `policies` na lista de dependencias do `useMemo`
+**3. Secao 7 - Renomear de "Pagamentos e Assinatura" para "Contratacao e Pagamentos"**
+- Remover mencao a "periodo de teste gratuito de 7 dias"
+- Remover "assinatura cobrada mensalmente via cartao de credito"
+- Novo conteudo refletindo modelo contratual:
+  - Acesso condicionado a formalizacao de contrato de prestacao de servicos
+  - Planos mensais ou anuais conforme proposta comercial
+  - Valores e condicoes definidos em proposta comercial individualizada
+  - Pagamento via boleto, Pix ou cartao de credito
+  - Renovacao automatica salvo manifestacao contraria com 30 dias de antecedencia
+  - Rescisao conforme clausulas do contrato firmado
 
-**4. Atualizar lista "Como voce economiza"**
-- Atualizar o item de politicas para ser dinamico: "Criacao e gestao de {policies} politicas com IA" (em vez do texto generico atual)
+**4. Secao 6 - Propriedade Intelectual**
+- Adicionar clausula sobre conteudo gerado por IA: "Conteudos gerados pelas funcionalidades de IA da plataforma (politicas, planos de acao, relatorios) sao de propriedade do cliente, cabendo ao CosmoSec apenas o papel de ferramenta facilitadora."
+
+**5. Secao 8 - Disponibilidade (adicionar SLA)**
+- Adicionar referencia a SLA contratual: "Niveis de servico (SLA) especificos podem ser definidos em contrato."
+
+**6. Secao 9 - Limitacao de Responsabilidade**
+- Reforcar que IA e ferramenta de apoio: "Os conteudos gerados por inteligencia artificial sao sugestoes e devem ser revisados por profissionais qualificados antes de sua adocao."
+
+**7. Nova Secao - "Confidencialidade e Protecao de Dados" (antes da secao de Lei Aplicavel)**
+- Referencia cruzada com a Politica de Privacidade (/privacidade) e LGPD (/lgpd)
+- Compromisso de confidencialidade sobre dados inseridos na plataforma
+- Tratamento de dados conforme LGPD
 
 ### Resultado
 
-O calculo de ROI passara a refletir a economia real proporcionada pelo modulo de Gestao de Politicas, aumentando o valor percebido da ferramenta para prospects que gerenciam multiplas politicas de seguranca.
-
+Os Termos de Uso passarao a refletir o modelo comercial consultivo baseado em contrato, sem mencoes a trial ou autoatendimento, e com clausulas adequadas para IA generativa e protecao de dados.
