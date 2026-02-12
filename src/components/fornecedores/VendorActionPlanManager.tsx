@@ -56,6 +56,7 @@ import { useVendorRequirements } from '@/hooks/useVendorRequirements';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import {
   ListTodo,
   Plus,
@@ -67,6 +68,7 @@ import {
   Clock,
   AlertTriangle,
   User,
+  Sparkles,
 } from 'lucide-react';
 
 interface VendorActionPlanManagerProps {
