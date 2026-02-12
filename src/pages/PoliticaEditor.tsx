@@ -17,6 +17,7 @@ import { PolicyEditorToolbar } from '@/components/politicas/PolicyEditorToolbar'
 import { PolicyMetadataPanel } from '@/components/politicas/PolicyMetadataPanel';
 import { PolicyVersionHistory } from '@/components/politicas/PolicyVersionHistory';
 import { PolicyComments } from '@/components/politicas/PolicyComments';
+import { PolicyLinkages } from '@/components/politicas/PolicyLinkages';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import type { Policy } from '@/hooks/usePolicies';
@@ -163,8 +164,9 @@ export default function PoliticaEditor() {
           <Tabs defaultValue="metadata">
             <TabsList className="w-full">
               <TabsTrigger value="metadata" className="flex-1">Metadados</TabsTrigger>
+              {!isNew && <TabsTrigger value="linkages" className="flex-1">Vínculos</TabsTrigger>}
               {!isNew && <TabsTrigger value="history" className="flex-1">Versões</TabsTrigger>}
-              {!isNew && <TabsTrigger value="comments" className="flex-1">Comentários</TabsTrigger>}
+              {!isNew && <TabsTrigger value="comments" className="flex-1">Coment.</TabsTrigger>}
             </TabsList>
             <TabsContent value="metadata">
               <Card className="p-4">
@@ -174,6 +176,11 @@ export default function PoliticaEditor() {
                 />
               </Card>
             </TabsContent>
+            {!isNew && id && (
+              <TabsContent value="linkages">
+                <PolicyLinkages policyId={id} />
+              </TabsContent>
+            )}
             {!isNew && id && (
               <TabsContent value="history">
                 <PolicyVersionHistory
