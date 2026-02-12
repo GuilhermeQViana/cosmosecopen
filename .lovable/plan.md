@@ -1,65 +1,84 @@
 
 
-## Expandir Biblioteca de Modelos com Politicas Completas
+## Aprovadores Dinamicos com Area/Departamento
 
-### Problema Atual
+### O que muda
 
-Os 10 templates existentes contem apenas 1 paragrafo cada (60-100 caracteres). Exemplo: a "Politica de Seguranca da Informacao" tem apenas `<h1>...</h1><p>Diretrizes para protecao dos ativos de informacao.</p>`. Isso torna o Preview vazio e o botao "Usar" pouco util.
+Atualmente o workflow suporta no maximo 2 niveis fixos (colunas `level1_approver_id`, `level2_approver_id`). Vamos substituir esse modelo rigido por um sistema flexivel que permite N aprovadores, cada um com sua area/departamento.
 
-### O que sera feito
+### Mudancas no Banco de Dados
 
-**1. Reescrever os 10 templates existentes com conteudo completo**
+**Nova coluna JSONB** em `policy_workflows`:
+- `approvers` (jsonb, default '[]') - Array de objetos com a estrutura:
 
-Cada template tera entre 800-2000 palavras em HTML estruturado com:
-- Objetivo
-- Escopo
-- Definicoes
-- Diretrizes e Requisitos (3-6 subsecoes)
-- Responsabilidades
-- Penalidades
-- Disposicoes Finais
+```text
+[
+  { "level": 1, "approver_id": "uuid-ou-null", "department": "Tecnologia da Informacao" },
+  { "level": 2, "approver_id": "uuid-ou-null", "department": "Juridico" },
+  { "level": 3, "approver_id": "uuid-ou-null", "department": "Diretoria" }
+]
+```
 
-Templates existentes a expandir:
-1. Politica de Seguranca da Informacao (ISO 27001)
-2. Politica de Controle de Acesso (ISO 27001)
-3. Politica de Senhas (ISO 27001)
-4. Politica de Uso Aceitavel (ISO 27001)
-5. Politica de Backup e Recuperacao (BCB/CMN)
-6. Politica de Continuidade de Negocios (BCB/CMN)
-7. Politica de BYOD (Seguranca)
-8. Politica de Gestao de Mudancas (Seguranca)
-9. Politica de Privacidade e LGPD (Privacidade)
-10. Politica de Resposta a Incidentes (NIST CSF)
+As colunas antigas (`level1_role`, `level1_approver_id`, `level2_role`, `level2_approver_id`) serao mantidas para compatibilidade mas nao serao mais usadas pela interface.
 
-**2. Adicionar 10 novos templates completos**
+### Mudancas nos Arquivos
 
-11. Politica de Classificacao da Informacao (Seguranca, ISO 27001)
-12. Politica de Seguranca em Nuvem (Seguranca, ISO 27001)
-13. Politica de Desenvolvimento Seguro (Seguranca, NIST CSF)
-14. Politica de Gestao de Vulnerabilidades (Seguranca, NIST CSF)
-15. Politica de Trabalho Remoto (Acesso, ISO 27001)
-16. Politica de Retencao de Dados (Privacidade, LGPD)
-17. Politica de Gestao de Terceiros (Seguranca, ISO 27001)
-18. Politica de Comunicacao e Midia Social (Seguranca)
-19. Politica de Seguranca Fisica (Seguranca, ISO 27001)
-20. Politica de Treinamento e Conscientizacao (Seguranca, NIST CSF)
+**1. `src/hooks/usePolicyWorkflows.ts`**
+- Adicionar tipo `WorkflowApprover` com campos `level`, `approver_id`, `department`
+- Atualizar tipo `PolicyWorkflow` com campo `approvers: WorkflowApprover[]`
+- Na query, parsear o campo JSONB automaticamente
+- Atualizar mutations de create/update/duplicate para salvar o array `approvers` e sincronizar `approval_levels` com o tamanho do array
 
-### Implementacao Tecnica
+**2. `src/pages/PolicyWorkflows.tsx`**
+- Substituir o seletor fixo "1 ou 2 niveis" por um sistema dinamico de aprovadores
+- No dialog de criacao/edicao, adicionar:
+  - Lista de aprovadores com botao "+ Adicionar Aprovador"
+  - Cada aprovador tera: campo de selecao do membro, campo de texto para Area/Departamento, e botao de remover
+  - Limite de ate 5 niveis
+- Nos cards de workflow, exibir nomes e areas dos aprovadores
+- O campo `approval_levels` sera calculado automaticamente pelo tamanho do array
 
-Uma unica migracao SQL com:
-- `UPDATE` nos 10 registros existentes substituindo o `content` e `description` por versoes completas
-- `INSERT` de 10 novos registros com `is_system = true` e `organization_id = NULL`
+**3. `src/components/politicas/WorkflowStepsPreview.tsx`**
+- Receber array de `approvers` em vez de apenas `levels: number`
+- Exibir nome do aprovador e area em cada step (quando disponivel)
+- Manter modo compacto para os cards
 
-Nenhum arquivo frontend precisa ser alterado - a pagina `PolicyTemplates.tsx` ja renderiza o HTML via `dangerouslySetInnerHTML` no Preview e passa o conteudo ao editor via query params.
+### Layout do Dialog (Novo)
 
-### Categorias utilizadas
+```text
++------------------------------------------+
+| Editar Workflow                        X |
++------------------------------------------+
+| Nome do Workflow                         |
+| [Politica de ciber                     ] |
+|                                          |
+| Descricao (opcional)                     |
+| [                                      ] |
+|                                          |
+| SLA (dias)        Notificar [ON]         |
+| [11           ]                          |
+|                                          |
+| Aprovadores                              |
+| +--------------------------------------+ |
+| | Nivel 1                         [x]  | |
+| | Aprovador: [Guilherme Viana     v]   | |
+| | Area:      [Tecnologia da Informacao]| |
+| +--------------------------------------+ |
+| | Nivel 2                         [x]  | |
+| | Aprovador: [Qualquer Admin      v]   | |
+| | Area:      [Juridico               ] | |
+| +--------------------------------------+ |
+| [+ Adicionar Aprovador]                  |
+|                                          |
+| Workflow padrao                    [OFF] |
+|                                          |
+| [        Salvar Alteracoes             ] |
++------------------------------------------+
+```
 
-- Seguranca (12 templates)
-- Acesso (3 templates)  
-- Privacidade (3 templates)
-- Continuidade (2 templates)
+### Secao Tecnica
 
-### Resultado
-
-A biblioteca passara de 10 templates vazios para 20 templates completos e profissionais, prontos para uso imediato ou personalizacao via editor/IA.
-
+- A migracao SQL adicionara a coluna `approvers JSONB DEFAULT '[]'` e populara dados existentes migrando os valores de `level1/level2` para o novo formato JSON
+- O `WorkflowStepsPreview` aceitara tanto `levels: number` (retrocompatibilidade) quanto `approvers: WorkflowApprover[]` (novo formato)
+- O `approval_levels` continuara sendo salvo como numero inteiro (derivado do tamanho do array) para manter compatibilidade com `policy_approvals`
+- Lista de departamentos sugeridos via datalist HTML (nao bloqueante - aceita texto livre): TI, Juridico, Compliance, RH, Financeiro, Diretoria, Operacoes, Seguranca
