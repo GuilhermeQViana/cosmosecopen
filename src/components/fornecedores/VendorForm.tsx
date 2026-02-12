@@ -67,6 +67,9 @@ export function VendorForm({
   isLoading,
 }: VendorFormProps) {
   const isEdit = !!vendor;
+  const { toast } = useToast();
+  const [aiSuggestion, setAiSuggestion] = useState<{ criticality: string; justification: string } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const form = useForm<VendorFormData>({
     resolver: zodResolver(vendorFormSchema),
