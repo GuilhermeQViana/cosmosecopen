@@ -1,71 +1,179 @@
 
 
-## Melhorias de Funcionalidade e Design para a Agenda de Reavaliações
+## Plano de Implementacao: 6 Funcionalidades de IA no Modulo VRM
 
-### Problemas Atuais (baseado no screenshot)
-- Calendario ocupa muito espaco vazio a esquerda sem informacoes contextuais
-- Lista de reavaliacoes a direita e basica demais (so nome + dias)
-- Falta de resumo rapido (quantas atrasadas, proximas, etc.)
-- Nao ha como agendar rapidamente sem clicar em um fornecedor existente
-- Falta criticidade do fornecedor na lista
-- Ao clicar em um dia no calendario nao filtra a lista
+### Visao Geral
+
+Implementar inteligencia artificial em 6 pontos estrategicos do modulo de Gestao de Fornecedores (VRM), utilizando Lovable AI (gateway ja configurado com `LOVABLE_API_KEY`). Todas as funcionalidades usarao o modelo `google/gemini-3-flash-preview` via Edge Functions dedicadas.
 
 ---
 
-### Melhorias Propostas
+### Fase 1: Geracao Automatica de Planos de Acao para Fornecedores
 
-#### 1. Mini-cards de resumo no topo (3 indicadores compactos inline)
-Adicionar uma faixa com 3 indicadores compactos horizontais logo abaixo do header:
-- **Atrasadas** (vermelho) com contagem
-- **Proximos 30 dias** (amarelo) com contagem  
-- **Total agendadas** (verde) com contagem
+**Objetivo:** Ao concluir uma avaliacao de fornecedor, gerar automaticamente planos de acao para requisitos com compliance_level abaixo de 3.
 
-Serao badges/chips inline, nao cards grandes -- mantendo a simplicidade.
+**Arquivos:**
+- Nova Edge Function: `supabase/functions/generate-vendor-action-plans/index.ts`
+- Modificar: `src/components/fornecedores/VendorAssessmentForm.tsx` (adicionar botao "Gerar Planos com IA" apos salvar avaliacao)
+- Modificar: `src/components/fornecedores/VendorActionPlanManager.tsx` (adicionar botao "Gerar com IA" no header)
 
-#### 2. Calendario interativo com filtro por dia
-- Ao clicar em um dia que tem reavaliacao marcada, a lista lateral filtra para mostrar apenas os fornecedores daquele dia
-- Adicionar um botao "Limpar filtro" quando um dia esta selecionado
-- Mostrar um ponto colorido nos dias com reavaliacoes (ja existe parcialmente com modifiers)
+**Logica:**
+- Reutilizar o padrao ja existente em `generate-bulk-action-plans` (batches, retries, rate limit handling)
+- A Edge Function recebe `assessmentId`, busca respostas com compliance < 3, envia para IA com contexto do requisito e fornecedor
+- IA retorna titulo, descricao, prioridade e subtarefas para cada plano
+- Frontend salva os planos via `useCreateVendorActionPlan` e exibe um dialog de progresso (igual ao `GenerateAIPlansDialog` do diagnostico)
 
-#### 3. Lista de reavaliacoes aprimorada
-- Adicionar badge de **criticidade** do fornecedor (Critica/Alta/Media/Baixa) ao lado do nome
-- Adicionar a **categoria** do fornecedor como texto secundario
-- Mostrar icone de status diferente para overdue (alerta) vs agendado (calendario)
-- Botao "Agendar novo" no topo da lista para fornecedores sem agenda
-
-#### 4. Botao "Agendar Reavaliacao" no header
-- Adicionar um botao primario "Nova Reavaliacao" no header da pagina (ao lado de "Ver Fornecedores")
-- Abre um dialog com dropdown para selecionar o fornecedor + calendario para selecionar data
-- Permite agendar rapidamente sem precisar navegar ate o detalhe
-
-#### 5. Melhorias visuais
-- Aplicar glassmorphism sutil nos cards (consistente com identidade CosmoSec)
-- Melhorar o contraste das badges de dias restantes com cores mais definidas
-- Adicionar transicoes suaves na lista ao filtrar
-- Calendario ocupar menos espaco vertical (remover borda interna duplicada)
+**Prompt da IA:** Incluira nome do fornecedor, criticidade, dominio do requisito, nivel de compliance atual e descricao do requisito.
 
 ---
 
-### Detalhes Tecnicos
+### Fase 2: Resumo Executivo Inteligente no Relatorio
 
-**Arquivos alterados:**
+**Objetivo:** Adicionar uma secao de analise gerada por IA no relatorio PDF do fornecedor.
 
-1. **`src/pages/VendorAgenda.tsx`**
-   - Adicionar botao "Nova Reavaliacao" no header
-   - Passar callback para o componente filho abrir o dialog de agendamento
+**Arquivos:**
+- Modificar: `supabase/functions/generate-vendor-report/index.ts`
 
-2. **`src/components/fornecedores/VendorReassessmentSchedule.tsx`**
-   - Adicionar faixa de mini-indicadores (3 chips) acima do grid
-   - Implementar filtro por dia: estado `filterDate`, ao clicar no calendario filtrar a lista
-   - Enriquecer `renderVendorRow` com badge de criticidade e categoria
-   - Adicionar botao "Agendar novo" no card da lista que abre dialog com Select de fornecedor
-   - Melhorar estilos: glassmorphism nos cards, remover borda duplicada do calendario
-   - Adicionar icones diferenciados para overdue (AlertTriangle) vs agendado (CalendarCheck)
+**Logica:**
+- Apos coletar todos os dados (scores, respostas, domainScores), enviar um resumo estruturado para a IA
+- IA retorna: pontos fortes (top 3), areas criticas (top 3), recomendacoes priorizadas e nivel de confianca geral
+- Inserir a analise como uma nova secao HTML "Analise Executiva (IA)" entre o score geral e a tabela de dominios
+- Usar `tool_choice` para extrair JSON estruturado (pontos fortes, fraquezas, recomendacoes)
+- Incluir disclaimer: "Analise gerada por inteligencia artificial"
 
-### Sequencia de implementacao
-1. Indicadores compactos no topo
-2. Botao "Nova Reavaliacao" com dialog completo (select + calendario)
-3. Filtro por dia no calendario
-4. Enriquecer rows da lista (criticidade, categoria, icones)
-5. Ajustes visuais e transicoes
+**Impacto:** Zero mudancas no frontend -- o relatorio ja e HTML gerado pela Edge Function.
+
+---
+
+### Fase 3: Analise de Causa Raiz de Incidentes
+
+**Objetivo:** Botao "Sugerir Causa Raiz" em cada incidente aberto que usa IA para propor causa raiz e acoes corretivas.
+
+**Arquivos:**
+- Nova Edge Function: `supabase/functions/analyze-vendor-incident/index.ts`
+- Modificar: `src/components/fornecedores/VendorIncidentLog.tsx`
+
+**Logica:**
+- Adicionar botao com icone `Sparkles` ao lado de "Resolver" em incidentes abertos
+- Ao clicar, envia titulo, descricao, impacto, severidade e categoria para a Edge Function
+- IA retorna: causa raiz provavel, acoes corretivas sugeridas (3-5 itens) e classificacao ITIL
+- Exibe resultado em um card expansivel abaixo do incidente
+- Botao "Aplicar" preenche os campos `root_cause` e `corrective_actions` do incidente via `useUpdateVendorIncident`
+
+**Prompt:** Contexto ITIL/ISO 27001, setor do fornecedor, historico de incidentes similares (se existirem).
+
+---
+
+### Fase 4: Classificacao Automatica de Criticidade
+
+**Objetivo:** Ao cadastrar ou editar um fornecedor, sugerir automaticamente a criticidade com base na descricao, categoria e tipo de servico.
+
+**Arquivos:**
+- Nova Edge Function: `supabase/functions/classify-vendor-criticality/index.ts`
+- Modificar: `src/components/fornecedores/VendorForm.tsx`
+
+**Logica:**
+- Adicionar botao "Sugerir com IA" ao lado do campo de Criticidade no formulario
+- Ao clicar, envia nome, descricao, categoria, tipo de servico e classificacao de dados para a Edge Function
+- IA classifica em baixa/media/alta/critica com justificativa
+- Exibe a sugestao como um tooltip/badge ao lado do select, permitindo ao usuario aceitar com um clique ou ignorar
+- Usar tool calling para extrair `{ criticality: string, justification: string }`
+
+**Implementacao no form:**
+- Novo estado `aiSuggestion: { criticality: string, justification: string } | null`
+- Badge animado aparece ao lado do select quando sugestao disponivel
+- Botao "Aceitar" aplica `form.setValue('criticality', suggestion.criticality)`
+
+---
+
+### Fase 5: Assistente de Due Diligence
+
+**Objetivo:** Para cada item do checklist de Due Diligence, oferecer perguntas investigativas e alertas de red flags gerados por IA.
+
+**Arquivos:**
+- Nova Edge Function: `supabase/functions/assist-due-diligence/index.ts`
+- Modificar: `src/components/fornecedores/DueDiligenceDialog.tsx`
+
+**Logica:**
+- Adicionar icone `Sparkles` ao lado de cada item do checklist
+- Ao clicar, envia nome do item, categoria, descricao, nome do fornecedor e sua categoria para a Edge Function
+- IA retorna: 3 perguntas investigativas especificas, possiveis red flags a observar e criterios de aprovacao sugeridos
+- Exibe resultado inline abaixo do item em um card com fundo diferenciado
+- Cache local (useState) para nao re-gerar ao reabrir o mesmo item na mesma sessao
+
+**Prompt:** Adaptado ao tipo de fornecedor (TI, financeiro, logistica, etc.) e a categoria do item (documental, financeiro, seguranca, legal, operacional).
+
+---
+
+### Fase 6: Widget de Risco Consolidado com IA
+
+**Objetivo:** No painel lateral do fornecedor (VendorDetailSheet), exibir um widget que sintetiza dados de multiplas fontes em uma analise holistica de risco.
+
+**Arquivos:**
+- Nova Edge Function: `supabase/functions/vendor-risk-analysis/index.ts`
+- Novo componente: `src/components/fornecedores/VendorAIRiskWidget.tsx`
+- Modificar: `src/components/fornecedores/VendorDetailSheet.tsx` (inserir widget)
+
+**Logica:**
+- Widget aparece como um card colapsavel no topo do detalhe do fornecedor
+- Ao expandir (ou botao "Analisar com IA"), coleta dados de:
+  - Ultima avaliacao (score, domainScores)
+  - Incidentes (quantidade abertos, severidades)
+  - SLAs (taxa de conformidade)
+  - Contratos (vencimentos proximos)
+  - Due Diligence (status, risk score)
+- Envia tudo consolidado para a Edge Function
+- IA retorna: risk score holistic (0-100), tendencia (melhorando/estavel/piorando), top 3 preocupacoes, recomendacao principal
+- Exibe com icones coloridos, barra de risco e texto da recomendacao
+- Botao "Atualizar analise" para re-gerar
+
+---
+
+### Configuracao Tecnica Comum
+
+**Todas as Edge Functions seguirao o mesmo padrao:**
+- Importar middleware de `_shared/auth.ts`
+- Usar `LOVABLE_API_KEY` (ja configurada) 
+- Modelo: `google/gemini-3-flash-preview`
+- Tratar erros 429 (rate limit) e 402 (creditos) com mensagens claras
+- Adicionar ao `supabase/config.toml` com `verify_jwt = false`
+
+**Frontend:**
+- Todas as chamadas via `supabase.functions.invoke()`
+- Loading states com icone `Sparkles` animado + texto "Analisando com IA..."
+- Toast de sucesso/erro com mensagens em portugues
+- Erros 429/402 traduzidos para usuario final
+
+---
+
+### Sequencia de Implementacao
+
+| Ordem | Funcionalidade | Complexidade | Impacto |
+|-------|---------------|-------------|---------|
+| 1 | Planos de Acao (Fase 1) | Media | Alto |
+| 2 | Resumo Executivo (Fase 2) | Baixa | Alto |
+| 3 | Causa Raiz Incidentes (Fase 3) | Media | Alto |
+| 4 | Criticidade Automatica (Fase 4) | Baixa | Medio |
+| 5 | Assistente Due Diligence (Fase 5) | Media | Medio |
+| 6 | Widget Risco Consolidado (Fase 6) | Alta | Alto |
+
+### Resumo de Arquivos
+
+**Novos (5 Edge Functions + 1 componente):**
+- `supabase/functions/generate-vendor-action-plans/index.ts`
+- `supabase/functions/analyze-vendor-incident/index.ts`
+- `supabase/functions/classify-vendor-criticality/index.ts`
+- `supabase/functions/assist-due-diligence/index.ts`
+- `supabase/functions/vendor-risk-analysis/index.ts`
+- `src/components/fornecedores/VendorAIRiskWidget.tsx`
+
+**Modificados (6 arquivos):**
+- `supabase/functions/generate-vendor-report/index.ts`
+- `supabase/config.toml`
+- `src/components/fornecedores/VendorAssessmentForm.tsx`
+- `src/components/fornecedores/VendorActionPlanManager.tsx`
+- `src/components/fornecedores/VendorIncidentLog.tsx`
+- `src/components/fornecedores/VendorForm.tsx`
+- `src/components/fornecedores/DueDiligenceDialog.tsx`
+- `src/components/fornecedores/VendorDetailSheet.tsx`
 
