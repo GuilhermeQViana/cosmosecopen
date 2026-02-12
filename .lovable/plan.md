@@ -1,113 +1,62 @@
 
-## Atualizacao da Landing Page - Alinhamento com Funcionalidades Reais
 
-### Analise: O que a plataforma tem vs. o que a landing page comunica
+## Atualizar Pagina de Tour (/tour) com Novas Funcionalidades
 
-A landing page atual esta desatualizada em relacao ao estado real da plataforma. Varias funcionalidades significativas nao sao mencionadas ou estao sub-representadas.
+### O que esta desatualizado
 
-#### Funcionalidades NAO mencionadas na landing page:
+A pagina de tour (`ConhecaCosmoSec.tsx`) tem apenas 3 modulos (GRC, VRM, Avancado), enquanto a landing page ja foi atualizada com um 4o pilar de **Gestao de Politicas**. Alem disso, o VRM e os Recursos Avancados nao mencionam funcionalidades que ja existem na plataforma.
 
-1. **Modulo de Gestao de Politicas** (completo e robusto)
-   - Editor rich-text com geracao por IA
-   - Dashboard de politicas com metricas
-   - Fluxos de aprovacao multi-nivel
-   - Campanhas de aceite com rastreamento de aderencia
-   - Templates de politicas
-   - Versionamento e historico
-   - Exportacao para PDF
+### Mudancas Planejadas
 
-2. **Modulo de Auditoria** (trilha de auditoria detalhada)
-   - Logs de acesso com filtros avancados
-   - Graficos e timeline visual
-   - Rastreamento por usuario
+**1. Adicionar novo modulo "Gestao de Politicas" ao array `modules[]`**
+- Icone: `FileText`
+- 6 features: Editor Rich-Text com IA, Dashboard de Politicas, Fluxos de Aprovacao, Campanhas de Aceite, Templates de Politicas, Versionamento e Historico
+- Cada feature com `description`, `highlights` e `extendedDescription`
 
-3. **Relatorios Avancados** (6 tipos)
-   - Conformidade, Riscos, Evidencias, Planos de Acao, Executivo, Gap Analysis
-   - Exportacao em HTML/PDF
+**2. Expandir features do modulo VRM**
+- Adicionar: Due Diligence Completa, SLA Tracking, Portal de Fornecedores, Gestao de Contratos, Pipeline Visual, Offboarding
+- Atualizar descricoes existentes para refletir funcionalidades expandidas (ex: "45+ requisitos" -> mencionar workflows completos)
 
-4. **Funcionalidades VRM expandidas**
-   - Due Diligence completa
-   - SLA Tracking
-   - Gestao de contratos
-   - Incidentes de fornecedores
-   - Portal de fornecedores
-   - Offboarding wizard
-   - Pipeline visual (Kanban/Funnel)
+**3. Expandir features de Recursos Avancados**
+- Adicionar: Geracao de Politicas com IA, Assistente de Implementacao, Analise de Incidentes de Fornecedores, 6 Tipos de Relatorios
+- Atualizar descricoes para cobrir relatorios (Conformidade, Riscos, Evidencias, Gap Analysis, Executivo, Planos de Acao)
 
-5. **Frameworks customizados**
-   - Criacao do zero ou importacao CSV
+**4. Atualizar navegacao lateral e cards de navegacao rapida**
+- `navigationSections[]`: adicionar entrada "Gestao de Politicas" com icone `FileText`
+- `QuickNavigationCards.tsx`: adicionar 4o card para Politicas com contagem de features atualizada
+- Ajustar grid de `sm:grid-cols-3` para `sm:grid-cols-2 lg:grid-cols-4`
 
-#### O que precisa ser atualizado:
+**5. Atualizar ModuleComparisonSection**
+- Adicionar 3o card de comparacao para "Gestao de Politicas" com lista de casos de uso ideais
+- Ajustar grid para `md:grid-cols-3`
 
-### Plano de Implementacao
+**6. Atualizar texto do hero**
+- Incluir "politicas" na descricao introdutoria da pagina
 
-**1. Atualizar PlatformSection - Adicionar 5o pilar "Gestao de Politicas"**
-- Novo card com icone FileText
-- Features: Editor com IA, Fluxos de aprovacao, Campanhas de aceite, Templates, Versionamento
-- Reorganizar o grid para 5 cards (3+2 ou layout adaptativo)
-
-**2. Expandir features no pilar VRM**
-- Atualizar lista de features para incluir: Due Diligence, SLA Tracking, Portal de Fornecedores, Gestao de Contratos
-- Aumentar de "45+ requisitos" para destacar os workflows completos
-
-**3. Expandir features no pilar IA Generativa**
-- Adicionar: Geracao de politicas com IA, Assistente de implementacao, Analise de incidentes de fornecedores, Classificacao automatica de criticidade
-
-**4. Atualizar TrustSection - Novas metricas**
-- Atualizar metricas para refletir funcionalidades expandidas:
-  - "6 tipos de relatorios" (novo)
-  - "45+ requisitos VRM" permanece
-  - Adicionar badge "Gestao de Politicas" aos frameworks
-- Adicionar "Frameworks Customizados" como badge
-
-**5. Atualizar FAQSection - Novas perguntas**
-- Adicionar FAQ sobre o modulo de politicas
-- Adicionar FAQ sobre relatorios
-- Atualizar FAQ do VRM para mencionar funcionalidades expandidas (Due Diligence, SLA, Portal)
-
-**6. Atualizar AudienceSection - Novos beneficios**
-- Card "Empresas": adicionar "Gestao completa de politicas com fluxos de aprovacao" e "6 tipos de relatorios executivos"
-- Card "Consultorias": adicionar "Templates de politicas reutilizaveis" e "Campanhas de aceite por cliente"
-
-**7. Atualizar HeroSection - Subtitulo**
-- Expandir subtitulo para incluir "politicas" na proposta de valor
-- De: "A plataforma GRC + VRM para empresas..."
-- Para: "A plataforma GRC + VRM + Gestao de Politicas para empresas..."
-
-**8. Atualizar Navbar e Footer**
-- Footer: adicionar links para "Gestao de Politicas" na secao Produto
-
-### Detalhes Tecnicos
+### Arquivos a modificar
 
 ```text
-Arquivos a modificar:
+1. src/pages/ConhecaCosmoSec.tsx
+   - Adicionar modulo "Gestao de Politicas" ao array modules[]
+   - Expandir features do VRM (6 novas)
+   - Expandir features de Avancados (4 novas/atualizadas)
+   - Adicionar "politicas" ao navigationSections[]
+   - Atualizar texto do hero
 
-1. src/components/landing/PlatformSection.tsx
-   - Adicionar 5o pilar "Gestao de Politicas" ao array platforms[]
-   - Ajustar grid de lg:grid-cols-4 para layout responsivo que acomode 5 cards
-   - Expandir features dos pilares VRM e IA
+2. src/components/conheca/QuickNavigationCards.tsx
+   - Adicionar 4o card "Gestao de Politicas"
+   - Ajustar grid para 4 colunas em telas grandes
+   - Atualizar contagens de features
 
-2. src/components/landing/TrustSection.tsx
-   - Adicionar badge "Gestao de Politicas" e "Frameworks Custom" ao array frameworks[]
-   - Atualizar metricas: trocar "Trilha de auditoria 100%" por "6 tipos de relatorios"
+3. src/components/conheca/ModuleComparisonSection.tsx
+   - Adicionar 3o card de comparacao para Politicas
+   - Ajustar grid de md:grid-cols-2 para md:grid-cols-3
 
-3. src/components/landing/AudienceSection.tsx
-   - Expandir benefits[] de cada card com funcionalidades de politicas e relatorios
-
-4. src/components/landing/FAQSection.tsx
-   - Adicionar 2 novas FAQs (politicas e relatorios)
-   - Atualizar FAQ do VRM com funcionalidades expandidas
-
-5. src/components/landing/HeroSection.tsx
-   - Atualizar subtitulo (linha 51) para incluir politicas
-
-6. src/components/landing/Footer.tsx
-   - Adicionar link "Gestao de Politicas" em footerLinks.produto
-
-7. src/components/landing/ROICalculatorSection.tsx
-   - Atualizar lista de beneficios para mencionar politicas e relatorios automatizados
+4. src/components/conheca/TourNavigation.tsx
+   - Adicionar icone FileText ao mapa sectionIcons
 ```
 
-### Resumo de Impacto
+### Resultado esperado
 
-A landing page passara a comunicar com precisao as 5 verticais da plataforma (GRC, VRM, Politicas, IA, Consultoria), refletindo a maturidade real do produto e aumentando a credibilidade junto a prospects que busquem solucoes completas de governanca.
+A pagina /tour passara a apresentar 4 modulos completos (GRC, VRM, Politicas, Avancado) com todas as funcionalidades reais da plataforma, alinhada com a landing page atualizada anteriormente.
+
