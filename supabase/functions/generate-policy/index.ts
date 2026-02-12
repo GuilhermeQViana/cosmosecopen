@@ -9,7 +9,41 @@ serve(async (req) => {
     const auth = await authenticate(req);
     if (isAuthError(auth)) return auth;
 
-    const { templateContent, templateTitle, sector, rigor, customInstructions } = await req.json();
+    const { templateContent, templateTitle, sector, rigor, customInstructions, language, companySize, frameworks, audience, tone, length } = await req.json();
+
+    const languageMap: Record<string, string> = {
+      'pt-BR': 'Português (Brasil)',
+      'en': 'English',
+      'es': 'Español',
+    };
+
+    const companySizeMap: Record<string, string> = {
+      'startup': 'Startup / Pequena empresa',
+      'media': 'Média empresa',
+      'grande': 'Grande empresa / Corporação',
+      'multinacional': 'Multinacional',
+    };
+
+    const audienceMap: Record<string, string> = {
+      'todos': 'Todos os colaboradores',
+      'ti': 'Equipe de TI / Segurança da Informação',
+      'gestao': 'Alta gestão / Diretoria',
+      'terceiros': 'Terceiros / Fornecedores',
+    };
+
+    const toneMap: Record<string, string> = {
+      'formal': 'Formal e jurídico',
+      'tecnico': 'Técnico e objetivo',
+      'acessivel': 'Acessível e didático',
+    };
+
+    const lengthMap: Record<string, string> = {
+      'resumido': 'Resumido (1-2 páginas)',
+      'padrao': 'Padrão (3-5 páginas)',
+      'detalhado': 'Detalhado e abrangente (6+ páginas)',
+    };
+
+    const writeLang = languageMap[language] || 'Português (Brasil)';
 
     const prompt = `Você é um especialista em segurança da informação, compliance e governança corporativa.
 
@@ -20,9 +54,16 @@ Conteúdo:
 ${templateContent.substring(0, 3000)}
 ---` : `Crie uma política corporativa sobre: ${templateTitle}`}
 
-${sector ? `Setor da empresa: ${sector}` : ''}
-${rigor ? `Nível de rigor desejado: ${rigor}` : ''}
-${customInstructions ? `Instruções adicionais: ${customInstructions}` : ''}
+INSTRUÇÕES DE CONTEXTO:
+- Escreva a política inteiramente em ${writeLang}.
+${sector ? `- Setor da empresa: ${sector}` : ''}
+${companySize ? `- Porte da empresa: ${companySizeMap[companySize] || companySize}` : ''}
+${rigor ? `- Nível de rigor desejado: ${rigor}` : ''}
+${audience ? `- Público-alvo desta política: ${audienceMap[audience] || audience}` : ''}
+${tone ? `- Tom da redação: ${toneMap[tone] || tone}` : ''}
+${length ? `- Extensão do documento: ${lengthMap[length] || length}` : ''}
+${frameworks && frameworks.length > 0 ? `- A política deve estar alinhada com os seguintes frameworks: ${frameworks.join(', ')}` : ''}
+${customInstructions ? `- Instruções adicionais: ${customInstructions}` : ''}
 
 Gere o texto completo da política em formato HTML bem estruturado, usando as seguintes tags:
 - <h2> para seções principais
@@ -43,6 +84,8 @@ A política deve incluir:
 
 Responda APENAS com o HTML da política, sem explicações adicionais.`;
 
+    const maxTokens = length === 'detalhado' ? 6000 : 4000;
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -53,7 +96,7 @@ Responda APENAS com o HTML da política, sem explicações adicionais.`;
         model: 'google/gemini-3-flash-preview',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: maxTokens,
       }),
     });
 
