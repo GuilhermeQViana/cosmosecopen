@@ -30,6 +30,7 @@ import { VendorIncidentLog } from './VendorIncidentLog';
 import { VendorSLATracker } from './VendorSLATracker';
 import { VendorOffboardingWizard } from './VendorOffboardingWizard';
 import { VendorPortalManager } from './VendorPortalManager';
+import { VendorAIRiskWidget } from './VendorAIRiskWidget';
 import { toast } from 'sonner';
 import {
   Building2,
