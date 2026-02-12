@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import { ControlInput } from './useCustomFrameworks';
 
 export type FieldMapping = Record<string, string | null>;
@@ -426,4 +427,54 @@ export function downloadTemplate() {
   a.click();
   window.URL.revokeObjectURL(url);
   document.body.removeChild(a);
+}
+
+// Convert Excel file to CSV string (client-side)
+export async function parseExcelToCSV(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: 'array' });
+  const firstSheetName = workbook.SheetNames[0];
+  if (!firstSheetName) {
+    throw new Error('O arquivo Excel não contém nenhuma aba');
+  }
+  const sheet = workbook.Sheets[firstSheetName];
+  // Convert to CSV using semicolon (common in PT-BR locale)
+  return XLSX.utils.sheet_to_csv(sheet, { FS: ';' });
+}
+
+// Fetch a public Google Sheets as CSV
+export async function fetchGoogleSheetAsCSV(url: string): Promise<string> {
+  // Extract spreadsheet ID from various Google Sheets URL formats
+  const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) {
+    throw new Error('URL do Google Sheets inválida. Cole o link completo da planilha.');
+  }
+  const sheetId = match[1];
+  const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+
+  try {
+    const response = await fetch(exportUrl);
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('A planilha não está acessível. Verifique se ela está compartilhada como "Qualquer pessoa com o link pode ver".');
+      }
+      throw new Error(`Erro ao acessar a planilha (status ${response.status})`);
+    }
+    const text = await response.text();
+    if (!text.trim()) {
+      throw new Error('A planilha está vazia');
+    }
+    return text;
+  } catch (err: any) {
+    if (err.message.includes('planilha')) throw err;
+    throw new Error('Não foi possível acessar a planilha. Verifique se ela está compartilhada publicamente.');
+  }
+}
+
+// Detect file type from extension
+export function getFileType(fileName: string): 'csv' | 'excel' | 'unknown' {
+  const ext = fileName.toLowerCase().split('.').pop();
+  if (ext === 'csv') return 'csv';
+  if (ext === 'xlsx' || ext === 'xls') return 'excel';
+  return 'unknown';
 }

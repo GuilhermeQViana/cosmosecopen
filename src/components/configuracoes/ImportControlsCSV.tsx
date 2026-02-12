@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
@@ -21,10 +22,13 @@ import {
   Loader2,
   Download,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Link as LinkIcon,
+  FileText,
+  Sheet
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useImportControls, downloadTemplate, FieldMapping } from '@/hooks/useImportControls';
+import { useImportControls, downloadTemplate, FieldMapping, parseExcelToCSV, fetchGoogleSheetAsCSV, getFileType } from '@/hooks/useImportControls';
 import { useBulkCreateControls, ControlInput } from '@/hooks/useCustomFrameworks';
 import { CSVImportTutorial } from './CSVImportTutorial';
 import { CSVFieldMapper, autoMapFields } from './CSVFieldMapper';
@@ -36,6 +40,7 @@ interface ImportControlsCSVProps {
 }
 
 type ImportStep = 'upload' | 'mapping' | 'preview';
+type SourceType = 'csv' | 'excel' | 'google-sheets';
 
 export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportControlsCSVProps) {
   const { parseContent, extractHeaders, isLoading: isParsing, result, error, reset, detectedDelimiter } = useImportControls();
@@ -49,45 +54,80 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
   const [fieldMapping, setFieldMapping] = useState<FieldMapping>({});
   const [importedFile, setImportedFile] = useState<File | null>(null);
   const [showTutorial, setShowTutorial] = useState(true);
+  const [sourceType, setSourceType] = useState<SourceType>('csv');
+  const [googleSheetUrl, setGoogleSheetUrl] = useState('');
+  const [isLoadingSheet, setIsLoadingSheet] = useState(false);
+  const [sourceName, setSourceName] = useState<string>('');
+
+  const processContent = useCallback(async (content: string, fileName: string, type: SourceType) => {
+    setCsvContent(content);
+    setSourceType(type);
+    setSourceName(fileName);
+
+    const { headers, delimiter, delimiterName } = extractHeaders(content);
+    if (headers.length === 0) {
+      toast.error('Arquivo inválido ou vazio');
+      return;
+    }
+
+    setCsvHeaders(headers);
+    setCsvDelimiter(delimiter);
+    setCsvDelimiterName(delimiterName);
+
+    const autoMapping = autoMapFields(headers);
+    setFieldMapping(autoMapping);
+    setStep('mapping');
+  }, [extractHeaders]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.csv')) {
-      toast.error('Por favor, selecione um arquivo CSV');
+    const fileType = getFileType(file.name);
+    if (fileType === 'unknown') {
+      toast.error('Formato não suportado. Use CSV, XLSX ou XLS.');
       return;
     }
 
-    try {
-      const content = await file.text();
-      setCsvContent(content);
-      setImportedFile(file);
+    setImportedFile(file);
 
-      const { headers, delimiter, delimiterName } = extractHeaders(content);
-      if (headers.length === 0) {
-        toast.error('Arquivo CSV inválido ou vazio');
-        return;
+    try {
+      let content: string;
+      if (fileType === 'excel') {
+        content = await parseExcelToCSV(file);
+      } else {
+        content = await file.text();
       }
-      
-      setCsvHeaders(headers);
-      setCsvDelimiter(delimiter);
-      setCsvDelimiterName(delimiterName);
-      
-      // Auto-map fields and go to mapping step
-      const autoMapping = autoMapFields(headers);
-      setFieldMapping(autoMapping);
-      setStep('mapping');
+      await processContent(content, file.name, fileType === 'excel' ? 'excel' : 'csv');
     } catch (err: any) {
       toast.error(err.message || 'Erro ao ler arquivo');
     }
-  }, [extractHeaders]);
+  }, [processContent]);
+
+  const handleLoadGoogleSheet = useCallback(async () => {
+    if (!googleSheetUrl.trim()) {
+      toast.error('Cole o link da planilha do Google Sheets');
+      return;
+    }
+
+    setIsLoadingSheet(true);
+    try {
+      const content = await fetchGoogleSheetAsCSV(googleSheetUrl);
+      setImportedFile(null);
+      await processContent(content, 'Google Sheets', 'google-sheets');
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao carregar planilha');
+    } finally {
+      setIsLoadingSheet(false);
+    }
+  }, [googleSheetUrl, processContent]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: {
       'text/csv': ['.csv'],
-      'application/vnd.ms-excel': ['.csv'],
+      'application/vnd.ms-excel': ['.csv', '.xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
     },
     maxFiles: 1,
     disabled: isParsing,
@@ -137,6 +177,9 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
     setCsvDelimiterName('Vírgula');
     setFieldMapping({});
     setImportedFile(null);
+    setSourceType('csv');
+    setSourceName('');
+    setGoogleSheetUrl('');
     setStep('upload');
   };
 
@@ -185,15 +228,18 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
             <CardTitle className="text-base flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
-                Importar Controles via CSV
+                Importar Controles
               </span>
               <Button variant="outline" size="sm" onClick={() => downloadTemplate()}>
                 <Download className="mr-2 h-4 w-4" />
                 Baixar Template
               </Button>
             </CardTitle>
+            <CardDescription>
+              Importe controles a partir de CSV, Excel ou Google Sheets
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div
               {...getRootProps({
                 onClick: (e) => {
@@ -222,10 +268,10 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
               ) : (
                 <>
                   <p className="text-lg mb-2">
-                    Arraste um arquivo CSV ou clique para selecionar
+                    Arraste um arquivo CSV ou Excel aqui
                   </p>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Você poderá mapear as colunas na próxima etapa
+                    Formatos aceitos: .csv, .xlsx, .xls
                   </p>
                   <Button 
                     type="button" 
@@ -239,6 +285,46 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
                   </Button>
                 </>
               )}
+            </div>
+
+            {/* Google Sheets input */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">ou</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Sheet className="h-4 w-4" />
+                Link do Google Sheets
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://docs.google.com/spreadsheets/d/..."
+                  value={googleSheetUrl}
+                  onChange={(e) => setGoogleSheetUrl(e.target.value)}
+                  disabled={isLoadingSheet}
+                />
+                <Button
+                  onClick={handleLoadGoogleSheet}
+                  disabled={isLoadingSheet || !googleSheetUrl.trim()}
+                  variant="secondary"
+                >
+                  {isLoadingSheet ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <LinkIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Carregar
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                A planilha deve estar compartilhada como "Qualquer pessoa com o link pode ver"
+              </p>
             </div>
 
             {error && (
@@ -269,9 +355,16 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
         <Card className="bg-muted/50">
           <CardContent className="py-3">
             <div className="flex items-center gap-3">
-              <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
+              {sourceType === 'excel' ? <FileSpreadsheet className="h-5 w-5 text-muted-foreground" /> 
+               : sourceType === 'google-sheets' ? <Sheet className="h-5 w-5 text-muted-foreground" /> 
+               : <FileText className="h-5 w-5 text-muted-foreground" />}
               <div className="flex-1">
-                <p className="font-medium text-sm">{importedFile?.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-sm">{sourceName}</p>
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    {sourceType === 'excel' ? 'Excel' : sourceType === 'google-sheets' ? 'Google Sheets' : 'CSV'}
+                  </Badge>
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {csvHeaders.length} colunas detectadas • Separador: {csvDelimiterName}
                 </p>
@@ -303,8 +396,13 @@ export function ImportControlsCSV({ frameworkId, onSuccess, onCancel }: ImportCo
         <CardHeader>
           <CardTitle className="text-base flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <FileSpreadsheet className="h-4 w-4" />
-              {importedFile?.name}
+              {sourceType === 'excel' ? <FileSpreadsheet className="h-4 w-4" /> 
+               : sourceType === 'google-sheets' ? <Sheet className="h-4 w-4" /> 
+               : <FileText className="h-4 w-4" />}
+              {sourceName}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                {sourceType === 'excel' ? 'Excel' : sourceType === 'google-sheets' ? 'Google Sheets' : 'CSV'}
+              </Badge>
             </span>
             <Button variant="ghost" size="icon" onClick={handleReset}>
               <X className="h-4 w-4" />
