@@ -15,6 +15,9 @@ import { Loader2, Save, ArrowLeft, Send, CheckCircle } from 'lucide-react';
 import { usePolicy, usePolicies } from '@/hooks/usePolicies';
 import { PolicyEditorToolbar } from '@/components/politicas/PolicyEditorToolbar';
 import { PolicyMetadataPanel } from '@/components/politicas/PolicyMetadataPanel';
+import { PolicyVersionHistory } from '@/components/politicas/PolicyVersionHistory';
+import { PolicyComments } from '@/components/politicas/PolicyComments';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import type { Policy } from '@/hooks/usePolicies';
 
@@ -155,15 +158,36 @@ export default function PoliticaEditor() {
           </Card>
         </div>
 
-        {/* Metadata Panel */}
-        <div className="lg:col-span-1">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-4 text-emerald-400">Metadados</h3>
-            <PolicyMetadataPanel
-              policy={metadata}
-              onChange={(updates) => setMetadata(prev => ({ ...prev, ...updates }))}
-            />
-          </Card>
+        {/* Sidebar Panel */}
+        <div className="lg:col-span-1 space-y-4">
+          <Tabs defaultValue="metadata">
+            <TabsList className="w-full">
+              <TabsTrigger value="metadata" className="flex-1">Metadados</TabsTrigger>
+              {!isNew && <TabsTrigger value="history" className="flex-1">Versões</TabsTrigger>}
+              {!isNew && <TabsTrigger value="comments" className="flex-1">Comentários</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="metadata">
+              <Card className="p-4">
+                <PolicyMetadataPanel
+                  policy={metadata}
+                  onChange={(updates) => setMetadata(prev => ({ ...prev, ...updates }))}
+                />
+              </Card>
+            </TabsContent>
+            {!isNew && id && (
+              <TabsContent value="history">
+                <PolicyVersionHistory
+                  policyId={id}
+                  onRestoreVersion={(content) => editor?.commands.setContent(content)}
+                />
+              </TabsContent>
+            )}
+            {!isNew && id && (
+              <TabsContent value="comments">
+                <PolicyComments policyId={id} />
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </div>
     </div>
