@@ -25,6 +25,48 @@ export interface ExtractHeadersResult {
 
 const REQUIRED_FIELDS = ['code', 'name'];
 
+// Split CSV content into lines respecting quoted fields with newlines
+function splitCSVLines(content: string): string[] {
+  const lines: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < content.length; i++) {
+    const char = content[i];
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      current += char;
+    } else if (char === '\r') {
+      if (!inQuotes) {
+        // skip \r, handle \n next
+        if (content[i + 1] === '\n') {
+          i++; // skip the \n too
+        }
+        lines.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    } else if (char === '\n') {
+      if (!inQuotes) {
+        lines.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    } else {
+      current += char;
+    }
+  }
+
+  if (current) {
+    lines.push(current);
+  }
+
+  return lines;
+}
+
 // Remove BOM (Byte Order Mark) from content
 function removeBOM(content: string): string {
   // UTF-8 BOM as unicode character
@@ -58,7 +100,7 @@ function countDelimiterOccurrences(line: string, delimiter: string): number {
 // Auto-detect the delimiter used in CSV content
 function detectDelimiter(content: string): string {
   const delimiters = [',', ';', '\t', '|'];
-  const lines = content.split(/\r?\n/).filter(l => l.trim()).slice(0, 10);
+  const lines = splitCSVLines(content).filter(l => l.trim()).slice(0, 10);
 
   if (lines.length === 0) return ',';
 
@@ -166,7 +208,7 @@ export function useImportControls() {
   const extractHeaders = useCallback((content: string): ExtractHeadersResult => {
     const cleanContent = removeBOM(content);
     const delimiter = detectDelimiter(cleanContent);
-    const lines = cleanContent.split(/\r?\n/);
+    const lines = splitCSVLines(cleanContent);
 
     if (lines.length === 0) {
       return { headers: [], delimiter, delimiterName: getDelimiterName(delimiter) };
@@ -189,7 +231,7 @@ export function useImportControls() {
     const delimiter = explicitDelimiter || detectDelimiter(cleanContent);
     setDetectedDelimiter(delimiter);
     
-    const lines = cleanContent.split(/\r?\n/).filter((line) => line.trim());
+    const lines = splitCSVLines(cleanContent).filter((line) => line.trim());
     
     if (lines.length < 2) {
       throw new Error('O arquivo deve conter pelo menos uma linha de cabeçalho e uma linha de dados');
