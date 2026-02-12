@@ -92,6 +92,26 @@ export function VendorDetailSheet({
     setEvidenceDialogOpen(true);
   };
 
+  const handleScheduleReassessment = async () => {
+    if (!selectedDate || !vendor) return;
+    try {
+      await updateVendor.mutateAsync({
+        id: vendor.id,
+        next_assessment_date: format(selectedDate, 'yyyy-MM-dd'),
+      });
+      toast.success('Reavaliação agendada com sucesso!');
+      setScheduleOpen(false);
+      setSelectedDate(undefined);
+    } catch {
+      toast.error('Erro ao agendar reavaliação');
+    }
+  };
+
+  const openScheduleDialog = () => {
+    setSelectedDate(vendor.next_assessment_date ? new Date(vendor.next_assessment_date + 'T00:00:00') : undefined);
+    setScheduleOpen(true);
+  };
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
