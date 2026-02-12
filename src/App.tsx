@@ -47,6 +47,7 @@ import Politicas from "@/pages/Politicas";
 import PolicyWorkflows from "@/pages/PolicyWorkflows";
 import PolicyAceite from "@/pages/PolicyAceite";
 import PolicyTemplates from "@/pages/PolicyTemplates";
+import PoliticaEditor from "@/pages/PoliticaEditor";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -108,6 +109,7 @@ const App = () => (
                   <Route element={<PolicyLayout />}>
                     <Route path="/policies" element={<PolicyDashboard />} />
                     <Route path="/policies/central" element={<Politicas />} />
+                    <Route path="/policies/central/:id" element={<PoliticaEditor />} />
                     <Route path="/policies/workflows" element={<PolicyWorkflows />} />
                     <Route path="/policies/aceite" element={<PolicyAceite />} />
                     <Route path="/policies/templates" element={<PolicyTemplates />} />

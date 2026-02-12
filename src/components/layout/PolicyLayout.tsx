@@ -30,6 +30,11 @@ const routeTitles: Record<string, string> = {
   '/policies/configuracoes': 'Configurações',
 };
 
+const getRouteTitle = (pathname: string) => {
+  if (pathname.startsWith('/policies/central/')) return 'Editor de Política';
+  return routeTitles[pathname] || 'Políticas';
+};
+
 export function PolicyLayout() {
   const { user, loading: authLoading } = useAuth();
   const { organization, organizations, loading: orgLoading } = useOrganization();
@@ -54,7 +59,7 @@ export function PolicyLayout() {
   if (!organization && organizations.length > 0 && location.pathname !== '/selecionar-organizacao') return <Navigate to="/selecionar-organizacao" replace />;
   if (!hasAccess && !allowedWithoutSubscription.includes(location.pathname)) return <SubscriptionRequired />;
 
-  const currentTitle = routeTitles[location.pathname] || 'Políticas';
+  const currentTitle = getRouteTitle(location.pathname);
   const breadcrumbItems = [
     { path: '/policies', label: 'Políticas', isCurrentPage: location.pathname === '/policies' },
   ];
