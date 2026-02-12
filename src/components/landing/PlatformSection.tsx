@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Building2, Sparkles, CheckCircle2, ChevronDown, Eye, ClipboardCheck } from 'lucide-react';
+import { Shield, Building2, Sparkles, CheckCircle2, ChevronDown, Eye, ClipboardCheck, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ModuleScreenshotGallery, Screenshot } from './ModuleScreenshotGallery';
@@ -20,61 +20,59 @@ const platforms: Platform[] = [
     id: 'grc',
     icon: Shield,
     title: 'GRC Frameworks',
-    description: 'Diagnóstico completo de controles de segurança com frameworks reconhecidos.',
+    description: 'Diagnóstico completo de controles de segurança com frameworks reconhecidos e customizáveis.',
     features: [
       'NIST CSF 2.0, ISO 27001, BCB/CMN',
-      'Risk Score automático',
-      'Matriz de riscos integrada',
-      'Gestão de evidências',
+      'Frameworks customizados e importação CSV',
+      'Risk Score automático e matriz de riscos',
+      'Gestão de evidências e mapeamento cruzado',
     ],
     gradient: 'from-primary to-primary/70',
     screenshots: [
-      { 
-        src: '/screenshots/grc-dashboard-1.png', 
-        title: 'Dashboard Executivo', 
-        description: 'Visão consolidada com score, alertas e métricas principais' 
-      },
-      { 
-        src: '/screenshots/grc-dashboard-2.png', 
-        title: 'Métricas de Remediação', 
-        description: 'MTTR, tendência de conformidade e histórico de maturidade' 
-      },
-      { 
-        src: '/screenshots/grc-dashboard-3.png', 
-        title: 'Indicadores Personalizáveis', 
-        description: 'Mapa de calor, distribuição de riscos e controles por maturidade' 
-      },
-      { 
-        src: '/screenshots/grc-dashboard-4.png', 
-        title: 'Atenção Prioritária', 
-        description: 'Top ameaças, cobertura por framework e gaps críticos' 
-      },
+      { src: '/screenshots/grc-dashboard-1.png', title: 'Dashboard Executivo', description: 'Visão consolidada com score, alertas e métricas principais' },
+      { src: '/screenshots/grc-dashboard-2.png', title: 'Métricas de Remediação', description: 'MTTR, tendência de conformidade e histórico de maturidade' },
+      { src: '/screenshots/grc-dashboard-3.png', title: 'Indicadores Personalizáveis', description: 'Mapa de calor, distribuição de riscos e controles por maturidade' },
+      { src: '/screenshots/grc-dashboard-4.png', title: 'Atenção Prioritária', description: 'Top ameaças, cobertura por framework e gaps críticos' },
     ],
   },
   {
     id: 'vrm',
     icon: Building2,
     title: 'VRM Fornecedores',
-    description: 'Avaliação e monitoramento contínuo de riscos de terceiros.',
+    description: 'Ciclo completo de gestão de riscos de terceiros, do onboarding ao offboarding.',
     features: [
-      '45+ requisitos de avaliação',
-      'Radar de conformidade',
-      'Workflow de aprovação',
-      'Agenda de reavaliação',
+      'Due Diligence e 45+ requisitos de avaliação',
+      'SLA Tracking e gestão de contratos',
+      'Portal de fornecedores e pipeline visual',
+      'Incidentes, offboarding e agenda de reavaliação',
     ],
     gradient: 'from-secondary to-secondary/70',
-    screenshots: [], // Placeholder - aguardando screenshots do usuário
+    screenshots: [],
+  },
+  {
+    id: 'politicas',
+    icon: FileText,
+    title: 'Gestão de Políticas',
+    description: 'Ciclo de vida completo de políticas com editor rico, aprovações e campanhas de aceite.',
+    features: [
+      'Editor rich-text com geração por IA',
+      'Fluxos de aprovação multi-nível',
+      'Campanhas de aceite com rastreamento',
+      'Templates, versionamento e export PDF',
+    ],
+    gradient: 'from-violet-500 to-purple-500',
+    screenshots: [],
   },
   {
     id: 'ia',
     icon: Sparkles,
     title: 'IA Generativa',
-    description: 'Automação inteligente para acelerar sua jornada de conformidade.',
+    description: 'Automação inteligente em todos os módulos para acelerar a conformidade.',
     features: [
-      'Planos de ação automáticos',
-      'Guias de implementação',
-      'Análise de gaps',
-      'Recomendações priorizadas',
+      'Planos de ação e políticas gerados por IA',
+      'Assistente de implementação de controles',
+      'Análise de incidentes e criticidade automática',
+      '6 tipos de relatórios automatizados',
     ],
     gradient: 'from-primary via-secondary to-primary',
     screenshots: [],
@@ -88,7 +86,7 @@ const platforms: Platform[] = [
       'Painel multi-organizações',
       'Relatórios com branding personalizado',
       'Templates de diagnóstico reutilizáveis',
-      'Trilha de auditoria por cliente',
+      'Trilha de auditoria completa por cliente',
     ],
     gradient: 'from-emerald-500 to-teal-500',
     screenshots: [],
@@ -115,12 +113,12 @@ export function PlatformSection() {
             <span className="text-gradient-cosmic">Segurança Completa.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Consolide sua governança de segurança, gestão de fornecedores e operações de consultoria em uma única solução.
+            Consolide governança, fornecedores, políticas e operações de consultoria em uma única solução com IA.
           </p>
         </div>
 
         {/* Platform Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-[1400px] mx-auto">
           {platforms.map((platform) => {
             const isExpanded = expandedId === platform.id;
             const hasScreenshots = platform.screenshots.length > 0;
