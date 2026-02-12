@@ -51,9 +51,9 @@ export default function TermosDeUso() {
             <section>
               <h2 className="text-xl font-semibold text-foreground">1. Aceitação dos Termos</h2>
               <p className="text-muted-foreground">
-                Ao acessar e utilizar a plataforma CosmoSec ("Serviço"), você concorda em cumprir e estar 
-                vinculado a estes Termos de Uso. Se você não concorda com qualquer parte destes termos, 
-                não poderá acessar o Serviço.
+                Ao assinar o contrato de prestação de serviços e/ou acessar a plataforma CosmoSec ("Serviço"), 
+                você concorda em cumprir e estar vinculado a estes Termos de Uso. Se você não concorda com 
+                qualquer parte destes termos, não poderá acessar o Serviço.
               </p>
             </section>
 
@@ -84,6 +84,7 @@ export default function TermosDeUso() {
                 <li>Tem pelo menos 18 anos de idade</li>
                 <li>Possui autorização para vincular sua organização a estes termos</li>
                 <li>Utilizará o Serviço apenas para fins legítimos de negócios</li>
+                <li>Passou pelo processo de demonstração e formalizou a contratação</li>
               </ul>
             </section>
 
@@ -123,19 +124,25 @@ export default function TermosDeUso() {
                 exclusiva do CosmoSec e está protegido por leis de propriedade intelectual. Você mantém 
                 todos os direitos sobre os dados que inserir na plataforma.
               </p>
+              <p className="text-muted-foreground mt-2">
+                Conteúdos gerados pelas funcionalidades de inteligência artificial da plataforma (políticas, 
+                planos de ação, relatórios, guias de implementação) são de propriedade do cliente, cabendo 
+                ao CosmoSec apenas o papel de ferramenta facilitadora.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-foreground">7. Pagamentos e Assinatura</h2>
+              <h2 className="text-xl font-semibold text-foreground">7. Contratação e Pagamentos</h2>
               <p className="text-muted-foreground">
-                O CosmoSec oferece um período de teste gratuito de 7 dias. Após este período:
+                O acesso ao CosmoSec é condicionado à formalização de contrato de prestação de serviços. 
+                As condições comerciais são as seguintes:
               </p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                <li>A assinatura é cobrada mensalmente via cartão de crédito</li>
-                <li>Os valores são informados antes da contratação</li>
-                <li>Você pode cancelar a qualquer momento sem multa</li>
-                <li>O cancelamento encerra o acesso ao final do período pago</li>
-                <li>Não há reembolso proporcional por cancelamento antecipado</li>
+                <li>Os valores e condições são definidos em proposta comercial individualizada</li>
+                <li>Planos mensais ou anuais conforme acordado em contrato</li>
+                <li>Pagamento via boleto bancário, Pix ou cartão de crédito</li>
+                <li>Renovação automática, salvo manifestação contrária com 30 dias de antecedência ao término do período vigente</li>
+                <li>Condições de rescisão conforme cláusulas do contrato firmado entre as partes</li>
               </ul>
             </section>
 
@@ -146,6 +153,10 @@ export default function TermosDeUso() {
                 ininterrupta. Manutenções programadas serão comunicadas com antecedência. O CosmoSec não 
                 se responsabiliza por indisponibilidades causadas por terceiros ou força maior.
               </p>
+              <p className="text-muted-foreground mt-2">
+                Níveis de serviço (SLA) específicos podem ser definidos em contrato, conforme a proposta 
+                comercial acordada entre as partes.
+              </p>
             </section>
 
             <section>
@@ -155,6 +166,11 @@ export default function TermosDeUso() {
                 conformidade automática com frameworks ou regulamentos. A responsabilidade final pela 
                 conformidade é da organização usuária. Em nenhuma circunstância seremos responsáveis por 
                 danos indiretos, incidentais ou consequenciais.
+              </p>
+              <p className="text-muted-foreground mt-2">
+                Os conteúdos gerados por inteligência artificial são sugestões e devem ser revisados por 
+                profissionais qualificados antes de sua adoção. O CosmoSec não se responsabiliza por 
+                decisões tomadas exclusivamente com base em outputs automatizados.
               </p>
             </section>
 
@@ -168,7 +184,22 @@ export default function TermosDeUso() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-foreground">11. Lei Aplicável e Foro</h2>
+              <h2 className="text-xl font-semibold text-foreground">11. Confidencialidade e Proteção de Dados</h2>
+              <p className="text-muted-foreground">
+                O CosmoSec compromete-se a manter a confidencialidade de todos os dados inseridos pelo 
+                cliente na plataforma. O tratamento de dados pessoais é realizado em conformidade com a 
+                Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
+              </p>
+              <p className="text-muted-foreground mt-2">
+                Para informações detalhadas sobre coleta, uso e proteção de dados, consulte nossa{' '}
+                <Link to="/privacidade" className="text-primary hover:underline">Política de Privacidade</Link> e 
+                nossa{' '}
+                <Link to="/lgpd" className="text-primary hover:underline">Política de Proteção de Dados (LGPD)</Link>.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-foreground">12. Lei Aplicável e Foro</h2>
               <p className="text-muted-foreground">
                 Estes Termos são regidos pelas leis da República Federativa do Brasil. Qualquer disputa 
                 será resolvida no foro da comarca de São Paulo/SP, com renúncia a qualquer outro, por 
@@ -177,7 +208,7 @@ export default function TermosDeUso() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-foreground">12. Contato</h2>
+              <h2 className="text-xl font-semibold text-foreground">13. Contato</h2>
               <p className="text-muted-foreground">
                 Para dúvidas sobre estes Termos de Uso, entre em contato:
               </p>
