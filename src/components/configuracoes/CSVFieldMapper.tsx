@@ -102,7 +102,7 @@ function loadMappingFromStorage(headers: string[]): FieldMapping | null {
   }
 }
 
-// Auto-map fields based on synonyms
+// Auto-map fields based on synonyms with flexible matching
 export function autoMapFields(csvHeaders: string[]): FieldMapping {
   const mapping: FieldMapping = {};
   const usedSystemFields = new Set<string>();
@@ -115,7 +115,27 @@ export function autoMapFields(csvHeaders: string[]): FieldMapping {
       
       const normalizedAliases = aliases.map(a => a.toLowerCase().replace(/[_\-\s]+/g, ''));
       
+      // 1. Exact match
       if (normalizedAliases.includes(normalized)) {
+        mapping[header] = field;
+        usedSystemFields.add(field);
+        break;
+      }
+      
+      // 2. Starts-with match (e.g. "codigo_controle" matches "codigo")
+      const startsWithMatch = normalizedAliases.some(alias => normalized.startsWith(alias) || alias.startsWith(normalized));
+      if (startsWithMatch) {
+        mapping[header] = field;
+        usedSystemFields.add(field);
+        break;
+      }
+
+      // 3. Contains match (e.g. "nome_do_controle" contains "nome")
+      const containsMatch = normalizedAliases.some(alias => 
+        (alias.length >= 3 && normalized.includes(alias)) || 
+        (normalized.length >= 3 && alias.includes(normalized))
+      );
+      if (containsMatch) {
         mapping[header] = field;
         usedSystemFields.add(field);
         break;

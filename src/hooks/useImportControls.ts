@@ -57,14 +57,14 @@ function countDelimiterOccurrences(line: string, delimiter: string): number {
 // Auto-detect the delimiter used in CSV content
 function detectDelimiter(content: string): string {
   const delimiters = [',', ';', '\t', '|'];
-  const lines = content.split(/\r?\n/).filter(l => l.trim()).slice(0, 5);
+  const lines = content.split(/\r?\n/).filter(l => l.trim()).slice(0, 10);
 
   if (lines.length === 0) return ',';
 
-  // Count occurrences of each delimiter in the first line
-  const counts: Record<string, number> = {};
+  // Count occurrences of each delimiter in the header (first line)
+  const headerCounts: Record<string, number> = {};
   delimiters.forEach(d => {
-    counts[d] = countDelimiterOccurrences(lines[0], d);
+    headerCounts[d] = countDelimiterOccurrences(lines[0], d);
   });
 
   // Find the best delimiter based on consistency and count
@@ -72,21 +72,44 @@ function detectDelimiter(content: string): string {
   let bestScore = 0;
 
   for (const d of delimiters) {
-    if (counts[d] === 0) continue;
+    if (headerCounts[d] === 0) continue;
 
-    // Check if all lines have similar count (consistency check)
-    const allCounts = lines.map(line => countDelimiterOccurrences(line, d));
-    const firstCount = allCounts[0];
-    
-    // Allow some variance for data rows (they might have fewer fields)
-    const isConsistent = allCounts.every((c, i) => {
-      if (i === 0) return true; // Header is reference
-      return c >= firstCount - 1 && c <= firstCount + 1;
-    });
+    const headerCount = headerCounts[d];
+    const dataLines = lines.slice(1);
 
-    if (isConsistent && counts[d] > bestScore) {
-      bestScore = counts[d];
+    if (dataLines.length === 0) {
+      // Only header — use highest count
+      if (headerCount > bestScore) {
+        bestScore = headerCount;
+        bestDelimiter = d;
+      }
+      continue;
+    }
+
+    // Tolerant consistency: accept data rows with count >= 50% of header count
+    const minAcceptable = Math.floor(headerCount / 2);
+    const consistentCount = dataLines.filter(line => {
+      const c = countDelimiterOccurrences(line, d);
+      return c >= minAcceptable && c <= headerCount + 1;
+    }).length;
+
+    // Accept if majority (>= 60%) of data lines are consistent
+    const isConsistent = consistentCount >= Math.ceil(dataLines.length * 0.6);
+
+    if (isConsistent && headerCount > bestScore) {
+      bestScore = headerCount;
       bestDelimiter = d;
+    }
+  }
+
+  // Fallback: if no delimiter passed consistency, pick the one with highest header count
+  if (bestScore === 0) {
+    let fallbackMax = 0;
+    for (const d of delimiters) {
+      if (headerCounts[d] > fallbackMax) {
+        fallbackMax = headerCounts[d];
+        bestDelimiter = d;
+      }
     }
   }
 
