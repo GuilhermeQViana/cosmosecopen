@@ -10,7 +10,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Vendor } from '@/hooks/useVendors';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Calendar as CalendarUI } from '@/components/ui/calendar';
+import { Vendor, useUpdateVendor } from '@/hooks/useVendors';
 import { useVendorAssessments, VendorAssessment } from '@/hooks/useVendorAssessments';
 import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
 import { VendorLifecycleBadge, DataClassificationBadge } from './VendorLifecycleBadge';
@@ -21,9 +30,11 @@ import { VendorIncidentLog } from './VendorIncidentLog';
 import { VendorSLATracker } from './VendorSLATracker';
 import { VendorOffboardingWizard } from './VendorOffboardingWizard';
 import { VendorPortalManager } from './VendorPortalManager';
+import { toast } from 'sonner';
 import {
   Building2,
   Calendar,
+  CalendarClock,
   Mail,
   Phone,
   User,
