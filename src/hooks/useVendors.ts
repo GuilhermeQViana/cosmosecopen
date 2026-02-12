@@ -247,6 +247,37 @@ export function useDeleteVendor() {
   });
 }
 
+export function useBulkCreateVendors() {
+  const queryClient = useQueryClient();
+  const { organization } = useOrganization();
+
+  return useMutation({
+    mutationFn: async (vendors: Array<{
+      code: string; name: string; description?: string | null; category?: string | null;
+      criticality: string; status: string; contact_name?: string | null; contact_email?: string | null;
+      contact_phone?: string | null; contract_start?: string | null; contract_end?: string | null;
+      service_type?: string | null; data_classification?: string | null; lifecycle_stage?: string;
+    }>) => {
+      if (!organization?.id) throw new Error('No organization');
+      const { data: user } = await supabase.auth.getUser();
+
+      const rows = vendors.map(v => ({
+        ...v,
+        organization_id: organization.id,
+        created_by: user.user?.id || null,
+      }));
+
+      const { data, error } = await supabase.from('vendors').insert(rows).select();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['next-vendor-code'] });
+    },
+  });
+}
+
 export function useNextVendorCode() {
   const { organization } = useOrganization();
 
