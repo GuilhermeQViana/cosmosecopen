@@ -42,9 +42,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Building2, Download, LayoutGrid, Columns3 } from 'lucide-react';
+import { Plus, Search, Building2, Download, Upload, LayoutGrid, Columns3 } from 'lucide-react';
 import { VendorPipeline } from '@/components/fornecedores/VendorPipeline';
 import { DueDiligenceDialog } from '@/components/fornecedores/DueDiligenceDialog';
+import { ImportVendorsDialog } from '@/components/fornecedores/ImportVendorsDialog';
 
 const RISK_LEVEL_FILTERS = [
   { value: 'all', label: 'Todos os níveis' },
@@ -71,7 +72,7 @@ export default function Fornecedores() {
   const [activeAssessment, setActiveAssessment] = useState<VendorAssessment | null>(null);
   const [assessmentFormVendor, setAssessmentFormVendor] = useState<Vendor | null>(null);
   const [ddVendor, setDdVendor] = useState<Vendor | null>(null);
-
+  const [importOpen, setImportOpen] = useState(false);
   const { toast } = useToast();
   const { data: vendors, isLoading } = useVendors();
   const { data: nextCode } = useNextVendorCode();
@@ -237,6 +238,15 @@ export default function Fornecedores() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportOpen(true)}
+              className="hover:bg-primary/10 hover:border-primary/30"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Importar
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -406,6 +416,9 @@ export default function Fornecedores() {
           setDdVendor(v);
         }}
       />
+
+      {/* Import Dialog */}
+      <ImportVendorsDialog open={importOpen} onOpenChange={setImportOpen} />
 
       {/* Due Diligence Dialog */}
       <DueDiligenceDialog
