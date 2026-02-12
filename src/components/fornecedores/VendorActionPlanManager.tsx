@@ -108,6 +108,7 @@ export function VendorActionPlanManager({
   const [editingPlan, setEditingPlan] = useState<VendorActionPlan | null>(null);
   const [deletePlan, setDeletePlan] = useState<VendorActionPlan | null>(null);
   const [formData, setFormData] = useState<ActionPlanFormData>(defaultFormData);
+  const [aiGenerating, setAiGenerating] = useState(false);
 
   const { toast } = useToast();
   const { data: actionPlans, isLoading } = useVendorActionPlans(vendor?.id);
