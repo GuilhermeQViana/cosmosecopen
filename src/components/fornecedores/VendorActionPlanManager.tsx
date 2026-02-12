@@ -238,10 +238,59 @@ export function VendorActionPlanManager({
                 <Badge variant="outline">{pendingPlans.length} pendentes</Badge>
                 <Badge variant="secondary">{completedPlans.length} concluídos</Badge>
               </div>
-              <Button onClick={openCreateForm} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Plano
-              </Button>
+              <div className="flex items-center gap-2">
+                {assessmentId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      if (!vendor || !assessmentId) return;
+                      setAiGenerating(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('generate-vendor-action-plans', {
+                          body: { assessmentId, vendorId: vendor.id },
+                        });
+                        if (error) throw error;
+                        if (data.success?.length > 0) {
+                          for (const item of data.success) {
+                            await createPlan.mutateAsync({
+                              vendor_id: vendor.id,
+                              assessment_id: assessmentId,
+                              requirement_id: item.requirementId,
+                              title: item.plan.title,
+                              description: item.plan.description,
+                              priority: item.plan.priority as VendorActionPlan['priority'],
+                              status: 'backlog' as VendorActionPlan['status'],
+                              due_date: null,
+                              assigned_to: null,
+                              completed_at: null,
+                            });
+                          }
+                          toast({ title: `${data.success.length} plano(s) gerado(s) com IA` });
+                        }
+                        if (data.failed?.length > 0) {
+                          toast({ title: `${data.failed.length} falha(s) na geração`, variant: 'destructive' });
+                        }
+                        if (data.success?.length === 0 && data.failed?.length === 0) {
+                          toast({ title: data.message || 'Nenhum requisito com conformidade abaixo de 3' });
+                        }
+                      } catch (err: any) {
+                        toast({ title: err?.message || 'Erro ao gerar planos', variant: 'destructive' });
+                      } finally {
+                        setAiGenerating(false);
+                      }
+                    }}
+                    disabled={aiGenerating}
+                  >
+                    {aiGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2 text-primary" />}
+                    {aiGenerating ? 'Gerando...' : 'Gerar com IA'}
+                  </Button>
+                )}
+                <Button onClick={openCreateForm} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Plano
+                </Button>
+              </div>
             </div>
 
             <ScrollArea className="h-[calc(100vh-14rem)]">
