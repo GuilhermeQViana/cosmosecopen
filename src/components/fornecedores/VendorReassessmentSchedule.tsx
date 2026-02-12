@@ -374,14 +374,33 @@ export function VendorReassessmentSchedule({ onNewScheduleOpen }: VendorReassess
               {selectedVendor && <>Selecione a data para <strong>{selectedVendor.name}</strong></>}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-center py-2">
-            <CalendarUI
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              disabled={(date) => date < new Date()}
-              className="rounded-md border"
-            />
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Frequência rápida</label>
+              <div className="flex flex-wrap gap-2">
+                {FREQUENCY_OPTIONS.map(opt => (
+                  <Button
+                    key={opt.months}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setSelectedDate(addMonths(new Date(), opt.months))}
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <CalendarUI
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={(date) => date < new Date()}
+                className="rounded-md border pointer-events-auto"
+              />
+            </div>
           </div>
           {selectedDate && (
             <p className="text-sm text-center text-muted-foreground">
