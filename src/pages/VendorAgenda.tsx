@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, LayoutDashboard, Calendar, Settings } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, CalendarClock } from 'lucide-react';
 import { VendorReassessmentSchedule } from '@/components/fornecedores/VendorReassessmentSchedule';
 
 export default function VendorAgenda() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('schedule');
+  const [triggerNew, setTriggerNew] = useState(0);
 
   return (
     <div className="space-y-6">
@@ -26,10 +25,12 @@ export default function VendorAgenda() {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={() => navigate('/vrm/fornecedores')}>
-          <LayoutDashboard className="h-4 w-4 mr-2" />
-          Ver Fornecedores
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate('/vrm/fornecedores')}>
+            <LayoutDashboard className="h-4 w-4 mr-2" />
+            Ver Fornecedores
+          </Button>
+        </div>
       </div>
 
       <VendorReassessmentSchedule />
