@@ -1,47 +1,46 @@
 
-## Importacao em Massa de Fornecedores via Planilha
+
+## Sumario de Preenchimento no Template de Importacao de Fornecedores
 
 ### Objetivo
-Permitir que o usuario importe todos os seus fornecedores de uma vez a partir de um arquivo CSV/planilha, com template completo para download, mapeamento inteligente de campos e preview antes da importacao.
+Adicionar uma secao de referencia visual na etapa de Upload do wizard de importacao, logo abaixo do botao "Baixar Template", mostrando um guia completo com todas as opcoes validas para cada campo do CSV. Isso ajuda o usuario a preencher corretamente sem precisar adivinhar.
 
 ---
 
-### Como vai funcionar
+### O que vai mudar
 
-1. Na pagina de Gestao de Fornecedores, um novo botao **"Importar"** aparecera ao lado do botao "Exportar"
-2. Ao clicar, abre um Dialog com wizard de 3 etapas:
-   - **Upload**: Arrastar/soltar ou selecionar arquivo CSV. Botao para baixar template preenchido com exemplos
-   - **Mapeamento**: Deteccao automatica de colunas e mapeamento inteligente dos campos do CSV para os campos do sistema (codigo, nome, categoria, criticidade, etc.)
-   - **Preview**: Tabela mostrando todos os fornecedores a importar, com indicacao de validos/invalidos e erros por linha
-3. Ao confirmar, todos os fornecedores validos sao inseridos de uma vez no banco de dados
-4. Codigos duplicados (ja existentes) sao sinalizados como erro no preview
+Na etapa "Upload" do `ImportVendorsDialog`, abaixo do card de template, sera adicionado um card expansivel (Collapsible) com o titulo **"Guia de preenchimento dos campos"**. Ao expandir, o usuario vera uma tabela/lista com:
 
-### Template CSV
-
-O template incluira todas as colunas do fornecedor com 2 linhas de exemplo:
-
-```text
-codigo;nome;descricao;categoria;criticidade;status;contato_nome;contato_email;contato_telefone;inicio_contrato;fim_contrato;tipo_servico;classificacao_dados
-VND-001;Amazon AWS;Servicos de cloud computing;Cloud;critica;ativo;Joao Silva;joao@aws.com;11999990000;2024-01-01;2026-12-31;cloud;confidencial
-VND-002;Consultoria XYZ;Consultoria em seguranca;Consultoria;media;ativo;Maria Santos;maria@xyz.com;11988880000;2024-06-01;2025-05-31;consultoria;interna
-```
+| Campo | Obrigatorio | Formato / Valores aceitos |
+|-------|-------------|--------------------------|
+| codigo | Nao (auto-gerado) | Texto livre. Ex: VND-001, VND-002. Se vazio, sera gerado automaticamente |
+| nome | Sim | Texto livre. Nome do fornecedor. Ex: Amazon AWS |
+| descricao | Nao | Texto livre. Descricao do servico prestado |
+| categoria | Nao | Tecnologia, Cloud, Servicos, Consultoria, Infraestrutura, Seguranca, Telecom, Outros |
+| criticidade | Nao (padrao: media) | critica, alta, media, baixa |
+| status | Nao (padrao: ativo) | ativo, inativo, em_avaliacao, bloqueado |
+| contato_nome | Nao | Texto livre. Nome da pessoa de contato |
+| contato_email | Nao | Email valido. Ex: joao@empresa.com |
+| contato_telefone | Nao | Texto livre. Ex: 11999990000 |
+| inicio_contrato | Nao | Data no formato AAAA-MM-DD. Ex: 2024-01-15 |
+| fim_contrato | Nao | Data no formato AAAA-MM-DD. Ex: 2026-12-31 |
+| tipo_servico | Nao | Texto livre. Ex: cloud, consultoria, SaaS |
+| classificacao_dados | Nao (padrao: nenhum) | publica, interna, confidencial, restrita |
 
 ---
 
 ### Detalhes Tecnicos
 
-**Novos arquivos:**
-- `src/hooks/useImportVendors.ts` - Hook de parsing CSV adaptado do `useImportControls.ts`, com campos mapeados para a tabela `vendors` (code, name, description, category, criticality, status, contact_name, contact_email, contact_phone, contract_start, contract_end, service_type, data_classification). Inclui validacao de campos obrigatorios (code, name), deteccao de duplicatas por codigo e geracao/download do template
-- `src/components/fornecedores/ImportVendorsDialog.tsx` - Dialog com wizard de 3 etapas (upload, mapeamento, preview) reutilizando o componente `CSVFieldMapper` existente para mapeamento de colunas. Inclui dropzone para upload, preview em tabela com badges de valido/invalido, contadores de resumo e botao de importacao
+**Arquivo modificado:**
+- `src/components/fornecedores/ImportVendorsDialog.tsx`
 
-**Arquivos modificados:**
-- `src/pages/Fornecedores.tsx` - Adicionar botao "Importar" (icone Upload) ao lado do "Exportar" no header, e renderizar o `ImportVendorsDialog`
-- `src/hooks/useVendors.ts` - Adicionar hook `useBulkCreateVendors` que recebe array de fornecedores e insere todos via `supabase.from('vendors').insert(vendorArray)`, invalidando o cache apos sucesso
+**Mudancas:**
+- Importar `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` de `@/components/ui/collapsible`
+- Importar `ChevronDown` de lucide-react
+- Adicionar um componente `Collapsible` abaixo do card de template na etapa "upload"
+- Dentro, renderizar uma tabela com 3 colunas: Campo, Obrigatorio (sim/nao), Valores Aceitos
+- Dados da tabela extraidos das constantes ja existentes: `VENDOR_CATEGORIES`, `VENDOR_CRITICALITY`, `VENDOR_STATUS`, `VENDOR_DATA_CLASSIFICATION` e `VENDOR_SYSTEM_FIELDS`
+- O card inicia fechado para nao poluir a tela, com um botao "Ver guia de preenchimento" que expande
 
-**Logica de importacao:**
-- Deteccao automatica de delimitador (virgula, ponto-e-virgula, TAB, pipe)
-- Mapeamento inteligente com sinonimos (ex: "nome" mapeia para "name", "criticidade" para "criticality")
-- Validacao: codigo e nome obrigatorios, criticidade deve ser um dos valores validos, email validado com regex
-- Verificacao de duplicatas contra fornecedores ja existentes na organizacao
-- Auto-geracao de codigos sequenciais (VND-XXX) caso nao fornecidos
-- Bulk insert unico ao confirmar (nao linha a linha)
+**Nenhum novo arquivo sera criado** -- e uma alteracao pontual no dialog existente.
+
