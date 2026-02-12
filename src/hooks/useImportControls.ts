@@ -25,6 +25,18 @@ export interface ExtractHeadersResult {
 
 const REQUIRED_FIELDS = ['code', 'name'];
 
+const CRITICALITY_MAP: Record<string, string> = {
+  'baixo': 'baixo', 'baixa': 'baixo',
+  'medio': 'medio', 'media': 'medio', 'média': 'medio', 'médio': 'medio',
+  'alto': 'alto', 'alta': 'alto',
+  'critico': 'critico', 'critica': 'critico', 'crítico': 'critico', 'crítica': 'critico',
+};
+
+function normalizeCriticality(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  return CRITICALITY_MAP[value.toLowerCase().trim()] || undefined;
+}
+
 // Split CSV content into lines respecting quoted fields with newlines
 function splitCSVLines(content: string): string[] {
   const lines: string[] = [];
@@ -326,7 +338,7 @@ export function useImportControls() {
         category: row.category || undefined,
         description: row.description || undefined,
         weight,
-        criticality: row.criticality || undefined,
+        criticality: normalizeCriticality(row.criticality),
         weight_reason: row.weight_reason || undefined,
         implementation_example: row.implementation_example || undefined,
         evidence_example: row.evidence_example || undefined,
@@ -421,7 +433,7 @@ export function generateCSVTemplate(): string {
       category: 'Governança',
       description: 'Estabelecer diretrizes e princípios de segurança da informação',
       weight: '3',
-      criticality: 'alta',
+      criticality: 'alto',
       weight_reason: 'Controle fundamental para o programa de segurança',
       implementation_example: 'Documento formal aprovado pela alta direção',
       evidence_example: 'Política assinada e publicada na intranet',
@@ -433,7 +445,7 @@ export function generateCSVTemplate(): string {
       category: 'Ativos',
       description: 'Identificar e classificar ativos de informação',
       weight: '2',
-      criticality: 'media',
+      criticality: 'medio',
       weight_reason: 'Importante para inventário de ativos',
       implementation_example: 'Sistema de inventário de ativos atualizado',
       evidence_example: 'Relatório do sistema de gestão de ativos',
