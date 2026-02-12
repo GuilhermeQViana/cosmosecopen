@@ -9,6 +9,7 @@ import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { FrameworkProvider } from "@/contexts/FrameworkContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { VendorLayout } from "@/components/layout/VendorLayout";
+import { PolicyLayout } from "@/components/layout/PolicyLayout";
 import Landing from "@/pages/Landing";
 import ConhecaCosmoSec from "@/pages/ConhecaCosmoSec";
 import Auth from "@/pages/Auth";
@@ -41,6 +42,11 @@ import TermosDeUso from "@/pages/TermosDeUso";
 import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
 import PoliticaLGPD from "@/pages/PoliticaLGPD";
 import VendorPortal from "@/pages/VendorPortal";
+import PolicyDashboard from "@/pages/PolicyDashboard";
+import Politicas from "@/pages/Politicas";
+import PolicyWorkflows from "@/pages/PolicyWorkflows";
+import PolicyAceite from "@/pages/PolicyAceite";
+import PolicyTemplates from "@/pages/PolicyTemplates";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -96,6 +102,16 @@ const App = () => (
                     <Route path="/vrm/evidencias" element={<VendorEvidencias />} />
                     <Route path="/vrm/agenda" element={<VendorAgenda />} />
                     <Route path="/vrm/configuracoes" element={<Configuracoes />} />
+                  </Route>
+
+                  {/* Módulo Políticas (Policy Center) */}
+                  <Route element={<PolicyLayout />}>
+                    <Route path="/policies" element={<PolicyDashboard />} />
+                    <Route path="/policies/central" element={<Politicas />} />
+                    <Route path="/policies/workflows" element={<PolicyWorkflows />} />
+                    <Route path="/policies/aceite" element={<PolicyAceite />} />
+                    <Route path="/policies/templates" element={<PolicyTemplates />} />
+                    <Route path="/policies/configuracoes" element={<Configuracoes />} />
                   </Route>
 
                   <Route path="*" element={<NotFound />} />

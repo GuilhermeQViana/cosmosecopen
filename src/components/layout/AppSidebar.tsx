@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Shield,
+  FileText,
   LayoutDashboard,
   ClipboardCheck,
   AlertTriangle,
@@ -348,6 +349,16 @@ export function AppSidebar() {
                 >
                   <Building className="w-4 h-4" />
                   <span>Fornecedores (VRM)</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate('/policies')}
+                  tooltip="Gestão de Políticas"
+                  className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Políticas</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
