@@ -11,22 +11,15 @@ interface PageTransitionProps {
 export function PageTransition({ children, className }: PageTransitionProps) {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(false);
-  const [displayChildren, setDisplayChildren] = useState(children);
 
   useEffect(() => {
-    // Start exit animation
     setIsVisible(false);
-    
-    // After exit animation, update children and start enter animation
     const timer = setTimeout(() => {
-      setDisplayChildren(children);
       setIsVisible(true);
     }, 200);
-
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
-  // Initial mount
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
@@ -44,7 +37,7 @@ export function PageTransition({ children, className }: PageTransitionProps) {
           className
         )}
       >
-        {displayChildren}
+        {children}
       </div>
     </>
   );
