@@ -1,42 +1,66 @@
 
-## Corrigir Deteccao de Delimitador no Import CSV
 
-### Problema
+## Suporte a Excel e Google Sheets na Importacao de Controles
 
-O `detectDelimiter` exige que TODAS as linhas tenham contagem similar do delimitador (+-1). Quando o Excel omite colunas vazias no final das linhas de dados, a contagem de ponto-e-virgula nas linhas de dados fica menor que no cabecalho, o que faz o algoritmo rejeitar o `;` e cair no default `,` — resultando em 1 unica coluna.
+### O que muda
 
-### Solucao
+Atualmente o sistema aceita apenas arquivos `.csv`. Vamos expandir para aceitar tambem:
 
-**Arquivo: `src/hooks/useImportControls.ts`** — Funcao `detectDelimiter`
+1. **Arquivos Excel** (`.xlsx`, `.xls`) - lidos diretamente no navegador
+2. **Google Sheets** - via URL publica (o usuario cola o link da planilha compartilhada)
 
-Tornar a deteccao mais robusta com estas mudancas:
+### Nova Dependencia
 
-1. **Fallback por contagem do cabecalho**: Se nenhum delimitador passar no teste de consistencia, usar o delimitador com maior contagem na primeira linha (cabecalho). Se o cabecalho tem 9 ponto-e-virgulas e 0 virgulas, ponto-e-virgula vence independente da consistencia.
+- **`xlsx`** (SheetJS) - Biblioteca para ler arquivos Excel no browser. Converte planilhas Excel em arrays de dados que o sistema ja sabe processar.
 
-2. **Consistencia mais tolerante**: Aceitar linhas de dados com ate 50% menos delimitadores que o cabecalho (em vez de apenas +-1), pois o Excel frequentemente omite colunas vazias no final.
+### Mudancas nos Arquivos
 
-3. **Priorizar maioria**: Se 3 de 4 linhas de dados sao consistentes, considerar o delimitador como valido (em vez de exigir 100%).
+**1. `src/hooks/useImportControls.ts`**
+- Adicionar funcao `parseExcelToCSV(file: File): Promise<string>` que:
+  - Le o arquivo como ArrayBuffer
+  - Usa `xlsx.read()` para parsear
+  - Pega a primeira sheet
+  - Converte para CSV com `xlsx.utils.sheet_to_csv()` usando separador `;`
+  - Retorna o conteudo CSV para o pipeline existente processar
+- Adicionar funcao `fetchGoogleSheetAsCSV(url: string): Promise<string>` que:
+  - Extrai o ID da planilha da URL do Google Sheets
+  - Monta a URL de exportacao publica: `https://docs.google.com/spreadsheets/d/{ID}/export?format=csv`
+  - Faz fetch e retorna o conteudo CSV
+- Atualizar `parseFile` para detectar extensao e chamar o conversor apropriado
 
-### Mudanca no Codigo
+**2. `src/components/configuracoes/ImportControlsCSV.tsx`**
+- Renomear titulo de "Importar Controles via CSV" para "Importar Controles"
+- Atualizar o dropzone para aceitar `.csv`, `.xlsx`, `.xls`
+- Atualizar texto: "Arraste um arquivo CSV ou Excel, ou cole um link do Google Sheets"
+- Adicionar campo de input para URL do Google Sheets com botao "Carregar"
+- Atualizar validacao do `onDrop` para aceitar as novas extensoes
+- Quando for arquivo Excel, chamar `parseExcelToCSV` antes de entrar no pipeline de mapeamento
+- Quando for URL do Google Sheets, chamar `fetchGoogleSheetAsCSV`
+- Mostrar badge do tipo de arquivo detectado (CSV, Excel, Google Sheets)
+
+### Fluxo do Usuario
 
 ```text
-Antes:
-  - isConsistent exige ALL linhas com +-1 do cabecalho
-  - Se nenhum delimitador e consistente, retorna ','
-
-Depois:
-  - isConsistent aceita linhas com contagem >= metade do cabecalho
-  - Se nenhum delimitador e consistente, usa o com maior contagem no cabecalho
-  - Adiciona fallback explicito: se header tem 0 virgulas mas N ponto-e-virgulas, usa ponto-e-virgula
++---------------------------------------------------+
+| Importar Controles                  [Baixar Template] |
++---------------------------------------------------+
+|                                                     |
+|  [Arraste CSV ou Excel, ou clique para selecionar]  |
+|                                                     |
+|  ---- ou ----                                       |
+|                                                     |
+|  Link do Google Sheets:                             |
+|  [https://docs.google.com/spreadshee... ] [Carregar]|
+|                                                     |
++---------------------------------------------------+
 ```
 
-**Arquivo: `src/components/configuracoes/CSVFieldMapper.tsx`** — Funcao `autoMapFields`
+### Detalhes Tecnicos
 
-Adicionar matching mais flexivel para que os headers do arquivo (ex: `code`, `name`, `weight`) sejam mapeados mesmo com pequenas variacoes:
+- A lib `xlsx` sera instalada como dependencia do projeto (~500KB gzipped, mas faz tree-shaking)
+- A conversao Excel -> CSV acontece inteiramente no browser (sem backend)
+- Para Google Sheets, a planilha DEVE estar compartilhada como "Qualquer pessoa com o link pode ver"
+- Se a planilha tiver multiplas abas, sera usada a primeira aba automaticamente
+- O resto do pipeline (deteccao de delimitador, mapeamento, preview) continua igual - so muda a origem dos dados
+- Tratamento de erros especifico: planilha privada, URL invalida, arquivo corrompido
 
-- Adicionar busca por "starts with" e "contains" alem de match exato nos sinonimos
-- Isso garante que mesmo com acentos ou underscores extras o mapeamento automatico funcione
-
-### Resultado
-
-O arquivo CSV com separador `;` sera corretamente detectado, as 10 colunas serao identificadas, e o mapeamento automatico associara cada coluna ao campo correto do sistema.
