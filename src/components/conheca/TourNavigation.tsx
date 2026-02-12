@@ -1,4 +1,4 @@
-import { Shield, Building2, Brain, MessageSquare } from 'lucide-react';
+import { Shield, Building2, Brain, FileText, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,7 @@ interface TourNavigationProps {
 const sectionIcons: Record<string, React.ElementType> = {
   grc: Shield,
   vrm: Building2,
+  policies: FileText,
   advanced: Brain,
   contact: MessageSquare,
 };

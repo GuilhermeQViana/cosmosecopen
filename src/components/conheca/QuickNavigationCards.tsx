@@ -1,4 +1,4 @@
-import { Shield, Building2, Brain, ArrowRight } from 'lucide-react';
+import { Shield, Building2, Brain, FileText, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -23,14 +23,21 @@ const modules: ModuleCard[] = [
     icon: Building2,
     title: 'VRM Fornecedores',
     subtitle: 'Riscos de Terceiros',
+    featureCount: 12,
+  },
+  {
+    id: 'policies',
+    icon: FileText,
+    title: 'Gestão de Políticas',
+    subtitle: 'Aprovações e Aceite',
     featureCount: 6,
   },
   {
     id: 'advanced',
     icon: Brain,
     title: 'Recursos Avançados',
-    subtitle: 'IA e Automação',
-    featureCount: 6,
+    subtitle: 'IA, Relatórios e Automação',
+    featureCount: 8,
   },
 ];
 
@@ -40,7 +47,7 @@ interface QuickNavigationCardsProps {
 
 export function QuickNavigationCards({ onNavigate }: QuickNavigationCardsProps) {
   return (
-    <div className="grid sm:grid-cols-3 gap-4 mt-10">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
       {modules.map((module, index) => (
         <Card
           key={module.id}

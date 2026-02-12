@@ -1,4 +1,4 @@
-import { Shield, Building2, Check, ArrowRight } from 'lucide-react';
+import { Shield, Building2, FileText, Check, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,6 @@ const comparisonData = [
       'Gestão de controles internos',
       'Auditorias internas e externas',
     ],
-    color: 'primary',
   },
   {
     id: 'vrm',
@@ -30,11 +29,23 @@ const comparisonData = [
     idealFor: [
       'Due diligence de terceiros',
       'Avaliação de risco de fornecedores',
-      'Monitoramento contínuo',
-      'Gestão de contratos',
+      'SLA tracking e monitoramento',
+      'Gestão de contratos e portal',
       'Compliance de parceiros',
     ],
-    color: 'secondary',
+  },
+  {
+    id: 'policies',
+    icon: FileText,
+    title: 'Gestão de Políticas',
+    subtitle: 'Políticas, Aprovações e Aceite',
+    idealFor: [
+      'Políticas de segurança da informação',
+      'Fluxos de aprovação multi-nível',
+      'Campanhas de aceite e aderência',
+      'Versionamento e auditoria',
+      'Templates reutilizáveis',
+    ],
   },
 ];
 
@@ -55,7 +66,7 @@ export function ModuleComparisonSection({ onNavigate }: ModuleComparisonSectionP
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {comparisonData.map((module) => (
             <Card 
               key={module.id}
@@ -67,8 +78,8 @@ export function ModuleComparisonSection({ onNavigate }: ModuleComparisonSectionP
                     <module.icon className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">{module.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{module.subtitle}</p>
+                    <CardTitle className="text-lg">{module.title}</CardTitle>
+                    <p className="text-xs text-muted-foreground">{module.subtitle}</p>
                   </div>
                 </div>
               </CardHeader>
@@ -99,7 +110,7 @@ export function ModuleComparisonSection({ onNavigate }: ModuleComparisonSectionP
 
         <div className="text-center mt-10">
           <p className="text-muted-foreground mb-4">
-            Ou use ambos os módulos com <span className="text-primary font-medium">integração nativa</span>
+            Ou use todos os módulos com <span className="text-primary font-medium">integração nativa</span>
           </p>
           <Button variant="cosmic" asChild>
             <a href="#contact">
