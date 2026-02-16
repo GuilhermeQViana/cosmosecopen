@@ -81,6 +81,7 @@ function SlidePreviewCard({ slide }: { slide: SlideDefinition }) {
 
 export default function PresentationSlidesSection() {
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [activeTab, setActiveTab] = useState('fundos');
 
   const handleDownloadAll = async () => {
     setDownloadingAll(true);
@@ -119,8 +120,8 @@ export default function PresentationSlidesSection() {
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="fundos">
-          <TabsList className="mb-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4 relative z-20">
             {CATEGORIES.map(cat => (
               <TabsTrigger key={cat.id} value={cat.id}>
                 {cat.label}
