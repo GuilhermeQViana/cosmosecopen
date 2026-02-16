@@ -321,7 +321,7 @@ function PlatformCard({
             <p className={cn('text-xs font-semibold uppercase tracking-widest mb-4', color.text)}>
               Funcionalidades
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {platform.subFeatures.map((sub) => (
                 <SubFeatureCard key={sub.title} sub={sub} color={color} />
               ))}
@@ -336,24 +336,22 @@ function PlatformCard({
 function SubFeatureCard({ sub, color }: { sub: SubFeature; color: ModuleColor }) {
   return (
     <div className={cn(
-      'rounded-xl border border-l-2 p-5 min-h-[140px] transition-all duration-300',
-      'bg-background/50 dark:bg-background/30',
-      color.border,
-      'hover:bg-background/80 dark:hover:bg-background/50',
-      'hover:scale-[1.02] hover:shadow-md'
+      'flex flex-col rounded-xl border-l-[3px] border border-white/[0.08] p-6 min-h-[140px] transition-all duration-300',
+      'bg-white/[0.03] dark:bg-white/[0.04] backdrop-blur-md',
+      'hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-lg',
     )}
       style={{ borderLeftColor: 'currentColor' }}
     >
       <div className={cn('flex items-center gap-3 mb-3', color.text)}>
-        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', color.bg)}>
-          <sub.icon className={cn('w-5 h-5', color.text)} />
+        <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', color.bg)}>
+          <sub.icon className={cn('w-[18px] h-[18px]', color.text)} />
         </div>
-        <h4 className="text-sm font-semibold text-foreground">{sub.title}</h4>
+        <h4 className="text-[13px] font-medium tracking-wide text-foreground">{sub.title}</h4>
       </div>
-      <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{sub.description}</p>
-      <div className="flex flex-wrap gap-1.5">
+      <p className="text-xs text-muted-foreground leading-snug line-clamp-2 mb-3">{sub.description}</p>
+      <div className="mt-auto flex flex-wrap gap-1.5">
         {sub.highlights.map((h) => (
-          <Badge key={h} variant="outline" className={cn('text-xs px-2.5 py-0.5', color.badge)}>
+          <Badge key={h} variant="outline" className={cn('text-[11px] px-2.5 py-0.5 rounded-full', color.badge.replace('/10', '/5'))}>
             {h}
           </Badge>
         ))}
