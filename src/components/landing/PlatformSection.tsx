@@ -1,9 +1,32 @@
 import { useState } from 'react';
-import { Shield, Building2, Sparkles, CheckCircle2, ChevronDown, Eye, ClipboardCheck, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  Shield, Building2, Sparkles, CheckCircle2, ChevronDown, FileText, ClipboardCheck,
+  LayoutDashboard, AlertTriangle, FolderLock, ListTodo, Map,
+  Users, Search, Timer, Globe, FileSignature,
+  PenTool, Workflow, Mail, BookTemplate, GitBranch,
+  Brain, Lightbulb, FileBarChart, History, MessageSquare, ShieldAlert,
+  Handshake, BarChart3, UserMinus,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ModuleScreenshotGallery, Screenshot } from './ModuleScreenshotGallery';
 import { cn } from '@/lib/utils';
+
+interface SubFeature {
+  icon: typeof Shield;
+  title: string;
+  description: string;
+  highlights: string[];
+}
+
+interface ModuleColor {
+  border: string;
+  borderHover: string;
+  bg: string;
+  text: string;
+  icon: string;
+  glow: string;
+  badge: string;
+}
 
 interface Platform {
   id: string;
@@ -11,9 +34,57 @@ interface Platform {
   title: string;
   description: string;
   features: string[];
-  gradient: string;
-  screenshots: Screenshot[];
+  color: ModuleColor;
+  subFeatures: SubFeature[];
 }
+
+const moduleColors: Record<string, ModuleColor> = {
+  grc: {
+    border: 'border-blue-500/20',
+    borderHover: 'hover:border-blue-500/50',
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-400',
+    icon: 'from-blue-600 to-blue-400',
+    glow: 'hover:shadow-[0_0_40px_rgba(59,130,246,0.15)]',
+    badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  },
+  vrm: {
+    border: 'border-cyan-500/20',
+    borderHover: 'hover:border-cyan-500/50',
+    bg: 'bg-cyan-500/10',
+    text: 'text-cyan-400',
+    icon: 'from-cyan-600 to-cyan-400',
+    glow: 'hover:shadow-[0_0_40px_rgba(6,182,212,0.15)]',
+    badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  },
+  politicas: {
+    border: 'border-violet-500/20',
+    borderHover: 'hover:border-violet-500/50',
+    bg: 'bg-violet-500/10',
+    text: 'text-violet-400',
+    icon: 'from-violet-600 to-violet-400',
+    glow: 'hover:shadow-[0_0_40px_rgba(139,92,246,0.15)]',
+    badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  },
+  ia: {
+    border: 'border-amber-500/20',
+    borderHover: 'hover:border-amber-500/50',
+    bg: 'bg-amber-500/10',
+    text: 'text-amber-400',
+    icon: 'from-amber-500 to-orange-400',
+    glow: 'hover:shadow-[0_0_40px_rgba(245,158,11,0.15)]',
+    badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  },
+  consultoria: {
+    border: 'border-emerald-500/20',
+    borderHover: 'hover:border-emerald-500/50',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-400',
+    icon: 'from-emerald-600 to-emerald-400',
+    glow: 'hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]',
+    badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  },
+};
 
 const platforms: Platform[] = [
   {
@@ -27,12 +98,14 @@ const platforms: Platform[] = [
       'Risk Score automático e matriz de riscos',
       'Gestão de evidências e mapeamento cruzado',
     ],
-    gradient: 'from-primary to-primary/70',
-    screenshots: [
-      { src: '/screenshots/grc-dashboard-1.png', title: 'Dashboard Executivo', description: 'Visão consolidada com score, alertas e métricas principais' },
-      { src: '/screenshots/grc-dashboard-2.png', title: 'Métricas de Remediação', description: 'MTTR, tendência de conformidade e histórico de maturidade' },
-      { src: '/screenshots/grc-dashboard-3.png', title: 'Indicadores Personalizáveis', description: 'Mapa de calor, distribuição de riscos e controles por maturidade' },
-      { src: '/screenshots/grc-dashboard-4.png', title: 'Atenção Prioritária', description: 'Top ameaças, cobertura por framework e gaps críticos' },
+    color: moduleColors.grc,
+    subFeatures: [
+      { icon: LayoutDashboard, title: 'Dashboard Executivo', description: 'Score de segurança, gráficos de tendência e alertas de riscos críticos.', highlights: ['Score em tempo real', 'Gráficos interativos'] },
+      { icon: ClipboardCheck, title: 'Diagnóstico de Controles', description: 'Avalie controles com maturidade 0-5, metas e evolução temporal.', highlights: ['Maturidade 0-5', 'Bulk edit'] },
+      { icon: AlertTriangle, title: 'Matriz de Riscos', description: 'Matriz 5x5 interativa com impacto vs probabilidade e risco residual.', highlights: ['ISO 31000', 'Risco residual'] },
+      { icon: FolderLock, title: 'Cofre de Evidências', description: 'Documentos organizados em pastas com classificação de sigilo.', highlights: ['Preview de arquivos', 'Validade'] },
+      { icon: ListTodo, title: 'Planos de Ação', description: 'Kanban, calendário e timeline com notificações de prazo.', highlights: ['Kanban', 'Notificações'] },
+      { icon: Map, title: 'Mapeamento Cruzado', description: 'Correspondências entre controles de diferentes frameworks.', highlights: ['NIST ↔ ISO', 'Gap analysis'] },
     ],
   },
   {
@@ -46,8 +119,15 @@ const platforms: Platform[] = [
       'Portal de fornecedores e pipeline visual',
       'Incidentes, offboarding e agenda de reavaliação',
     ],
-    gradient: 'from-secondary to-secondary/70',
-    screenshots: [],
+    color: moduleColors.vrm,
+    subFeatures: [
+      { icon: Users, title: 'Cadastro & Pipeline', description: 'Registre fornecedores com criticidade e pipeline visual Kanban/Funnel.', highlights: ['Pipeline visual', 'Import em lote'] },
+      { icon: ClipboardCheck, title: 'Avaliação Estruturada', description: '45+ requisitos em 4 domínios com score ponderado.', highlights: ['4 domínios', 'Score ponderado'] },
+      { icon: Search, title: 'Due Diligence', description: 'Processo estruturado com assistência de IA para análise de riscos.', highlights: ['Assistência IA', 'Relatório auto'] },
+      { icon: Timer, title: 'SLA Tracking', description: 'Monitore SLAs com métricas de conformidade em tempo real.', highlights: ['Alertas de violação', 'Histórico'] },
+      { icon: Globe, title: 'Portal de Fornecedores', description: 'Fornecedores respondem avaliações e enviam evidências.', highlights: ['Acesso externo', 'Autoavaliação'] },
+      { icon: FileSignature, title: 'Contratos & Offboarding', description: 'Gestão de contratos com wizard de desligamento seguro.', highlights: ['Alertas de vencimento', 'Checklist'] },
+    ],
   },
   {
     id: 'politicas',
@@ -60,8 +140,15 @@ const platforms: Platform[] = [
       'Campanhas de aceite com rastreamento',
       'Templates, versionamento e export PDF',
     ],
-    gradient: 'from-violet-500 to-purple-500',
-    screenshots: [],
+    color: moduleColors.politicas,
+    subFeatures: [
+      { icon: PenTool, title: 'Editor Rich-Text + IA', description: 'Editor completo com geração de conteúdo por IA, tabelas e imagens.', highlights: ['Geração por IA', 'Formatação avançada'] },
+      { icon: Workflow, title: 'Fluxos de Aprovação', description: 'Workflows multi-nível com aprovadores por papel ou usuário.', highlights: ['Multi-nível', 'Histórico'] },
+      { icon: Mail, title: 'Campanhas de Aceite', description: 'Distribua políticas e rastreie aderência em tempo real.', highlights: ['Rastreamento', 'Relatório'] },
+      { icon: BookTemplate, title: 'Templates', description: 'Biblioteca de templates pré-configurados por framework.', highlights: ['Por framework', 'Customizáveis'] },
+      { icon: GitBranch, title: 'Versionamento', description: 'Controle de versões automático com exportação PDF.', highlights: ['Versões auto', 'Export PDF'] },
+      { icon: LayoutDashboard, title: 'Dashboard', description: 'Métricas de status, categorias e alertas de revisão.', highlights: ['Métricas', 'Alertas'] },
+    ],
   },
   {
     id: 'ia',
@@ -74,8 +161,15 @@ const platforms: Platform[] = [
       'Análise de incidentes e criticidade automática',
       '6 tipos de relatórios automatizados',
     ],
-    gradient: 'from-primary via-secondary to-primary',
-    screenshots: [],
+    color: moduleColors.ia,
+    subFeatures: [
+      { icon: Brain, title: 'Planos de Ação por IA', description: 'IA gera planos detalhados com tarefas e prioridade automática.', highlights: ['Geração automática', 'Tarefas detalhadas'] },
+      { icon: Lightbulb, title: 'Assistente de Implementação', description: 'Guia inteligente com passos práticos para cada controle.', highlights: ['Passo a passo', 'Contextual'] },
+      { icon: FileBarChart, title: '6 Tipos de Relatórios', description: 'Conformidade, Riscos, Gap Analysis, Executivo e mais.', highlights: ['Export PDF', 'Branding'] },
+      { icon: ShieldAlert, title: 'Análise de Incidentes', description: 'IA analisa incidentes e sugere ações de mitigação.', highlights: ['Severidade auto', 'Sugestões'] },
+      { icon: MessageSquare, title: 'Colaboração Inteligente', description: 'Comentários, threads e notificações em todos os módulos.', highlights: ['Threads', 'Reações'] },
+      { icon: Shield, title: 'Frameworks Customizados', description: 'Crie frameworks do zero ou importe via CSV.', highlights: ['Import CSV', 'Edição completa'] },
+    ],
   },
   {
     id: 'consultoria',
@@ -88,8 +182,15 @@ const platforms: Platform[] = [
       'Templates de diagnóstico reutilizáveis',
       'Trilha de auditoria completa por cliente',
     ],
-    gradient: 'from-emerald-500 to-teal-500',
-    screenshots: [],
+    color: moduleColors.consultoria,
+    subFeatures: [
+      { icon: Handshake, title: 'Multi-Organizações', description: 'Gerencie múltiplos clientes em um único painel centralizado.', highlights: ['Painel único', 'Troca rápida'] },
+      { icon: BarChart3, title: 'Relatórios Customizados', description: 'Relatórios executivos com branding personalizado do cliente.', highlights: ['Branding', 'Export PDF'] },
+      { icon: ClipboardCheck, title: 'Templates de Diagnóstico', description: 'Templates reutilizáveis para padronizar avaliações entre clientes.', highlights: ['Reutilizáveis', 'Padronização'] },
+      { icon: History, title: 'Trilha de Auditoria', description: 'Registro completo de ações por cliente para compliance.', highlights: ['Log completo', 'Filtros avançados'] },
+      { icon: Users, title: 'Equipe e Permissões', description: 'Controle de acesso granular por organização e papel.', highlights: ['Convites', 'Roles'] },
+      { icon: UserMinus, title: 'Ciclo de Vida do Cliente', description: 'Onboarding ao offboarding com histórico preservado.', highlights: ['Onboarding', 'Histórico'] },
+    ],
   },
 ];
 
@@ -100,11 +201,13 @@ export function PlatformSection() {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const topRow = platforms.slice(0, 3);
+  const bottomRow = platforms.slice(3);
+
   return (
     <section id="platform" className="py-24 relative">
-      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
-      
+
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
@@ -117,98 +220,140 @@ export function PlatformSection() {
           </p>
         </div>
 
-        {/* Platform Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-[1400px] mx-auto">
-          {platforms.map((platform) => {
-            const isExpanded = expandedId === platform.id;
-            const hasScreenshots = platform.screenshots.length > 0;
-            
-            return (
-              <Collapsible
-                key={platform.id}
-                open={isExpanded}
-                onOpenChange={() => toggleExpanded(platform.id)}
-              >
-                <div
-                  className={cn(
-                    "group relative bg-card/60 dark:bg-card/40 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-500 overflow-hidden",
-                    isExpanded 
-                      ? "border-secondary/50 shadow-[0_0_40px_hsl(var(--secondary)/0.2)] ring-1 ring-secondary/20" 
-                      : "border-primary/20 dark:border-primary/30 hover:border-secondary/50 hover:shadow-[0_0_40px_hsl(var(--secondary)/0.15)]"
-                  )}
-                >
-                  {/* Glow effect on hover */}
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{
-                      background: 'radial-gradient(circle at 50% 0%, hsl(var(--secondary) / 0.1), transparent 60%)',
-                    }}
-                  />
-                  
-                  {/* Icon */}
-                  <div className={`w-14 h-14 bg-gradient-to-br ${platform.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                    <platform.icon className="w-7 h-7 text-white" />
-                  </div>
+        {/* Top Row: 3 cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1200px] mx-auto mb-6">
+          {topRow.map((platform) => (
+            <PlatformCard
+              key={platform.id}
+              platform={platform}
+              isExpanded={expandedId === platform.id}
+              onToggle={() => toggleExpanded(platform.id)}
+            />
+          ))}
+        </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-foreground mb-3 font-space">
-                    {platform.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-muted-foreground mb-6">
-                    {platform.description}
-                  </p>
-
-                  {/* Features */}
-                  <ul className="space-y-3 mb-6">
-                    {platform.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3 text-sm text-muted-foreground">
-                        <CheckCircle2 className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Expand Button */}
-                  <CollapsibleTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className={cn(
-                        "w-full justify-center gap-2 text-sm transition-colors",
-                        hasScreenshots 
-                          ? "text-secondary hover:text-secondary hover:bg-secondary/10" 
-                          : "text-muted-foreground hover:text-muted-foreground/80 cursor-default"
-                      )}
-                      disabled={!hasScreenshots}
-                    >
-                      <Eye className="w-4 h-4" />
-                      {hasScreenshots ? 'Ver em Ação' : 'Em breve'}
-                      {hasScreenshots && (
-                        <ChevronDown 
-                          className={cn(
-                            "w-4 h-4 transition-transform duration-300",
-                            isExpanded && "rotate-180"
-                          )} 
-                        />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-
-                  {/* Expanded Gallery */}
-                  <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-                    <ModuleScreenshotGallery 
-                      screenshots={platform.screenshots} 
-                      moduleId={platform.id} 
-                    />
-                  </CollapsibleContent>
-                </div>
-              </Collapsible>
-            );
-          })}
+        {/* Bottom Row: 2 cards centered */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
+          {bottomRow.map((platform) => (
+            <PlatformCard
+              key={platform.id}
+              platform={platform}
+              isExpanded={expandedId === platform.id}
+              onToggle={() => toggleExpanded(platform.id)}
+            />
+          ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function PlatformCard({
+  platform,
+  isExpanded,
+  onToggle,
+}: {
+  platform: Platform;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const { color } = platform;
+
+  return (
+    <Collapsible open={isExpanded} onOpenChange={onToggle}>
+      <div
+        className={cn(
+          'group relative bg-card/60 dark:bg-card/40 backdrop-blur-sm border rounded-2xl p-8 transition-all duration-500 overflow-hidden',
+          color.border,
+          color.borderHover,
+          color.glow,
+          isExpanded && 'ring-1',
+          isExpanded ? `ring-current ${color.text}` : ''
+        )}
+        style={isExpanded ? { borderColor: 'currentColor' } : undefined}
+      >
+        {/* Icon */}
+        <div className={`w-14 h-14 bg-gradient-to-br ${color.icon} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+          <platform.icon className="w-7 h-7 text-white" />
+        </div>
+
+        {/* Title */}
+        <h3 className="text-xl font-bold text-foreground mb-3 font-space">
+          {platform.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-muted-foreground mb-6">{platform.description}</p>
+
+        {/* Features */}
+        <ul className="space-y-3 mb-6">
+          {platform.features.map((feature) => (
+            <li key={feature} className="flex items-start gap-3 text-sm text-muted-foreground">
+              <CheckCircle2 className={cn('w-4 h-4 flex-shrink-0 mt-0.5', color.text)} />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Expand Button */}
+        <CollapsibleTrigger asChild>
+          <button
+            className={cn(
+              'w-full flex items-center justify-center gap-2 text-sm py-2 rounded-lg transition-colors',
+              color.text,
+              color.bg,
+              'hover:opacity-80'
+            )}
+          >
+            <ChevronDown
+              className={cn(
+                'w-4 h-4 transition-transform duration-300',
+                isExpanded && 'rotate-180'
+              )}
+            />
+            {isExpanded ? 'Recolher' : 'Ver Detalhes'}
+          </button>
+        </CollapsibleTrigger>
+
+        {/* Expanded Sub-Features */}
+        <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+          <div className="mt-6 pt-6 border-t border-border/50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {platform.subFeatures.map((sub) => (
+                <SubFeatureCard key={sub.title} sub={sub} color={color} />
+              ))}
+            </div>
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+}
+
+function SubFeatureCard({ sub, color }: { sub: SubFeature; color: ModuleColor }) {
+  return (
+    <div className={cn(
+      'rounded-xl border p-4 transition-all duration-300',
+      'bg-background/50 dark:bg-background/30',
+      color.border,
+      'hover:bg-background/80 dark:hover:bg-background/50'
+    )}>
+      <div className="flex items-start gap-3 mb-2">
+        <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0', color.bg)}>
+          <sub.icon className={cn('w-4 h-4', color.text)} />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-foreground">{sub.title}</h4>
+          <p className="text-xs text-muted-foreground mt-1">{sub.description}</p>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mt-3">
+        {sub.highlights.map((h) => (
+          <Badge key={h} variant="outline" className={cn('text-[10px] px-2 py-0', color.badge)}>
+            {h}
+          </Badge>
+        ))}
+      </div>
+    </div>
   );
 }
