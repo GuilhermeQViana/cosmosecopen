@@ -1,71 +1,38 @@
 
+## Melhorar Visualizacao dos Sub-Feature Cards
 
-## Redesign da PlatformSection na Landing Page
+### Problema
+Os mini-cards dentro da area expandida estao em grid 2 colunas dentro de um card ja estreito, causando texto quebrado, icones apertados e badges sem espaco. A experiencia visual fica confusa.
 
-### Problema atual
-Os 5 cards de modulos estao em uma grade 5 colunas com proporcoes apertadas, todos com a mesma aparencia visual, e a expansao mostra apenas screenshots (que so existem para GRC). Nao ha diferenciacao visual por modulo nem sub-funcionalidades detalhadas.
+### Solucao
 
-### Solucao proposta
+Redesenhar o `SubFeatureCard` e o layout da area expandida em `PlatformSection.tsx`:
 
-Redesenhar a PlatformSection com:
+1. **Layout da area expandida**: Mudar de `grid-cols-2` fixo para `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` quando o card pai tiver espaco (nos cards da fileira de 3), e manter `grid-cols-1 sm:grid-cols-2` para os cards da fileira de 2. Adicionar `gap-4` em vez de `gap-3`.
 
-1. **Layout responsivo em 3 + 2 colunas** - Primeira fileira com 3 cards (GRC, VRM, Politicas), segunda fileira com 2 cards centralizados (IA, Consultoria). Proporcoes mais confortaveis para leitura.
+2. **Sub-feature card redesenhado**:
+   - Icone e titulo na mesma linha com layout horizontal
+   - Descricao com `line-clamp-2` para manter altura uniforme
+   - Badges com padding maior e fonte legivel (`text-xs` em vez de `text-[10px]`)
+   - Borda lateral colorida (left border accent) de 2px na cor do modulo para reforcar a identidade visual
+   - Hover com leve scale e elevacao (`hover:scale-[1.02] hover:shadow-md`)
+   - Padding aumentado de `p-4` para `p-5`
 
-2. **Cores distintas por modulo** - Cada modulo tera sua propria cor de destaque no icone, borda hover e badges:
-   - GRC: Azul primary (`primary`)
-   - VRM: Cyan secondary (`secondary`)
-   - Politicas: Violeta (`violet-500`)
-   - IA: Gradiente primary-to-secondary
-   - Consultoria: Esmeralda (`emerald-500`)
+3. **Altura minima nos cards**: Adicionar `min-h-[140px]` para garantir proporcoes uniformes entre os sub-cards, evitando que uns fiquem muito menores que outros.
 
-3. **Sub-funcionalidades expandiveis** - Ao clicar na seta para baixo, cada card expande revelando um grid de sub-feature cards (similar ao tour), cada um com icone, titulo, descricao curta e badges coloridos. Reutilizar os dados detalhados que ja existem na pagina `/tour`.
-
-4. **Badges coloridos por modulo** - Os highlights de cada sub-funcionalidade usarao a cor do modulo pai (nao todos azul).
+4. **Espacamento da area expandida**: Aumentar `mt-6 pt-6` para `mt-8 pt-8` e adicionar um titulo sutil como "Funcionalidades" antes do grid.
 
 ### Detalhes tecnicos
 
-**Arquivo principal alterado**: `src/components/landing/PlatformSection.tsx`
+**Arquivo alterado**: `src/components/landing/PlatformSection.tsx`
 
-- Reestruturar os dados `platforms[]` para incluir `subFeatures` com icone, titulo, descricao e highlights (reutilizando dados do ConhecaCosmoSec)
-- Adicionar propriedade `color` a cada plataforma (classes Tailwind para borda, bg, text)
-- Mudar grid de `xl:grid-cols-5` para `lg:grid-cols-3` na primeira fileira + segunda fileira com 2 cards centralizados (ou usar layout flex com wrap)
-- Na expansao, em vez do `ModuleScreenshotGallery`, renderizar um grid 2x3 de mini-cards com icone + titulo + descricao + badges coloridos
-- Cada mini-card tera chevron para expandir descricao detalhada inline
-- Manter a galeria de screenshots do GRC como bonus dentro da area expandida
+Alteracoes no `SubFeatureCard`:
+- Trocar `rounded-xl border p-4` por `rounded-xl border-l-2 border p-5 min-h-[140px]` com a borda esquerda na cor do modulo
+- Aumentar o icone de `w-8 h-8` para `w-10 h-10` e o icone interno de `w-4 h-4` para `w-5 h-5`
+- Badges de `text-[10px] px-2 py-0` para `text-xs px-2.5 py-0.5`
+- Adicionar `hover:scale-[1.02] hover:shadow-md` com transicao suave
 
-**Estrutura do card expandido**:
-
-```text
-+------------------------------------------+
-| [icone colorido]                         |
-| Titulo do Modulo                         |
-| Descricao                                |
-| * Feature 1                              |
-| * Feature 2                              |
-| [v Ver Detalhes]                         |
-+------------------------------------------+
-         |  (expande para)
-+------------------------------------------+
-| +----------+ +----------+ +----------+  |
-| | Sub 1    | | Sub 2    | | Sub 3    |  |
-| | desc     | | desc     | | desc     |  |
-| | [badges] | | [badges] | | [badges] |  |
-| +----------+ +----------+ +----------+  |
-| +----------+ +----------+ +----------+  |
-| | Sub 4    | | Sub 5    | | Sub 6    |  |
-| +----------+ +----------+ +----------+  |
-+------------------------------------------+
-```
-
-**Mapa de cores (classes Tailwind)**:
-
-```text
-GRC:         border-blue-500/30  bg-blue-500/10  text-blue-400
-VRM:         border-cyan-500/30  bg-cyan-500/10  text-cyan-400
-Politicas:   border-violet-500/30 bg-violet-500/10 text-violet-400
-IA:          border-amber-500/30 bg-amber-500/10 text-amber-400
-Consultoria: border-emerald-500/30 bg-emerald-500/10 text-emerald-400
-```
-
-**Nenhum arquivo novo sera criado** - toda a logica fica dentro do PlatformSection.tsx redesenhado, reutilizando os componentes UI existentes (Card, Collapsible, Badge).
-
+Alteracoes no `CollapsibleContent`:
+- Grid responsivo: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`
+- Titulo "Funcionalidades" com icone antes do grid
+- Maior espacamento vertical
