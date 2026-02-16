@@ -317,8 +317,11 @@ function PlatformCard({
 
         {/* Expanded Sub-Features */}
         <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-          <div className="mt-6 pt-6 border-t border-border/50">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="mt-8 pt-8 border-t border-border/50">
+            <p className={cn('text-xs font-semibold uppercase tracking-widest mb-4', color.text)}>
+              Funcionalidades
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {platform.subFeatures.map((sub) => (
                 <SubFeatureCard key={sub.title} sub={sub} color={color} />
               ))}
@@ -333,23 +336,24 @@ function PlatformCard({
 function SubFeatureCard({ sub, color }: { sub: SubFeature; color: ModuleColor }) {
   return (
     <div className={cn(
-      'rounded-xl border p-4 transition-all duration-300',
+      'rounded-xl border border-l-2 p-5 min-h-[140px] transition-all duration-300',
       'bg-background/50 dark:bg-background/30',
       color.border,
-      'hover:bg-background/80 dark:hover:bg-background/50'
-    )}>
-      <div className="flex items-start gap-3 mb-2">
-        <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0', color.bg)}>
-          <sub.icon className={cn('w-4 h-4', color.text)} />
+      'hover:bg-background/80 dark:hover:bg-background/50',
+      'hover:scale-[1.02] hover:shadow-md'
+    )}
+      style={{ borderLeftColor: 'currentColor' }}
+    >
+      <div className={cn('flex items-center gap-3 mb-3', color.text)}>
+        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', color.bg)}>
+          <sub.icon className={cn('w-5 h-5', color.text)} />
         </div>
-        <div>
-          <h4 className="text-sm font-semibold text-foreground">{sub.title}</h4>
-          <p className="text-xs text-muted-foreground mt-1">{sub.description}</p>
-        </div>
+        <h4 className="text-sm font-semibold text-foreground">{sub.title}</h4>
       </div>
-      <div className="flex flex-wrap gap-1.5 mt-3">
+      <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{sub.description}</p>
+      <div className="flex flex-wrap gap-1.5">
         {sub.highlights.map((h) => (
-          <Badge key={h} variant="outline" className={cn('text-[10px] px-2 py-0', color.badge)}>
+          <Badge key={h} variant="outline" className={cn('text-xs px-2.5 py-0.5', color.badge)}>
             {h}
           </Badge>
         ))}
