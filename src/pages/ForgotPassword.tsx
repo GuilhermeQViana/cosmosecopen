@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
+import { AUTH_ROUTE } from '@/lib/constants';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -135,7 +136,7 @@ export default function ForgotPassword() {
 
             <div className="mt-6 pt-6 border-t border-white/10">
               <Link 
-                to="/auth" 
+                to={AUTH_ROUTE} 
                 className="flex items-center justify-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />

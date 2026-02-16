@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/ui/star-field';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { AUTH_ROUTE } from '@/lib/constants';
 import { DocumentationSidebar, documentationSections } from '@/components/documentacao/DocumentationSidebar';
 import { 
   DocumentationSection, 
@@ -84,7 +85,7 @@ export default function Documentacao() {
           </div>
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/auth">Entrar</Link>
+              <Link to={AUTH_ROUTE}>Entrar</Link>
             </Button>
             <ThemeToggle />
           </div>

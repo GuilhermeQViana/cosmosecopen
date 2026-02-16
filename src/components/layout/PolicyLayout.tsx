@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2, FileText } from 'lucide-react';
 import { NotificationCenter } from './NotificationCenter';
 import { StarField } from '@/components/ui/star-field';
+import { AUTH_ROUTE } from '@/lib/constants';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { PaymentFailedBanner } from '@/components/subscription/PaymentFailedBanner';
 import { SubscriptionRequired } from '@/components/subscription/SubscriptionRequired';
@@ -53,7 +54,7 @@ export function PolicyLayout() {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to={AUTH_ROUTE} replace />;
   if (organizations.length === 0 && location.pathname !== '/onboarding') return <Navigate to="/onboarding" replace />;
   if (!organization && organizations.length > 0 && location.pathname !== '/selecionar-organizacao') return <Navigate to="/selecionar-organizacao" replace />;
   if (!hasAccess && !allowedWithoutSubscription.includes(location.pathname)) return <SubscriptionRequired />;

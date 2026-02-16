@@ -10,6 +10,7 @@ import { FrameworkProvider } from "@/contexts/FrameworkContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { VendorLayout } from "@/components/layout/VendorLayout";
 import { PolicyLayout } from "@/components/layout/PolicyLayout";
+import { AUTH_ROUTE } from "@/lib/constants";
 import Landing from "@/pages/Landing";
 import ConhecaCosmoSec from "@/pages/ConhecaCosmoSec";
 import Auth from "@/pages/Auth";
@@ -65,7 +66,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route path="/tour" element={<ConhecaCosmoSec />} />
-                  <Route path="/auth" element={<Auth />} />
+                  <Route path={AUTH_ROUTE} element={<Auth />} />
                   <Route path="/esqueci-senha" element={<ForgotPassword />} />
                   <Route path="/redefinir-senha" element={<ResetPassword />} />
                   <Route path="/onboarding" element={<Onboarding />} />

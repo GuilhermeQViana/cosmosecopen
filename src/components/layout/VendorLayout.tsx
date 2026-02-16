@@ -8,6 +8,7 @@ import { Loader2, Search, Building } from 'lucide-react';
 import { NotificationCenter } from './NotificationCenter';
 import { StarField } from '@/components/ui/star-field';
 import { PageTransition } from './PageTransition';
+import { AUTH_ROUTE } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { PaymentFailedBanner } from '@/components/subscription/PaymentFailedBanner';
@@ -48,7 +49,7 @@ export function VendorLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={AUTH_ROUTE} replace />;
   }
 
   if (organizations.length === 0 && location.pathname !== '/onboarding') {

@@ -14,6 +14,7 @@ import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { StarField } from '@/components/ui/star-field';
 import { PageTransition } from './PageTransition';
 import { useBreadcrumb } from '@/hooks/useBreadcrumb';
+import { AUTH_ROUTE } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { PaymentFailedBanner } from '@/components/subscription/PaymentFailedBanner';
@@ -80,7 +81,7 @@ export function AppLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={AUTH_ROUTE} replace />;
   }
 
   // Usuário não tem nenhuma organização -> onboarding
