@@ -10,6 +10,7 @@ import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordStrengthIndicator, getPasswordStrength } from '@/components/ui/PasswordStrengthIndicator';
+import { AUTH_ROUTE } from '@/lib/constants';
 
 const resetPasswordSchema = z.object({
   password: z
@@ -94,7 +95,7 @@ export default function ResetPassword() {
       // Sign out and redirect to login after 3 seconds
       setTimeout(async () => {
         await supabase.auth.signOut();
-        navigate('/auth');
+        navigate(AUTH_ROUTE);
       }, 3000);
     }
   };

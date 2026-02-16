@@ -1,5 +1,6 @@
 import { Check, Sparkles, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AUTH_ROUTE } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -99,7 +100,7 @@ export function PricingSection() {
                 size="lg"
                 asChild
               >
-                <Link to="/auth">
+                <Link to={AUTH_ROUTE}>
                   <Sparkles className="w-4 h-4 mr-2" />
                   Começar Trial de 7 Dias
                 </Link>

@@ -7,6 +7,7 @@ import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { Navigate } from 'react-router-dom';
+import { AUTH_ROUTE } from '@/lib/constants';
 
 const modules = [
   {
@@ -59,7 +60,7 @@ export default function SelecionarModulo() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to={AUTH_ROUTE} replace />;
   }
 
   if (organizations.length === 0) {
