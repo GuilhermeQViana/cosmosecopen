@@ -115,7 +115,7 @@ export default function Documentacao() {
 
               <h3 id="criando-conta" className="text-lg font-semibold mt-6 mb-4 scroll-mt-24">Criando sua conta</h3>
               <DocStep number={1} title="Acesse a página de autenticação">
-                Clique em "Começar Agora" na página inicial ou acesse diretamente /auth.
+                Clique em "Começar Agora" na página inicial ou no botão "Entrar" no topo desta página.
               </DocStep>
               <DocStep number={2} title="Preencha seus dados">
                 Informe seu nome completo, email e crie uma senha segura.
