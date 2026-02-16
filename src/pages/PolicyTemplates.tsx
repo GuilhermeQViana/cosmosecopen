@@ -7,8 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { BookTemplate, Search, Eye, FileText, Loader2 } from 'lucide-react';
+import { BookTemplate, Search, Eye, FileText, Loader2, Download, Upload } from 'lucide-react';
 import { usePolicyTemplates, PolicyTemplate } from '@/hooks/usePolicyTemplates';
+import { downloadTemplateAsDocx } from '@/lib/docx-utils';
+import ImportTemplateDocxDialog from '@/components/politicas/ImportTemplateDocxDialog';
+import { toast } from 'sonner';
 
 const categoryColors: Record<string, string> = {
   'Segurança': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
@@ -27,10 +30,11 @@ const frameworkLabels: Record<string, string> = {
 
 export default function PolicyTemplates() {
   const navigate = useNavigate();
-  const { data: templates, isLoading } = usePolicyTemplates();
+  const { data: templates, isLoading, createTemplate } = usePolicyTemplates();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('todos');
   const [previewTemplate, setPreviewTemplate] = useState<PolicyTemplate | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const categories = [...new Set(templates?.map(t => t.category).filter(Boolean))];
 
@@ -48,11 +52,29 @@ export default function PolicyTemplates() {
     navigate(`/policies/central/nova?${params.toString()}`);
   };
 
+  const handleDownload = async (template: PolicyTemplate) => {
+    try {
+      await downloadTemplateAsDocx(template.title, template.content);
+      toast.success('Download iniciado!');
+    } catch {
+      toast.error('Erro ao gerar o arquivo DOCX');
+    }
+  };
+
+  const handleImportSave = async (data: { title: string; description: string; category: string; content: string }) => {
+    await createTemplate.mutateAsync(data);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-space">Biblioteca de Modelos</h1>
-        <p className="text-muted-foreground mt-1">Templates prontos para acelerar a criação de políticas</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold font-space">Biblioteca de Modelos</h1>
+          <p className="text-muted-foreground mt-1">Templates prontos para acelerar a criação de políticas</p>
+        </div>
+        <Button variant="outline" onClick={() => setImportOpen(true)}>
+          <Upload className="w-4 h-4 mr-2" /> Importar DOCX
+        </Button>
       </div>
 
       {/* Filters */}
@@ -114,6 +136,9 @@ export default function PolicyTemplates() {
                   <Button variant="outline" size="sm" className="flex-1" onClick={() => setPreviewTemplate(template)}>
                     <Eye className="w-3.5 h-3.5 mr-1.5" /> Preview
                   </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleDownload(template)} title="Baixar DOCX">
+                    <Download className="w-3.5 h-3.5" />
+                  </Button>
                   <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={() => handleUseTemplate(template)}>
                     <FileText className="w-3.5 h-3.5 mr-1.5" /> Usar
                   </Button>
@@ -145,6 +170,9 @@ export default function PolicyTemplates() {
           </ScrollArea>
           <div className="flex justify-end gap-2 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => setPreviewTemplate(null)}>Fechar</Button>
+            <Button variant="outline" onClick={() => { if (previewTemplate) handleDownload(previewTemplate); }}>
+              <Download className="w-4 h-4 mr-2" /> Baixar DOCX
+            </Button>
             <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => {
               if (previewTemplate) handleUseTemplate(previewTemplate);
             }}>
@@ -153,6 +181,9 @@ export default function PolicyTemplates() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Import Dialog */}
+      <ImportTemplateDocxDialog open={importOpen} onOpenChange={setImportOpen} onSave={handleImportSave} />
     </div>
   );
 }
