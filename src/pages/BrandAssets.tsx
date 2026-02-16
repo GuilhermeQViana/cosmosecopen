@@ -5,6 +5,7 @@ import { Download, Copy, Check, ArrowLeft } from 'lucide-react';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import PresentationSlidesSection from '@/components/brand/PresentationSlidesSection';
 
 const LOGO_SIZES = [
   { name: 'Favicon', size: 32 },
@@ -324,6 +325,9 @@ export default function BrandAssets() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Presentation Slides */}
+        <PresentationSlidesSection />
 
         {/* Color Palette */}
         <Card className="mb-8 bg-card/50 backdrop-blur border-border/50">
