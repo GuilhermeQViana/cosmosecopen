@@ -32,6 +32,8 @@ import {
   VendorContract,
 } from '@/hooks/useVendorContracts';
 import { Vendor } from '@/hooks/useVendors';
+import { useOrganization } from '@/contexts/OrganizationContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
   Plus,
@@ -41,6 +43,9 @@ import {
   ShieldCheck,
   Trash2,
   RefreshCw,
+  Upload,
+  X,
+  ExternalLink,
 } from 'lucide-react';
 
 interface VendorContractManagerProps {
@@ -54,7 +59,11 @@ export function VendorContractManager({ open, onOpenChange, vendor }: VendorCont
   const { data: contracts, isLoading } = useVendorContracts(vendor?.id);
   const createContract = useCreateVendorContract();
   const deleteContract = useDeleteVendorContract();
+  const { organization } = useOrganization();
   const { toast } = useToast();
+
+  const [contractFile, setContractFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState({
     contract_number: '',
@@ -82,11 +91,47 @@ export function VendorContractManager({ open, onOpenChange, vendor }: VendorCont
       auto_renewal: false, security_clauses: false, lgpd_clauses: false,
       sla_defined: false, status: 'ativo', notes: '',
     });
+    setContractFile(null);
     setShowForm(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ];
+      if (!validTypes.includes(file.type)) {
+        toast({ title: 'Formato inválido', description: 'Apenas PDF e DOCX são aceitos.', variant: 'destructive' });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: 'Arquivo muito grande', description: 'Tamanho máximo: 10MB', variant: 'destructive' });
+        return;
+      }
+      setContractFile(file);
+    }
   };
 
   const handleSubmit = async () => {
     try {
+      setUploading(true);
+      let filePath: string | null = null;
+
+      if (contractFile && organization?.id) {
+        const ext = contractFile.name.split('.').pop();
+        const fileId = crypto.randomUUID();
+        const storagePath = `${organization.id}/${vendor.id}/${fileId}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('vendor-contracts')
+          .upload(storagePath, contractFile);
+
+        if (uploadError) throw uploadError;
+        filePath = storagePath;
+      }
+
       await createContract.mutateAsync({
         vendor_id: vendor.id,
         contract_number: form.contract_number || null,
@@ -101,7 +146,7 @@ export function VendorContractManager({ open, onOpenChange, vendor }: VendorCont
         security_clauses: form.security_clauses,
         lgpd_clauses: form.lgpd_clauses,
         sla_defined: form.sla_defined,
-        file_path: null,
+        file_path: filePath,
         status: form.status,
         notes: form.notes || null,
       });
@@ -109,16 +154,33 @@ export function VendorContractManager({ open, onOpenChange, vendor }: VendorCont
       resetForm();
     } catch {
       toast({ title: 'Erro ao criar contrato', variant: 'destructive' });
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleDelete = async (contract: VendorContract) => {
     try {
+      // Delete file from storage if exists
+      if (contract.file_path) {
+        await supabase.storage.from('vendor-contracts').remove([contract.file_path]);
+      }
       await deleteContract.mutateAsync({ id: contract.id, vendorId: vendor.id });
       toast({ title: 'Contrato excluído' });
     } catch {
       toast({ title: 'Erro ao excluir', variant: 'destructive' });
     }
+  };
+
+  const handleViewFile = async (filePath: string) => {
+    const { data, error } = await supabase.storage
+      .from('vendor-contracts')
+      .createSignedUrl(filePath, 60 * 5); // 5 min
+    if (error || !data?.signedUrl) {
+      toast({ title: 'Erro ao abrir arquivo', variant: 'destructive' });
+      return;
+    }
+    window.open(data.signedUrl, '_blank');
   };
 
   const getStatusColor = (status: string) => {
@@ -214,8 +276,41 @@ export function VendorContractManager({ open, onOpenChange, vendor }: VendorCont
                   <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />
                 </div>
 
+                {/* File Upload */}
+                <div>
+                  <Label>Arquivo do Contrato (PDF ou DOCX)</Label>
+                  {contractFile ? (
+                    <div className="flex items-center gap-2 mt-1 p-2 rounded-md border border-border bg-card/50">
+                      <FileText className="h-4 w-4 text-primary shrink-0" />
+                      <span className="text-sm truncate flex-1">{contractFile.name}</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setContractFile(null)}>
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-1">
+                      <label
+                        htmlFor="contract-file-upload"
+                        className="flex items-center gap-2 cursor-pointer p-2 rounded-md border border-dashed border-border hover:border-primary/50 hover:bg-accent/30 transition-colors"
+                      >
+                        <Upload className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Clique para selecionar arquivo</span>
+                      </label>
+                      <input
+                        id="contract-file-upload"
+                        type="file"
+                        accept=".pdf,.docx"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex gap-2">
-                  <Button onClick={handleSubmit} disabled={createContract.isPending} size="sm">Salvar</Button>
+                  <Button onClick={handleSubmit} disabled={createContract.isPending || uploading} size="sm">
+                    {uploading ? 'Enviando...' : 'Salvar'}
+                  </Button>
                   <Button variant="ghost" onClick={resetForm} size="sm">Cancelar</Button>
                 </div>
               </div>
@@ -264,6 +359,16 @@ export function VendorContractManager({ open, onOpenChange, vendor }: VendorCont
                       {contract.security_clauses && <Badge variant="secondary" className="text-xs"><ShieldCheck className="h-3 w-3 mr-1" />Segurança</Badge>}
                       {contract.lgpd_clauses && <Badge variant="secondary" className="text-xs">LGPD</Badge>}
                       {contract.sla_defined && <Badge variant="secondary" className="text-xs">SLA</Badge>}
+                      {contract.file_path && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs cursor-pointer hover:bg-accent/50 transition-colors"
+                          onClick={() => handleViewFile(contract.file_path!)}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Ver Contrato
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 ))}
