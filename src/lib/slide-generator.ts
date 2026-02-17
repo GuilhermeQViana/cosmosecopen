@@ -383,7 +383,7 @@ async function renderSlide(ctx: CanvasRenderingContext2D, slideId: string) {
       });
 
       drawLogoOnCanvas(ctx, logo, W - 80, H - 60, 40);
-      drawText(ctx, 'cosmosec.lovable.app', W - 130, H - 30, {
+      drawText(ctx, 'cosmosec.com.br', W - 130, H - 30, {
         font: '16px "Space Grotesk", sans-serif',
         color: COLORS.lightGray,
         align: 'right',
