@@ -33,6 +33,7 @@ import {
   Loader2,
   Link2,
 } from 'lucide-react';
+import { OFFICIAL_DOMAIN } from '@/lib/constants';
 
 interface VendorPortalManagerProps {
   open: boolean;
@@ -73,7 +74,7 @@ export function VendorPortalManager({ open, onOpenChange, vendor }: VendorPortal
       setShowCreate(false);
       toast({ title: 'Link criado com sucesso' });
       // Copy to clipboard
-      const portalUrl = `${window.location.origin}/vendor-portal/${token.token}`;
+      const portalUrl = `${OFFICIAL_DOMAIN}/vendor-portal/${token.token}`;
       await navigator.clipboard.writeText(portalUrl);
       toast({ title: 'Link copiado', description: 'O link do portal foi copiado para a área de transferência.' });
     } catch {
@@ -82,7 +83,7 @@ export function VendorPortalManager({ open, onOpenChange, vendor }: VendorPortal
   };
 
   const handleCopyLink = async (token: VendorPortalToken) => {
-    const portalUrl = `${window.location.origin}/vendor-portal/${token.token}`;
+    const portalUrl = `${OFFICIAL_DOMAIN}/vendor-portal/${token.token}`;
     await navigator.clipboard.writeText(portalUrl);
     toast({ title: 'Link copiado' });
   };
