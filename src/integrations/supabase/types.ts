@@ -1560,6 +1560,266 @@ export type Database = {
           },
         ]
       }
+      qualification_campaigns: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          ko_triggered: boolean
+          organization_id: string
+          reviewer_notes: string | null
+          risk_classification: string | null
+          score: number | null
+          status: string
+          template_id: string
+          template_version: number
+          token: string
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          ko_triggered?: boolean
+          organization_id: string
+          reviewer_notes?: string | null
+          risk_classification?: string | null
+          score?: number | null
+          status?: string
+          template_id: string
+          template_version?: number
+          token?: string
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          ko_triggered?: boolean
+          organization_id?: string
+          reviewer_notes?: string | null
+          risk_classification?: string | null
+          score?: number | null
+          status?: string
+          template_id?: string
+          template_version?: number
+          token?: string
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualification_campaigns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualification_campaigns_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualification_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualification_campaigns_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qualification_questions: {
+        Row: {
+          conditional_on: string | null
+          conditional_value: string | null
+          created_at: string
+          id: string
+          is_ko: boolean
+          is_required: boolean
+          ko_value: string | null
+          label: string
+          options: Json | null
+          order_index: number
+          template_id: string
+          type: string
+          weight: number
+        }
+        Insert: {
+          conditional_on?: string | null
+          conditional_value?: string | null
+          created_at?: string
+          id?: string
+          is_ko?: boolean
+          is_required?: boolean
+          ko_value?: string | null
+          label: string
+          options?: Json | null
+          order_index?: number
+          template_id: string
+          type?: string
+          weight?: number
+        }
+        Update: {
+          conditional_on?: string | null
+          conditional_value?: string | null
+          created_at?: string
+          id?: string
+          is_ko?: boolean
+          is_required?: boolean
+          ko_value?: string | null
+          label?: string
+          options?: Json | null
+          order_index?: number
+          template_id?: string
+          type?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualification_questions_conditional_on_fkey"
+            columns: ["conditional_on"]
+            isOneToOne: false
+            referencedRelation: "qualification_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualification_questions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qualification_responses: {
+        Row: {
+          answer_file_url: string | null
+          answer_option: Json | null
+          answer_text: string | null
+          campaign_id: string
+          created_at: string
+          id: string
+          question_id: string
+          score_awarded: number | null
+          updated_at: string
+        }
+        Insert: {
+          answer_file_url?: string | null
+          answer_option?: Json | null
+          answer_text?: string | null
+          campaign_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+          score_awarded?: number | null
+          updated_at?: string
+        }
+        Update: {
+          answer_file_url?: string | null
+          answer_option?: Json | null
+          answer_text?: string | null
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          score_awarded?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualification_responses_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualification_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "qualification_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qualification_templates: {
+        Row: {
+          auto_approve_threshold: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          score_ranges: Json
+          status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          auto_approve_threshold?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          score_ranges?: Json
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          auto_approve_threshold?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          score_ranges?: Json
+          status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualification_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualification_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risk_controls: {
         Row: {
           control_id: string
