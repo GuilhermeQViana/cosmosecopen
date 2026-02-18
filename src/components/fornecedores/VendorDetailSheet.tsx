@@ -86,7 +86,10 @@ export function VendorDetailSheet({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const { data: assessments } = useVendorAssessments(vendor?.id);
+  const { data: qualCampaigns } = useQualificationCampaigns(vendor ? { vendorId: vendor.id } : undefined);
   const updateVendor = useUpdateVendor();
+
+  const latestQualification = qualCampaigns?.find(c => c.score !== null);
 
   if (!vendor) return null;
 
