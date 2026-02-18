@@ -53,6 +53,8 @@ const PolicyWorkflows = lazy(() => import("@/pages/PolicyWorkflows"));
 const PolicyAceite = lazy(() => import("@/pages/PolicyAceite"));
 const PolicyTemplates = lazy(() => import("@/pages/PolicyTemplates"));
 const PoliticaEditor = lazy(() => import("@/pages/PoliticaEditor"));
+const QualificationTemplates = lazy(() => import("@/pages/QualificationTemplates"));
+const QualificationTemplateBuilder = lazy(() => import("@/pages/QualificationTemplateBuilder"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -145,6 +147,8 @@ const App = () => (
                         <Route path="/vrm/requisitos" element={<VendorRequisitos />} />
                         <Route path="/vrm/evidencias" element={<VendorEvidencias />} />
                         <Route path="/vrm/agenda" element={<VendorAgenda />} />
+                        <Route path="/vrm/qualificacao/templates" element={<QualificationTemplates />} />
+                        <Route path="/vrm/qualificacao/templates/:id" element={<QualificationTemplateBuilder />} />
                         <Route path="/vrm/configuracoes" element={<Configuracoes />} />
                       </Route>
 

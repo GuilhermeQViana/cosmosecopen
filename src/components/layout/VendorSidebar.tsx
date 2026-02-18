@@ -42,6 +42,7 @@ import {
   FileText,
   Calendar,
   FolderOpen,
+  ClipboardList,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
@@ -55,6 +56,7 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { title: 'Dashboard', url: '/vrm', icon: LayoutDashboard },
   { title: 'Fornecedores', url: '/vrm/fornecedores', icon: Building },
+  { title: 'Qualificação', url: '/vrm/qualificacao/templates', icon: ClipboardList },
   { title: 'Requisitos', url: '/vrm/requisitos', icon: FileText },
   { title: 'Evidências', url: '/vrm/evidencias', icon: FolderOpen },
   { title: 'Agenda', url: '/vrm/agenda', icon: Calendar },
@@ -177,7 +179,7 @@ export function VendorSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === item.url}
+                    isActive={location.pathname === item.url || location.pathname.startsWith(item.url + '/')}
                     tooltip={item.title}
                   >
                     <RouterNavLink to={item.url}>
