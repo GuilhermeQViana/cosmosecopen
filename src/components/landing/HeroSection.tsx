@@ -57,7 +57,7 @@ function HeroIllustration() {
         <p className="text-[10px] font-medium text-muted-foreground">98% Score</p>
       </div>
       <div className="absolute top-[18%] left-[5%] px-3 py-2 rounded-lg bg-card/70 dark:bg-card/50 backdrop-blur-md border border-primary/20 dark:border-primary/30 shadow-lg animate-float-slow" style={{ animationDelay: '4.5s' }}>
-        <p className="text-[10px] font-medium text-primary">BCB/CMN</p>
+        <p className="text-[10px] font-medium text-red-400">BCB/CMN</p>
       </div>
     </div>
   );
