@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AnimatedItem, StaggeredGrid } from '@/components/ui/staggered-list';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { QualificationComparison } from '@/components/fornecedores/QualificationComparison';
+import { StartQualificationCampaignDialog } from '@/components/fornecedores/StartQualificationCampaignDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
