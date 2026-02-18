@@ -26,6 +26,7 @@ import {
 const routeTitles: Record<string, string> = {
   '/vrm': 'Dashboard VRM',
   '/vrm/fornecedores': 'Gestão de Fornecedores',
+  '/vrm/qualificacao/templates': 'Templates de Qualificação',
   '/vrm/configuracoes': 'Configurações',
 };
 
