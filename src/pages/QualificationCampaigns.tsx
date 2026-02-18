@@ -358,6 +358,21 @@ export default function QualificationCampaigns() {
                         </TooltipTrigger>
                         <TooltipContent>Ver respostas</TooltipContent>
                       </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleExportCSV(campaign.id)} disabled={exportingId === campaign.id}>
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Exportar CSV</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleImportCSV(campaign.id)} disabled={importing}>
+                            <Upload className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Importar respostas CSV</TooltipContent>
 
                       {campaign.status === 'respondido' && (
                         <Button
