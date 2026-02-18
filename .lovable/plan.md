@@ -1,17 +1,42 @@
 
 
-# Adicionar card flutuante "BCB/CMN" na ilustracao do Hero
+# Renomear página Auth para Gateway
 
-## Alteracao
+## O que sera feito
 
-Adicionar um novo card flutuante no estilo glassmorphism (identico aos existentes "ISO 27001", "NIST CSF" e "98% Score") com o texto "BCB/CMN" na ilustracao orbital do `HeroSection.tsx`.
+Renomear o arquivo da pagina de login de `Auth.tsx` para `Gateway.tsx` e atualizar a referencia no `App.tsx`.
+
+**Importante:** As referencias ao `AuthContext`, `AuthProvider`, `useAuth` e ao arquivo utilitario `_shared/auth.ts` das edge functions **nao serao alteradas**, pois sao componentes internos de autenticacao e nao tem relacao com o nome da pagina.
 
 ## Detalhes tecnicos
 
-- **Arquivo**: `src/components/landing/HeroSection.tsx`
-- Adicionar um novo `<div>` no bloco de "Floating glassmorphism cards" da funcao `HeroIllustration`
-- Posicionar no canto superior esquerdo (ex: `top-[18%] left-[5%]`) para nao sobrepor os cards existentes
-- Usar o mesmo estilo dos demais cards: `bg-card/70 backdrop-blur-md border border-primary/20 shadow-lg animate-float-slow`
-- Cor do texto em `text-primary` para manter consistencia com o tema cosmico
-- Adicionar um `animationDelay` diferente dos demais (ex: `4.5s`) para variar o ritmo da animacao
+### 1. Criar `src/pages/Gateway.tsx`
+- Copiar todo o conteudo de `src/pages/Auth.tsx` para o novo arquivo `src/pages/Gateway.tsx`
+
+### 2. Atualizar `src/App.tsx`
+- Alterar o lazy import de:
+  ```
+  const Auth = lazy(() => import("@/pages/Auth"));
+  ```
+  para:
+  ```
+  const Gateway = lazy(() => import("@/pages/Gateway"));
+  ```
+- Atualizar a rota de:
+  ```
+  <Route path={AUTH_ROUTE} element={<Auth />} />
+  ```
+  para:
+  ```
+  <Route path={AUTH_ROUTE} element={<Gateway />} />
+  ```
+
+### 3. Remover `src/pages/Auth.tsx`
+- Arquivo antigo sera removido apos a criacao do novo
+
+### O que NAO muda
+- `AUTH_ROUTE` em `src/lib/constants.ts` (ja aponta para `/gateway/c7x9k2m4`)
+- `AuthContext`, `AuthProvider`, `useAuth` (sao do sistema de autenticacao, nao da pagina)
+- `_shared/auth.ts` nas edge functions (utilitario de backend)
+- Todas as referencias a `AUTH_ROUTE` nos demais componentes (ja usam a constante correta)
 
