@@ -108,7 +108,7 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<Landing />} />
                       <Route path="/tour" element={<ConhecaCosmoSec />} />
-                      <Route path={AUTH_ROUTE} element={<Auth />} />
+                      <Route path={AUTH_ROUTE} element={<Gateway />} />
                       <Route path="/esqueci-senha" element={<ForgotPassword />} />
                       <Route path="/redefinir-senha" element={<ResetPassword />} />
                       <Route path="/onboarding" element={<Onboarding />} />
