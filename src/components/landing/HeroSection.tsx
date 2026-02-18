@@ -43,8 +43,8 @@ export function HeroSection() {
           {/* Animated entrance for headline */}
           <div className="animate-fade-in" style={{ animationDuration: '0.8s' }}>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight mb-6 font-space tracking-tight">
-              Não Gerencie Compliance.{' '}
-              <span className="text-gradient-cosmic">Domine.</span>
+              Consultoria em GRC com{' '}
+              <span className="text-gradient-cosmic">Tecnologia Própria.</span>
             </h1>
           </div>
 
