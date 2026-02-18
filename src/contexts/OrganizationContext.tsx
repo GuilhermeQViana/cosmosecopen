@@ -104,6 +104,19 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
+      // Verify the profile was actually updated
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user!.id)
+        .single();
+
+      if (profile?.organization_id !== orgId) {
+        console.error('Profile org mismatch after set_active_organization', { expected: orgId, got: profile?.organization_id });
+        // Force update as fallback
+        await supabase.from('profiles').update({ organization_id: orgId }).eq('id', user!.id);
+      }
+
       // Invalidar todo o cache do React Query
       await queryClient.invalidateQueries();
 

@@ -135,8 +135,9 @@ export default function Fornecedores() {
         toast({ title: 'Fornecedor criado com sucesso' });
       }
       setFormOpen(false);
-    } catch (error) {
-      toast({ title: 'Erro', description: 'Não foi possível salvar o fornecedor', variant: 'destructive' });
+    } catch (error: any) {
+      console.error('[Fornecedores] Erro ao salvar fornecedor:', error);
+      toast({ title: 'Erro', description: error?.message || 'Não foi possível salvar o fornecedor', variant: 'destructive' });
     }
   };
 
