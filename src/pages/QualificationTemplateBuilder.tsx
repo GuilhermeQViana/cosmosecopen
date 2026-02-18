@@ -89,6 +89,7 @@ export default function QualificationTemplateBuilder() {
   const [editingQuestion, setEditingQuestion] = useState<Partial<QualificationQuestion> | null>(null);
   const [showQuestionEditor, setShowQuestionEditor] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [options, setOptions] = useState<QuestionOption[]>([]);
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
