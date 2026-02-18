@@ -140,6 +140,10 @@ export default function QualificationCampaigns() {
             </h1>
             <p className="text-muted-foreground mt-1">Acompanhe e gerencie as campanhas enviadas aos fornecedores</p>
           </div>
+          <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
+            <Users className="h-4 w-4 mr-2" />
+            Comparar
+          </Button>
         </div>
       </AnimatedItem>
 
