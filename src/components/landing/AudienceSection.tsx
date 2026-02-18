@@ -1,38 +1,38 @@
-import { Building2, UserCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Handshake, MonitorSmartphone, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 const audiences = [
   {
-    icon: Building2,
-    title: 'Para sua empresa',
-    subtitle: 'Controle interno de conformidade, políticas e fornecedores',
-    badge: 'GRC + VRM + Políticas',
-    cta: 'Agendar Demonstração',
+    icon: Handshake,
+    title: 'Consultoria Completa',
+    subtitle: 'Nossos especialistas conduzem sua jornada de conformidade usando a plataforma CosmoSec',
+    badge: 'Consultoria + Plataforma',
+    cta: 'Falar com Especialista',
     gradient: 'from-primary to-primary/70',
     benefits: [
-      'Diagnóstico completo de frameworks (NIST, ISO, BCB e custom)',
-      'Gestão centralizada de riscos e evidências',
-      'Gestão de políticas com fluxos de aprovação e aceite',
-      'Due Diligence e monitoramento contínuo de fornecedores',
-      'Planos de ação e relatórios automatizados com IA',
-      '6 tipos de relatórios executivos (Compliance, Riscos, Gap Analysis...)',
+      'Diagnóstico de maturidade conduzido por especialistas',
+      'Implementação de frameworks (NIST, ISO 27001, BCB/CMN)',
+      'Criação e revisão de políticas de segurança',
+      'Due Diligence e gestão de fornecedores como serviço',
+      'Relatórios executivos periódicos e acompanhamento contínuo',
+      'Acesso completo à plataforma CosmoSec incluído',
     ],
   },
   {
-    icon: UserCheck,
-    title: 'Para sua consultoria',
-    subtitle: 'Gerencie múltiplos clientes com escalabilidade',
-    badge: 'Programa de Parceiros',
-    cta: 'Conhecer Programa',
+    icon: MonitorSmartphone,
+    title: 'Plataforma SaaS',
+    subtitle: 'Para empresas com equipe interna de GRC que precisam de uma ferramenta poderosa',
+    badge: 'Apenas a Plataforma',
+    cta: 'Conhecer a Plataforma',
     gradient: 'from-secondary to-secondary/70',
     benefits: [
-      'Painel consolidado multi-cliente',
-      'Relatórios PDF com branding da sua consultoria',
-      'Templates de políticas e diagnósticos reutilizáveis',
-      'Campanhas de aceite de políticas por cliente',
-      'Visão comparativa de maturidade entre clientes',
-      'Programa de parceiros com condições especiais',
+      'Acesso completo a todos os módulos (GRC, VRM, Políticas, IA)',
+      'Onboarding assistido pela nossa equipe',
+      'Suporte técnico dedicado',
+      'Diagnóstico de controles com frameworks reconhecidos e customizáveis',
+      'Gestão de riscos, evidências e planos de ação',
+      'Relatórios automatizados e exportação PDF',
     ],
   },
 ];
