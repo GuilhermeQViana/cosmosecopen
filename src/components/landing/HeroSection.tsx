@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Shield, Lock, BarChart3, Eye, FileCheck, Network } from 'lucide-react';
+import { ArrowRight, Sparkles, Lock, BarChart3, Eye, FileCheck, Network } from 'lucide-react';
+import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 
 function HeroIllustration() {
   return (
