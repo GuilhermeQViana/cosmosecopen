@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useQualificationTemplates,
   useUpdateQualificationTemplate,
+  useTemplateHasResponses,
 } from '@/hooks/useQualificationTemplates';
 import {
   useQualificationQuestions,
@@ -77,6 +78,7 @@ export default function QualificationTemplateBuilder() {
   const { data: templates = [] } = useQualificationTemplates();
   const template = templates.find(t => t.id === id);
   const { data: questions = [], isLoading: questionsLoading } = useQualificationQuestions(id);
+  const { data: hasResponses = false } = useTemplateHasResponses(id);
   const upsertQuestion = useUpsertQualificationQuestion();
   const deleteQuestion = useDeleteQualificationQuestion();
   const reorderQuestions = useReorderQualificationQuestions();
@@ -165,13 +167,17 @@ export default function QualificationTemplateBuilder() {
   const handleSaveTemplate = async () => {
     if (!id || !templateName.trim()) return;
     try {
-      await updateTemplate.mutateAsync({
+      const result = await updateTemplate.mutateAsync({
         id,
         name: templateName.trim(),
         description: templateDescription.trim() || undefined,
       });
       setNameEdited(true);
-      toast({ title: 'Template salvo' });
+      if ((result as any).versionIncremented) {
+        toast({ title: `Template atualizado para v${(result as any).version}`, description: 'Nova versão criada pois já existem campanhas respondidas na versão anterior.' });
+      } else {
+        toast({ title: 'Template salvo' });
+      }
     } catch {
       toast({ title: 'Erro ao salvar template', variant: 'destructive' });
     }
@@ -242,6 +248,12 @@ export default function QualificationTemplateBuilder() {
               {template?.status && (
                 <Badge variant={template.status === 'publicado' ? 'default' : 'secondary'} className="ml-2 text-xs">
                   {template.status}
+                </Badge>
+              )}
+              {hasResponses && template?.status === 'publicado' && (
+                <Badge variant="outline" className="ml-2 text-xs border-yellow-500 text-yellow-600">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Alterações criarão nova versão
                 </Badge>
               )}
             </p>
