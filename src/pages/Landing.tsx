@@ -8,6 +8,7 @@ import { CTASection } from '@/components/landing/CTASection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { Footer } from '@/components/landing/Footer';
 import { StarField } from '@/components/ui/star-field';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 export default function Landing() {
   return (
@@ -16,12 +17,24 @@ export default function Landing() {
       <Navbar />
       <main className="relative z-10">
         <HeroSection />
-        <PlatformSection />
-        <TrustSection />
-        <AudienceSection />
-        <ROICalculatorSection />
-        <CTASection />
-        <FAQSection />
+        <ScrollReveal animation="fade-up" duration={700}>
+          <PlatformSection />
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" duration={700} delay={100}>
+          <TrustSection />
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" duration={700}>
+          <AudienceSection />
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" duration={700} delay={100}>
+          <ROICalculatorSection />
+        </ScrollReveal>
+        <ScrollReveal animation="scale-in" duration={700}>
+          <CTASection />
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" duration={700}>
+          <FAQSection />
+        </ScrollReveal>
       </main>
       <Footer />
     </div>
