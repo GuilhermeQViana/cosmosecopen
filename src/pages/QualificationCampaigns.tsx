@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQualificationCampaigns, useUpdateQualificationCampaign } from '@/hooks/useQualificationCampaigns';
 import { useCalculateQualificationScore, useQualificationResponses } from '@/hooks/useQualificationResponses';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,12 +15,13 @@ import { useToast } from '@/hooks/use-toast';
 import { AnimatedItem, StaggeredGrid } from '@/components/ui/staggered-list';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { QualificationComparison } from '@/components/fornecedores/QualificationComparison';
+import { supabase } from '@/integrations/supabase/client';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ClipboardList, Search, Clock, CheckCircle2, XCircle, AlertTriangle,
   BarChart3, Eye, RotateCcw, ThumbsUp, ThumbsDown, Copy, ExternalLink,
-  Send, FileText, Calculator, Filter, Users
+  Send, FileText, Calculator, Filter, Users, Download, Upload
 } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -47,6 +48,10 @@ export default function QualificationCampaigns() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [detailCampaignId, setDetailCampaignId] = useState<string | null>(null);
   const [comparisonOpen, setComparisonOpen] = useState(false);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+  const [importCampaignId, setImportCampaignId] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: campaigns, isLoading } = useQualificationCampaigns(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
@@ -119,6 +124,66 @@ export default function QualificationCampaigns() {
 
   const openPortal = (token: string) => {
     window.open(`/qualification/${token}`, '_blank');
+  };
+
+  const handleExportCSV = async (campaignId: string) => {
+    setExportingId(campaignId);
+    try {
+      const { data, error } = await supabase.functions.invoke('export-qualification-template', {
+        body: { campaignId },
+      });
+      if (error) throw error;
+      // data is the CSV string
+      const blob = new Blob([typeof data === 'string' ? data : JSON.stringify(data)], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `qualificacao-${campaignId.slice(0, 8)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'CSV exportado com sucesso!' });
+    } catch {
+      toast({ title: 'Erro ao exportar CSV', variant: 'destructive' });
+    } finally {
+      setExportingId(null);
+    }
+  };
+
+  const handleImportCSV = (campaignId: string) => {
+    setImportCampaignId(campaignId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !importCampaignId) return;
+    setImporting(true);
+    try {
+      const csvContent = await file.text();
+      const { data, error } = await supabase.functions.invoke('import-qualification-responses', {
+        body: { campaignId: importCampaignId, csvContent },
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result.success) {
+        toast({
+          title: `${result.imported} respostas importadas`,
+          description: result.errors?.length ? `${result.errors.length} avisos encontrados` : undefined,
+        });
+      } else {
+        toast({
+          title: 'Erro na importação',
+          description: result.errors?.slice(0, 3).join('\n'),
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({ title: 'Erro ao importar CSV', variant: 'destructive' });
+    } finally {
+      setImporting(false);
+      setImportCampaignId(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -292,6 +357,22 @@ export default function QualificationCampaigns() {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Ver respostas</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleExportCSV(campaign.id)} disabled={exportingId === campaign.id}>
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Exportar CSV</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleImportCSV(campaign.id)} disabled={importing}>
+                            <Upload className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Importar respostas CSV</TooltipContent>
                       </Tooltip>
 
                       {campaign.status === 'respondido' && (
@@ -509,6 +590,15 @@ export default function QualificationCampaigns() {
 
       {/* Comparison Dialog */}
       <QualificationComparison open={comparisonOpen} onOpenChange={setComparisonOpen} />
+
+      {/* Hidden file input for CSV import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={handleFileSelected}
+      />
     </div>
   );
 }
