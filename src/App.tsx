@@ -46,7 +46,6 @@ const BrandAssets = lazy(() => import("@/pages/BrandAssets"));
 const TermosDeUso = lazy(() => import("@/pages/TermosDeUso"));
 const PoliticaPrivacidade = lazy(() => import("@/pages/PoliticaPrivacidade"));
 const PoliticaLGPD = lazy(() => import("@/pages/PoliticaLGPD"));
-const VendorPortal = lazy(() => import("@/pages/VendorPortal"));
 const PolicyDashboard = lazy(() => import("@/pages/PolicyDashboard"));
 const Politicas = lazy(() => import("@/pages/Politicas"));
 const PolicyWorkflows = lazy(() => import("@/pages/PolicyWorkflows"));
