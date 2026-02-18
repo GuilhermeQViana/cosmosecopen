@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,122 +11,144 @@ import { FrameworkProvider } from "@/contexts/FrameworkContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { VendorLayout } from "@/components/layout/VendorLayout";
 import { PolicyLayout } from "@/components/layout/PolicyLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AUTH_ROUTE } from "@/lib/constants";
-import Landing from "@/pages/Landing";
-import ConhecaCosmoSec from "@/pages/ConhecaCosmoSec";
-import Auth from "@/pages/Auth";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
-import Onboarding from "@/pages/Onboarding";
-import SelecionarOrganizacao from "@/pages/SelecionarOrganizacao";
-import SelecionarModulo from "@/pages/SelecionarModulo";
-import SelecionarFramework from "@/pages/SelecionarFramework";
-import Dashboard from "@/pages/Dashboard";
-import Diagnostico from "@/pages/Diagnostico";
-import Riscos from "@/pages/Riscos";
-import Evidencias from "@/pages/Evidencias";
-import PlanoAcao from "@/pages/PlanoAcao";
-import Mapeamento from "@/pages/Mapeamento";
-import Relatorios from "@/pages/Relatorios";
-import Equipe from "@/pages/Equipe";
-import Auditoria from "@/pages/Auditoria";
-import Configuracoes from "@/pages/Configuracoes";
-import CheckoutSuccess from "@/pages/CheckoutSuccess";
-import Fornecedores from "@/pages/Fornecedores";
-import FornecedoresDashboard from "@/pages/FornecedoresDashboard";
-import VendorRequisitos from "@/pages/VendorRequisitos";
-import VendorAgenda from "@/pages/VendorAgenda";
-import VendorEvidencias from "@/pages/VendorEvidencias";
-import Documentacao from "@/pages/Documentacao";
-import Feedbacks from "@/pages/Feedbacks";
-import BrandAssets from "@/pages/BrandAssets";
-import TermosDeUso from "@/pages/TermosDeUso";
-import PoliticaPrivacidade from "@/pages/PoliticaPrivacidade";
-import PoliticaLGPD from "@/pages/PoliticaLGPD";
-import VendorPortal from "@/pages/VendorPortal";
-import PolicyDashboard from "@/pages/PolicyDashboard";
-import Politicas from "@/pages/Politicas";
-import PolicyWorkflows from "@/pages/PolicyWorkflows";
-import PolicyAceite from "@/pages/PolicyAceite";
-import PolicyTemplates from "@/pages/PolicyTemplates";
-import PoliticaEditor from "@/pages/PoliticaEditor";
-import NotFound from "@/pages/NotFound";
 
-const queryClient = new QueryClient();
+// Lazy loaded pages
+const Landing = lazy(() => import("@/pages/Landing"));
+const ConhecaCosmoSec = lazy(() => import("@/pages/ConhecaCosmoSec"));
+const Auth = lazy(() => import("@/pages/Auth"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const Onboarding = lazy(() => import("@/pages/Onboarding"));
+const SelecionarOrganizacao = lazy(() => import("@/pages/SelecionarOrganizacao"));
+const SelecionarModulo = lazy(() => import("@/pages/SelecionarModulo"));
+const SelecionarFramework = lazy(() => import("@/pages/SelecionarFramework"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Diagnostico = lazy(() => import("@/pages/Diagnostico"));
+const Riscos = lazy(() => import("@/pages/Riscos"));
+const Evidencias = lazy(() => import("@/pages/Evidencias"));
+const PlanoAcao = lazy(() => import("@/pages/PlanoAcao"));
+const Mapeamento = lazy(() => import("@/pages/Mapeamento"));
+const Relatorios = lazy(() => import("@/pages/Relatorios"));
+const Equipe = lazy(() => import("@/pages/Equipe"));
+const Auditoria = lazy(() => import("@/pages/Auditoria"));
+const Configuracoes = lazy(() => import("@/pages/Configuracoes"));
+const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
+const Fornecedores = lazy(() => import("@/pages/Fornecedores"));
+const FornecedoresDashboard = lazy(() => import("@/pages/FornecedoresDashboard"));
+const VendorRequisitos = lazy(() => import("@/pages/VendorRequisitos"));
+const VendorAgenda = lazy(() => import("@/pages/VendorAgenda"));
+const VendorEvidencias = lazy(() => import("@/pages/VendorEvidencias"));
+const Documentacao = lazy(() => import("@/pages/Documentacao"));
+const Feedbacks = lazy(() => import("@/pages/Feedbacks"));
+const BrandAssets = lazy(() => import("@/pages/BrandAssets"));
+const TermosDeUso = lazy(() => import("@/pages/TermosDeUso"));
+const PoliticaPrivacidade = lazy(() => import("@/pages/PoliticaPrivacidade"));
+const PoliticaLGPD = lazy(() => import("@/pages/PoliticaLGPD"));
+const VendorPortal = lazy(() => import("@/pages/VendorPortal"));
+const PolicyDashboard = lazy(() => import("@/pages/PolicyDashboard"));
+const Politicas = lazy(() => import("@/pages/Politicas"));
+const PolicyWorkflows = lazy(() => import("@/pages/PolicyWorkflows"));
+const PolicyAceite = lazy(() => import("@/pages/PolicyAceite"));
+const PolicyTemplates = lazy(() => import("@/pages/PolicyTemplates"));
+const PoliticaEditor = lazy(() => import("@/pages/PoliticaEditor"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-pulse text-muted-foreground">Carregando...</div>
+  </div>
+);
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <OrganizationProvider>
-              <FrameworkProvider>
-                <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/tour" element={<ConhecaCosmoSec />} />
-                  <Route path={AUTH_ROUTE} element={<Auth />} />
-                  <Route path="/esqueci-senha" element={<ForgotPassword />} />
-                  <Route path="/redefinir-senha" element={<ResetPassword />} />
-                  <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
-                  <Route path="/selecionar-modulo" element={<SelecionarModulo />} />
-                  <Route path="/selecionar-framework" element={<SelecionarFramework />} />
-                  <Route path="/checkout-success" element={<CheckoutSuccess />} />
-                  <Route path="/documentacao" element={<Documentacao />} />
-                  <Route path="/brand-assets" element={<BrandAssets />} />
-                  <Route path="/termos" element={<TermosDeUso />} />
-                  <Route path="/privacidade" element={<PoliticaPrivacidade />} />
-                  <Route path="/lgpd" element={<PoliticaLGPD />} />
-                  <Route path="/vendor-portal/:token" element={<VendorPortal />} />
-                  
-                  {/* Módulo Frameworks (GRC) */}
-                  <Route element={<AppLayout />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/diagnostico" element={<Diagnostico />} />
-                    <Route path="/riscos" element={<Riscos />} />
-                    <Route path="/evidencias" element={<Evidencias />} />
-                    <Route path="/plano-acao" element={<PlanoAcao />} />
-                    <Route path="/relatorios" element={<Relatorios />} />
-                    <Route path="/mapeamento" element={<Mapeamento />} />
-                    <Route path="/equipe" element={<Equipe />} />
-                    <Route path="/auditoria" element={<Auditoria />} />
-                    <Route path="/configuracoes" element={<Configuracoes />} />
-                    <Route path="/feedbacks" element={<Feedbacks />} />
-                  </Route>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <OrganizationProvider>
+                <FrameworkProvider>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      <Route path="/" element={<Landing />} />
+                      <Route path="/tour" element={<ConhecaCosmoSec />} />
+                      <Route path={AUTH_ROUTE} element={<Auth />} />
+                      <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                      <Route path="/redefinir-senha" element={<ResetPassword />} />
+                      <Route path="/onboarding" element={<Onboarding />} />
+                      <Route path="/selecionar-organizacao" element={<SelecionarOrganizacao />} />
+                      <Route path="/selecionar-modulo" element={<SelecionarModulo />} />
+                      <Route path="/selecionar-framework" element={<SelecionarFramework />} />
+                      <Route path="/checkout-success" element={<CheckoutSuccess />} />
+                      <Route path="/documentacao" element={<Documentacao />} />
+                      <Route path="/brand-assets" element={<BrandAssets />} />
+                      <Route path="/termos" element={<TermosDeUso />} />
+                      <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+                      <Route path="/lgpd" element={<PoliticaLGPD />} />
+                      <Route path="/vendor-portal/:token" element={<VendorPortal />} />
+                      
+                      {/* Módulo Frameworks (GRC) */}
+                      <Route element={<AppLayout />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/diagnostico" element={<Diagnostico />} />
+                        <Route path="/riscos" element={<Riscos />} />
+                        <Route path="/evidencias" element={<Evidencias />} />
+                        <Route path="/plano-acao" element={<PlanoAcao />} />
+                        <Route path="/relatorios" element={<Relatorios />} />
+                        <Route path="/mapeamento" element={<Mapeamento />} />
+                        <Route path="/equipe" element={<Equipe />} />
+                        <Route path="/auditoria" element={<Auditoria />} />
+                        <Route path="/configuracoes" element={<Configuracoes />} />
+                        <Route path="/feedbacks" element={<Feedbacks />} />
+                      </Route>
 
-                  {/* Módulo Fornecedores (VRM) */}
-                  <Route element={<VendorLayout />}>
-                    <Route path="/vrm" element={<FornecedoresDashboard />} />
-                    <Route path="/vrm/fornecedores" element={<Fornecedores />} />
-                    <Route path="/vrm/requisitos" element={<VendorRequisitos />} />
-                    <Route path="/vrm/evidencias" element={<VendorEvidencias />} />
-                    <Route path="/vrm/agenda" element={<VendorAgenda />} />
-                    <Route path="/vrm/configuracoes" element={<Configuracoes />} />
-                  </Route>
+                      {/* Módulo Fornecedores (VRM) */}
+                      <Route element={<VendorLayout />}>
+                        <Route path="/vrm" element={<FornecedoresDashboard />} />
+                        <Route path="/vrm/fornecedores" element={<Fornecedores />} />
+                        <Route path="/vrm/requisitos" element={<VendorRequisitos />} />
+                        <Route path="/vrm/evidencias" element={<VendorEvidencias />} />
+                        <Route path="/vrm/agenda" element={<VendorAgenda />} />
+                        <Route path="/vrm/configuracoes" element={<Configuracoes />} />
+                      </Route>
 
-                  {/* Módulo Políticas (Policy Center) */}
-                  <Route element={<PolicyLayout />}>
-                    <Route path="/policies" element={<PolicyDashboard />} />
-                    <Route path="/policies/central" element={<Politicas />} />
-                    <Route path="/policies/central/:id" element={<PoliticaEditor />} />
-                    <Route path="/policies/workflows" element={<PolicyWorkflows />} />
-                    <Route path="/policies/aceite" element={<PolicyAceite />} />
-                    <Route path="/policies/templates" element={<PolicyTemplates />} />
-                    <Route path="/policies/configuracoes" element={<Configuracoes />} />
-                  </Route>
+                      {/* Módulo Políticas (Policy Center) */}
+                      <Route element={<PolicyLayout />}>
+                        <Route path="/policies" element={<PolicyDashboard />} />
+                        <Route path="/policies/central" element={<Politicas />} />
+                        <Route path="/policies/central/:id" element={<PoliticaEditor />} />
+                        <Route path="/policies/workflows" element={<PolicyWorkflows />} />
+                        <Route path="/policies/aceite" element={<PolicyAceite />} />
+                        <Route path="/policies/templates" element={<PolicyTemplates />} />
+                        <Route path="/policies/configuracoes" element={<Configuracoes />} />
+                      </Route>
 
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </FrameworkProvider>
-            </OrganizationProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </FrameworkProvider>
+              </OrganizationProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
