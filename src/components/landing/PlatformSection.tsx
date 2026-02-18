@@ -162,27 +162,6 @@ const platforms: Platform[] = [
       { icon: Shield, title: 'Frameworks Customizados', description: 'Crie frameworks do zero ou importe via CSV.', highlights: ['Import CSV', 'Edição completa'] },
     ],
   },
-  {
-    id: 'consultoria',
-    icon: ClipboardCheck,
-    title: 'Consultoria & Auditoria',
-    description: 'Gerencie múltiplos clientes em um único painel com padronização e escalabilidade.',
-    features: [
-      'Painel multi-organizações',
-      'Relatórios com branding personalizado',
-      'Templates de diagnóstico reutilizáveis',
-      'Trilha de auditoria completa por cliente',
-    ],
-    color: moduleColors.consultoria,
-    subFeatures: [
-      { icon: Handshake, title: 'Multi-Organizações', description: 'Gerencie múltiplos clientes em um único painel centralizado.', highlights: ['Painel único', 'Troca rápida'] },
-      { icon: BarChart3, title: 'Relatórios Customizados', description: 'Relatórios executivos com branding personalizado do cliente.', highlights: ['Branding', 'Export PDF'] },
-      { icon: ClipboardCheck, title: 'Templates de Diagnóstico', description: 'Templates reutilizáveis para padronizar avaliações entre clientes.', highlights: ['Reutilizáveis', 'Padronização'] },
-      { icon: History, title: 'Trilha de Auditoria', description: 'Registro completo de ações por cliente para compliance.', highlights: ['Log completo', 'Filtros avançados'] },
-      { icon: Users, title: 'Equipe e Permissões', description: 'Controle de acesso granular por organização e papel.', highlights: ['Convites', 'Roles'] },
-      { icon: UserMinus, title: 'Ciclo de Vida do Cliente', description: 'Onboarding ao offboarding com histórico preservado.', highlights: ['Onboarding', 'Histórico'] },
-    ],
-  },
 ];
 
 export function PlatformSection() {
