@@ -42,6 +42,7 @@ import {
   FileText,
   Calendar,
   FolderOpen,
+  ClipboardList,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
