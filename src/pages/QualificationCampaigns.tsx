@@ -53,6 +53,8 @@ export default function QualificationCampaigns() {
   const calculateScore = useCalculateQualificationScore();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { data: detailResponses, isLoading: isLoadingResponses } = useQualificationResponses(detailCampaignId || undefined);
+  const detailCampaign = campaigns?.find(c => c.id === detailCampaignId);
 
   const filtered = campaigns?.filter(c => {
     if (!search) return true;
