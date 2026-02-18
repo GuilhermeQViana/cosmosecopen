@@ -250,6 +250,12 @@ export default function QualificationTemplateBuilder() {
                   {template.status}
                 </Badge>
               )}
+              {hasResponses && template?.status === 'publicado' && (
+                <Badge variant="outline" className="ml-2 text-xs border-yellow-500 text-yellow-600">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Alterações criarão nova versão
+                </Badge>
+              )}
             </p>
           </div>
         </div>
