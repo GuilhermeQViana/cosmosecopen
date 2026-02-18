@@ -6,16 +6,43 @@ export interface AuthResult {
   supabase: SupabaseClient;
 }
 
+// Domínios permitidos em produção
+const ALLOWED_ORIGINS = [
+  "https://cosmosec.com.br",
+  "https://www.cosmosec.com.br",
+  "https://cosmosec.lovable.app",
+];
+
+function getAllowedOrigin(req?: Request): string {
+  const origin = req?.headers?.get("origin") || "";
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    return origin;
+  }
+  // Em desenvolvimento, permitir qualquer origem
+  if (origin.includes("localhost") || origin.includes("lovableproject") || origin.includes("lovable.app")) {
+    return origin;
+  }
+  return ALLOWED_ORIGINS[0];
+}
+
 // Headers CORS padrão para todas as edge functions
 export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGINS[0],
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// Gerar CORS headers dinâmicos baseados na origem da requisição
+export function getCorsHeaders(req?: Request) {
+  return {
+    ...corsHeaders,
+    "Access-Control-Allow-Origin": getAllowedOrigin(req),
+  };
+}
 
 // Resposta CORS para preflight requests
 export function handleCors(req: Request): Response | null {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
   return null;
 }
