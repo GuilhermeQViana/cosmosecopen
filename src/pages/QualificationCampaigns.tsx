@@ -209,10 +209,33 @@ export default function QualificationCampaigns() {
             </h1>
             <p className="text-muted-foreground mt-1">Acompanhe e gerencie as campanhas enviadas aos fornecedores</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
-            <Users className="h-4 w-4 mr-2" />
-            Comparar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
+              <Users className="h-4 w-4 mr-2" />
+              Comparar
+            </Button>
+            <Button size="sm" onClick={() => setShowNewCampaign(true)}>
+              <Send className="h-4 w-4 mr-2" />
+              Nova Campanha
+            </Button>
+          </div>
+        </div>
+      </AnimatedItem>
+
+      {/* Sub-navigation tabs */}
+      <AnimatedItem animation="fade-up" delay={25}>
+        <div className="flex gap-1 border-b border-border">
+          <button
+            className="px-4 py-2 text-sm font-medium border-b-2 border-primary text-foreground"
+          >
+            Campanhas
+          </button>
+          <button
+            className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => navigate('/vrm/qualificacao/templates')}
+          >
+            Templates
+          </button>
         </div>
       </AnimatedItem>
 
