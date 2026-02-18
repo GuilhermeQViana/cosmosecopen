@@ -8,6 +8,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -21,6 +22,7 @@ import {
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
 import { Vendor, useUpdateVendor } from '@/hooks/useVendors';
 import { useVendorAssessments, VendorAssessment } from '@/hooks/useVendorAssessments';
+import { useQualificationCampaigns } from '@/hooks/useQualificationCampaigns';
 import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
 import { VendorLifecycleBadge, DataClassificationBadge } from './VendorLifecycleBadge';
 import { VendorEvidenceUpload } from './VendorEvidenceUpload';
@@ -51,6 +53,7 @@ import {
   Gauge,
   LogOut,
   ExternalLink,
+  Award,
 } from 'lucide-react';
 
 interface VendorDetailSheetProps {
@@ -84,7 +87,10 @@ export function VendorDetailSheet({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const { data: assessments } = useVendorAssessments(vendor?.id);
+  const { data: qualCampaigns } = useQualificationCampaigns(vendor ? { vendorId: vendor.id } : undefined);
   const updateVendor = useUpdateVendor();
+
+  const latestQualification = qualCampaigns?.find(c => c.score !== null);
 
   if (!vendor) return null;
 
@@ -278,6 +284,48 @@ export function VendorDetailSheet({
               </div>
 
               <Separator />
+
+              {/* Qualification Score */}
+              {latestQualification && (
+                <>
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                      <Award className="h-4 w-4" />
+                      Qualificação
+                    </h4>
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{latestQualification.qualification_templates?.name}</span>
+                        <Badge variant="outline" className={`text-xs ${
+                          latestQualification.risk_classification === 'baixo' ? 'text-green-500 border-green-500/20 bg-green-500/10' :
+                          latestQualification.risk_classification === 'medio' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/10' :
+                          'text-red-500 border-red-500/20 bg-red-500/10'
+                        }`}>
+                          {latestQualification.risk_classification === 'baixo' ? 'Baixo Risco' :
+                           latestQualification.risk_classification === 'medio' ? 'Médio Risco' : 'Alto Risco'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-muted/50 rounded-full h-2">
+                          <div
+                            className={`h-full rounded-full ${(latestQualification.score ?? 0) >= 81 ? 'bg-green-500' : (latestQualification.score ?? 0) >= 51 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            style={{ width: `${latestQualification.score}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-bold font-space">{latestQualification.score}%</span>
+                      </div>
+                      {latestQualification.ko_triggered && (
+                        <div className="flex items-center gap-1.5 text-red-500 text-xs">
+                          <AlertTriangle className="h-3 w-3" />
+                          <span>Critério KO acionado</span>
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground capitalize">Status: {latestQualification.status.replace('_', ' ')}</p>
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
 
               {/* Assessments History */}
               <div>

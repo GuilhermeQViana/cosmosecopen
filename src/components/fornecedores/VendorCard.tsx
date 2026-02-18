@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Vendor } from '@/hooks/useVendors';
+import { useQualificationCampaigns } from '@/hooks/useQualificationCampaigns';
 import { VendorRiskBadge, VendorCriticalityBadge } from './VendorRiskBadge';
 import { VendorLifecycleBadge } from './VendorLifecycleBadge';
 import {
@@ -23,6 +24,7 @@ import {
   Mail,
   Phone,
   FileBarChart,
+  Award,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -45,6 +47,9 @@ export function VendorCard({
   const isContractExpiring =
     contractEndDate && contractEndDate <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   const isContractExpired = contractEndDate && contractEndDate < new Date();
+
+  const { data: qualCampaigns } = useQualificationCampaigns({ vendorId: vendor.id });
+  const latestQual = qualCampaigns?.find(c => c.score !== null);
 
   return (
     <Card
@@ -121,6 +126,14 @@ export function VendorCard({
           )}
           {!vendor.last_assessment && (
             <span className="text-xs text-muted-foreground italic">Sem avaliação</span>
+          )}
+          {latestQual && (
+            <span className={`inline-flex items-center gap-1 text-xs font-medium ${
+              (latestQual.score ?? 0) >= 81 ? 'text-green-500' : (latestQual.score ?? 0) >= 51 ? 'text-yellow-500' : 'text-red-500'
+            }`}>
+              <Award className="h-3 w-3" />
+              {latestQual.score}%
+            </span>
           )}
         </div>
 

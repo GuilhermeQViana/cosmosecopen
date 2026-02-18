@@ -14,12 +14,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useToast } from '@/hooks/use-toast';
 import { AnimatedItem, StaggeredGrid } from '@/components/ui/staggered-list';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { QualificationComparison } from '@/components/fornecedores/QualificationComparison';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ClipboardList, Search, Clock, CheckCircle2, XCircle, AlertTriangle,
   BarChart3, Eye, RotateCcw, ThumbsUp, ThumbsDown, Copy, ExternalLink,
-  Send, FileText, Calculator, Filter
+  Send, FileText, Calculator, Filter, Users
 } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -45,6 +46,7 @@ export default function QualificationCampaigns() {
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | 'return' | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [detailCampaignId, setDetailCampaignId] = useState<string | null>(null);
+  const [comparisonOpen, setComparisonOpen] = useState(false);
 
   const { data: campaigns, isLoading } = useQualificationCampaigns(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
@@ -138,6 +140,10 @@ export default function QualificationCampaigns() {
             </h1>
             <p className="text-muted-foreground mt-1">Acompanhe e gerencie as campanhas enviadas aos fornecedores</p>
           </div>
+          <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
+            <Users className="h-4 w-4 mr-2" />
+            Comparar
+          </Button>
         </div>
       </AnimatedItem>
 
@@ -500,6 +506,9 @@ export default function QualificationCampaigns() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Comparison Dialog */}
+      <QualificationComparison open={comparisonOpen} onOpenChange={setComparisonOpen} />
     </div>
   );
 }
