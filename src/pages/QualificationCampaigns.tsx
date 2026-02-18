@@ -44,6 +44,7 @@ export default function QualificationCampaigns() {
   const [reviewCampaign, setReviewCampaign] = useState<any>(null);
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | 'return' | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
+  const [detailCampaignId, setDetailCampaignId] = useState<string | null>(null);
 
   const { data: campaigns, isLoading } = useQualificationCampaigns(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
