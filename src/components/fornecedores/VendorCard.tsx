@@ -48,6 +48,9 @@ export function VendorCard({
     contractEndDate && contractEndDate <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   const isContractExpired = contractEndDate && contractEndDate < new Date();
 
+  const { data: qualCampaigns } = useQualificationCampaigns({ vendorId: vendor.id });
+  const latestQual = qualCampaigns?.find(c => c.score !== null);
+
   return (
     <Card
       className={cn(
