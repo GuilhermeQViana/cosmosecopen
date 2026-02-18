@@ -53,7 +53,9 @@ export default function QualificationCampaigns() {
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [importCampaignId, setImportCampaignId] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [showNewCampaign, setShowNewCampaign] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const { data: campaigns, isLoading } = useQualificationCampaigns(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
