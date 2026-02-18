@@ -21,6 +21,7 @@ import {
 import { Calendar as CalendarUI } from '@/components/ui/calendar';
 import { Vendor, useUpdateVendor } from '@/hooks/useVendors';
 import { useVendorAssessments, VendorAssessment } from '@/hooks/useVendorAssessments';
+import { useQualificationCampaigns } from '@/hooks/useQualificationCampaigns';
 import { VendorRiskBadge, VendorCriticalityBadge, VendorStatusBadge } from './VendorRiskBadge';
 import { VendorLifecycleBadge, DataClassificationBadge } from './VendorLifecycleBadge';
 import { VendorEvidenceUpload } from './VendorEvidenceUpload';
