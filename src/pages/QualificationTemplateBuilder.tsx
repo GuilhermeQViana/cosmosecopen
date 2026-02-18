@@ -167,13 +167,17 @@ export default function QualificationTemplateBuilder() {
   const handleSaveTemplate = async () => {
     if (!id || !templateName.trim()) return;
     try {
-      await updateTemplate.mutateAsync({
+      const result = await updateTemplate.mutateAsync({
         id,
         name: templateName.trim(),
         description: templateDescription.trim() || undefined,
       });
       setNameEdited(true);
-      toast({ title: 'Template salvo' });
+      if ((result as any).versionIncremented) {
+        toast({ title: `Template atualizado para v${(result as any).version}`, description: 'Nova versão criada pois já existem campanhas respondidas na versão anterior.' });
+      } else {
+        toast({ title: 'Template salvo' });
+      }
     } catch {
       toast({ title: 'Erro ao salvar template', variant: 'destructive' });
     }
