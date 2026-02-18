@@ -53,6 +53,8 @@ const PolicyWorkflows = lazy(() => import("@/pages/PolicyWorkflows"));
 const PolicyAceite = lazy(() => import("@/pages/PolicyAceite"));
 const PolicyTemplates = lazy(() => import("@/pages/PolicyTemplates"));
 const PoliticaEditor = lazy(() => import("@/pages/PoliticaEditor"));
+const QualificationTemplates = lazy(() => import("@/pages/QualificationTemplates"));
+const QualificationTemplateBuilder = lazy(() => import("@/pages/QualificationTemplateBuilder"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
