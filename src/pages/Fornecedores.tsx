@@ -42,7 +42,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Building2, Download, Upload, LayoutGrid, Columns3 } from 'lucide-react';
+import { Plus, Search, Building2, Download, Upload, LayoutGrid, Columns3, ClipboardList } from 'lucide-react';
 import { VendorPipeline } from '@/components/fornecedores/VendorPipeline';
 import { DueDiligenceDialog } from '@/components/fornecedores/DueDiligenceDialog';
 import { ImportVendorsDialog } from '@/components/fornecedores/ImportVendorsDialog';
