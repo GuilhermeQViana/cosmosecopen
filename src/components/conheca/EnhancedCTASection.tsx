@@ -54,7 +54,7 @@ export function EnhancedCTASection() {
               </a>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <a href="https://linkedin.com/company/cosmosec" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.linkedin.com/company/cosmosecgrc/" target="_blank" rel="noopener noreferrer">
                 <Linkedin className="w-4 h-4 mr-2" />
                 LinkedIn
               </a>
