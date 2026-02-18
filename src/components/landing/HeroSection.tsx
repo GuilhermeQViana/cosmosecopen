@@ -51,7 +51,7 @@ export function HeroSection() {
           {/* Subheadline with delay */}
           <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-              A plataforma GRC + VRM + Gestão de Políticas para empresas, consultorias e auditores que precisam dominar conformidade de ponta a ponta.
+              Somos especialistas em conformidade e segurança da informação. Usamos nossa própria plataforma para entregar resultados — ou disponibilizamos ela para sua equipe.
             </p>
           </div>
 
