@@ -190,6 +190,9 @@ export function useCreateVendor() {
     ) => {
       if (!organization?.id) throw new Error('No organization');
 
+      // Sync profile → organization before insert to prevent RLS mismatch
+      await supabase.rpc('set_active_organization', { _org_id: organization.id });
+
       const { data: user } = await supabase.auth.getUser();
 
       const { data, error } = await supabase
