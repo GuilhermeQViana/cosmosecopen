@@ -186,7 +186,7 @@ export function PlatformSection() {
             <span className="text-gradient-cosmic">Segurança Completa.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Consolide governança, fornecedores, políticas e operações de consultoria em uma única solução com IA.
+            Consolide governança, fornecedores e políticas em uma única solução com IA — usada pela nossa consultoria e disponível para sua equipe.
           </p>
         </div>
 
