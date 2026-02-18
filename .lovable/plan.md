@@ -1,50 +1,70 @@
 
-# Fix: Qualification Flow Navigation
 
-## Problem
+# Import de Perguntas via Excel no Template Builder
 
-The qualification module has all the pages implemented but they are **not connected**:
+## Objetivo
+Adicionar ao builder de templates de qualificacao a possibilidade de importar perguntas em massa via arquivo Excel/CSV, com um template para download como modelo.
 
-1. The sidebar "Qualificação" link goes directly to the Campaigns page -- there is no way to access the **Templates** page from the UI
-2. The Campaigns page has no **"New Campaign"** button -- the `StartQualificationCampaignDialog` component exists but is never rendered on this page
-3. The full workflow (Create Template -> Publish -> Start Campaign -> Review) is broken because users can't navigate between steps
+## Como vai funcionar
 
-## Solution
+1. Um novo botao "Importar Perguntas" aparece ao lado de "Adicionar Pergunta" no builder
+2. Ao clicar, abre um dialog com:
+   - Botao para baixar o template Excel modelo
+   - Area de upload (drag-and-drop) para CSV/XLSX
+3. O sistema le o arquivo, valida as perguntas e mostra um preview
+4. O usuario confirma e as perguntas sao inseridas no template
 
-### 1. Add sub-navigation tabs on the Campaigns page
+## Template de Modelo
 
-Add a **tab bar** at the top of the Campaigns page with two tabs:
-- **Campanhas** (current page content)
-- **Templates** (links to `/vrm/qualificacao/templates`)
+O arquivo Excel tera as seguintes colunas:
 
-This lets users switch between campaigns and templates without needing extra sidebar items.
+| Coluna | Obrigatoria | Descricao |
+|--------|-------------|-----------|
+| pergunta | Sim | Texto da pergunta |
+| tipo | Nao | text, multiple_choice, number, date, currency, upload (padrao: text) |
+| peso | Nao | Peso em pontos, 1-100 (padrao: 10) |
+| obrigatoria | Nao | sim/nao (padrao: sim) |
+| ko | Nao | sim/nao - pergunta eliminatoria (padrao: nao) |
+| valor_ko | Nao | Valor que elimina (para KO) |
+| opcoes | Nao | Para multipla escolha: "Sim(10);Nao(0);Parcial(5)" - label(score) separados por ; |
 
-### 2. Add "New Campaign" button to the Campaigns page
+O template vira com 2-3 linhas de exemplo preenchidas.
 
-Add a button in the header that opens the existing `StartQualificationCampaignDialog`. This is the missing piece that connects templates to campaigns.
+## Detalhes Tecnicos
 
-### 3. Update the sidebar navigation
+### Novo arquivo: `src/hooks/useImportQualificationQuestions.ts`
 
-Change the "Qualificação" sidebar item to expand into two sub-items or keep as-is pointing to campaigns (since tabs handle navigation). The simplest approach: keep sidebar as-is, use tabs on the page.
+- Funcao `generateQuestionsTemplate()` - gera o CSV modelo
+- Funcao `downloadQuestionsTemplate()` - dispara o download
+- Funcao `parseQuestionsFile(content, delimiter)` - parseia o conteudo e retorna as perguntas validadas
+  - Valida campo obrigatorio `pergunta`
+  - Normaliza tipo (text, multiple_choice, etc)
+  - Parseia opcoes no formato "Label(score);Label(score)"
+  - Retorna lista com erros por linha
 
----
+Reutiliza utilitarios existentes do `useImportControls` (detectDelimiter, parseCSVLine, removeBOM, splitCSVLines, parseExcelToCSV).
 
-## Technical Details
+### Novo componente: `src/components/configuracoes/ImportQuestionsDialog.tsx`
 
-### File: `src/pages/QualificationCampaigns.tsx`
+- Dialog com 2 etapas: Upload e Preview
+- Etapa Upload: botao download template + dropzone para arquivo
+- Etapa Preview: tabela com perguntas parseadas, indicando validas/invalidas
+- Botao "Importar X perguntas" que chama `useUpsertQualificationQuestion` para cada pergunta valida
+- Usa o mesmo visual pattern do `ImportControlsCSV` existente (dropzone, tabela de preview, badges de erro)
 
-- Import `StartQualificationCampaignDialog` and `useNavigate`
-- Add state `showNewCampaign` for dialog toggle
-- Add a tab bar (using buttons or Tabs component) linking to Templates (`/vrm/qualificacao/templates`) and Campaigns (active)
-- Add "Nova Campanha" button in the header next to "Comparar"
+### Arquivo modificado: `src/pages/QualificationTemplateBuilder.tsx`
 
-### File: `src/pages/QualificationTemplates.tsx`
+- Importar o novo `ImportQuestionsDialog`
+- Adicionar estado `showImportDialog`
+- Adicionar botao "Importar" (icone Upload) no header, ao lado de "Preview" e "Salvar"
+- Tambem adicionar como opcao na area vazia ("Nenhuma pergunta adicionada ainda") ao lado de "Adicionar Pergunta"
 
-- Add matching tab bar linking back to Campaigns (`/vrm/qualificacao/campanhas`) and Templates (active)
-- Ensure consistent navigation between the two pages
+### Fluxo de dados
 
-### File: `src/components/layout/VendorSidebar.tsx`
+1. Usuario faz upload do arquivo
+2. Sistema detecta formato (CSV/XLSX) e converte para CSV se necessario
+3. Parser extrai perguntas e valida cada linha
+4. Preview mostra resultado com contagem de validos/invalidos
+5. Ao confirmar, insere cada pergunta via `useUpsertQualificationQuestion` com `order_index` sequencial (continuando apos as existentes)
+6. Dialog fecha, lista de perguntas atualiza automaticamente via invalidacao do React Query
 
-- Update the `isActive` check for "Qualificação" to highlight on both `/vrm/qualificacao/templates` and `/vrm/qualificacao/campanhas`
-
-No database or backend changes needed -- all components already exist, they just need to be wired together.
