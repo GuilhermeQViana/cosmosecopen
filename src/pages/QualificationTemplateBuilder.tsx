@@ -265,6 +265,10 @@ export default function QualificationTemplateBuilder() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
+            <FileUp className="h-4 w-4 mr-2" />
+            Importar
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowPreview(true)}>
             <Eye className="h-4 w-4 mr-2" />
             Preview
