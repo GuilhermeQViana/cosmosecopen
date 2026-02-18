@@ -431,6 +431,9 @@ export default function Fornecedores() {
       {/* Import Dialog */}
       <ImportVendorsDialog open={importOpen} onOpenChange={setImportOpen} />
 
+      {/* Qualification Campaign Dialog */}
+      <StartQualificationCampaignDialog open={qualCampaignOpen} onOpenChange={setQualCampaignOpen} />
+
       {/* Due Diligence Dialog */}
       <DueDiligenceDialog
         open={!!ddVendor}
