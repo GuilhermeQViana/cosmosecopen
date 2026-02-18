@@ -405,6 +405,101 @@ export default function QualificationCampaigns() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Response Detail Dialog */}
+      <Dialog open={!!detailCampaignId} onOpenChange={open => { if (!open) setDetailCampaignId(null); }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-space flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              Respostas — {detailCampaign?.vendors?.name || 'Fornecedor'}
+            </DialogTitle>
+            <DialogDescription>
+              {detailCampaign?.qualification_templates?.name} • Score: {detailCampaign?.score ?? '—'}%
+              {detailCampaign?.ko_triggered && ' • KO acionado'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingResponses ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-20 rounded-lg bg-muted/50 animate-pulse" />
+              ))}
+            </div>
+          ) : !detailResponses?.length ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-10 w-10 mx-auto mb-2 opacity-50" />
+              <p>Nenhuma resposta registrada ainda.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {detailResponses
+                .sort((a, b) => (a.qualification_questions?.order_index ?? 0) - (b.qualification_questions?.order_index ?? 0))
+                .map((resp, idx) => {
+                  const q = resp.qualification_questions;
+                  if (!q) return null;
+                  const maxWeight = q.weight;
+                  const scored = resp.score_awarded ?? 0;
+                  const pct = maxWeight > 0 ? Math.round((scored / maxWeight) * 100) : 0;
+                  const isKo = q.is_ko && q.ko_value;
+                  const answerValue = resp.answer_text || (resp.answer_option as any)?.label || (resp.answer_option as any)?.value || '';
+                  const koMatch = isKo && answerValue?.toString().toLowerCase() === q.ko_value?.toLowerCase();
+
+                  return (
+                    <Card key={resp.id} className={`border-border/50 ${koMatch ? 'border-red-500/40 bg-red-500/5' : 'bg-card/50'}`}>
+                      <CardContent className="p-4 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground font-mono">Q{idx + 1}</span>
+                              {q.label}
+                              {isKo && (
+                                <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-500 border-red-500/20">KO</Badge>
+                              )}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              Tipo: {q.type === 'multiple_choice' ? 'Múltipla escolha' : q.type === 'text' ? 'Texto' : q.type === 'upload' ? 'Anexo' : q.type === 'date' ? 'Data' : q.type === 'currency' ? 'Moeda' : q.type === 'number' ? 'Número' : q.type} • Peso: {q.weight}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className={`text-sm font-bold font-space ${pct >= 80 ? 'text-green-500' : pct >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
+                              {scored.toFixed(1)}/{maxWeight}
+                            </span>
+                            <div className="w-16 bg-muted/50 rounded-full h-1.5 mt-1">
+                              <div
+                                className={`h-full rounded-full ${pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-muted/30 rounded-md px-3 py-2">
+                          {resp.answer_file_url ? (
+                            <a href={resp.answer_file_url} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                              <ExternalLink className="h-3 w-3" /> Ver anexo
+                            </a>
+                          ) : answerValue ? (
+                            <p className="text-sm">{answerValue}</p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">Sem resposta</p>
+                          )}
+                        </div>
+
+                        {koMatch && (
+                          <div className="flex items-center gap-1.5 text-red-500 text-xs">
+                            <AlertTriangle className="h-3 w-3" />
+                            <span>Resposta acionou critério eliminatório (KO)</span>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
