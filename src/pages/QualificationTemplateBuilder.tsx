@@ -53,7 +53,9 @@ import {
   Hash,
   ChevronDown,
   ChevronUp,
+  FileUp,
 } from 'lucide-react';
+import { ImportQuestionsDialog } from '@/components/configuracoes/ImportQuestionsDialog';
 
 const QUESTION_TYPES = [
   { value: 'text', label: 'Texto', icon: Type },
