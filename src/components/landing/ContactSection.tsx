@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Calendar, MessageSquare, Building2, Send } from 'lucide-react';
+import { Mail, Calendar, MessageSquare, Building2, Send, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -169,14 +169,19 @@ export function ContactSection() {
             <Card className="bg-card/80 dark:bg-card/60 backdrop-blur-sm border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-success to-success/70 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Send className="w-6 h-6 text-success-foreground" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-1">Resposta Rápida</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Preencha o formulário e retornamos em até 24h úteis
-                    </p>
+                    <h3 className="font-semibold text-foreground mb-1">WhatsApp</h3>
+                    <a 
+                      href="https://wa.me/5521999253788" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:text-secondary transition-colors"
+                    >
+                      (21) 99925-3788
+                    </a>
                   </div>
                 </div>
               </CardContent>

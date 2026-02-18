@@ -1,4 +1,4 @@
-import { Calendar, Mail, Linkedin, ArrowRight, MessageSquare } from 'lucide-react';
+import { Calendar, Mail, Linkedin, ArrowRight, MessageSquare, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -57,6 +57,12 @@ export function EnhancedCTASection() {
               <a href="https://www.linkedin.com/company/cosmosecgrc/" target="_blank" rel="noopener noreferrer">
                 <Linkedin className="w-4 h-4 mr-2" />
                 LinkedIn
+              </a>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <a href="https://wa.me/5521999253788" target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                WhatsApp
               </a>
             </Button>
           </div>
