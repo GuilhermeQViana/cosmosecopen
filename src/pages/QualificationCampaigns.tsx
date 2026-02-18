@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQualificationCampaigns, useUpdateQualificationCampaign } from '@/hooks/useQualificationCampaigns';
 import { useCalculateQualificationScore, useQualificationResponses } from '@/hooks/useQualificationResponses';
 import { useAuth } from '@/contexts/AuthContext';
