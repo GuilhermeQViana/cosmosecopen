@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Vendor } from '@/hooks/useVendors';
+import { useQualificationCampaigns } from '@/hooks/useQualificationCampaigns';
 import { VendorRiskBadge, VendorCriticalityBadge } from './VendorRiskBadge';
 import { VendorLifecycleBadge } from './VendorLifecycleBadge';
 import {
