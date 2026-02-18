@@ -31,7 +31,6 @@ import { VendorContractManager } from './VendorContractManager';
 import { VendorIncidentLog } from './VendorIncidentLog';
 import { VendorSLATracker } from './VendorSLATracker';
 import { VendorOffboardingWizard } from './VendorOffboardingWizard';
-import { VendorPortalManager } from './VendorPortalManager';
 import { VendorAIRiskWidget } from './VendorAIRiskWidget';
 import { toast } from 'sonner';
 import {
@@ -52,7 +51,6 @@ import {
   AlertTriangle,
   Gauge,
   LogOut,
-  ExternalLink,
   Award,
 } from 'lucide-react';
 
@@ -81,7 +79,6 @@ export function VendorDetailSheet({
   const [incidentsOpen, setIncidentsOpen] = useState(false);
   const [slasOpen, setSlasOpen] = useState(false);
   const [offboardingOpen, setOffboardingOpen] = useState(false);
-  const [portalOpen, setPortalOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -194,10 +191,6 @@ export function VendorDetailSheet({
                 <Button variant="outline" size="sm" onClick={openScheduleDialog}>
                   <CalendarClock className="h-4 w-4 mr-2" />
                   Reavaliação
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setPortalOpen(true)}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Portal
                 </Button>
               </div>
 
@@ -430,12 +423,6 @@ export function VendorDetailSheet({
         vendor={vendor}
       />
 
-      {/* Portal Manager */}
-      <VendorPortalManager
-        open={portalOpen}
-        onOpenChange={setPortalOpen}
-        vendor={vendor}
-      />
 
       {/* Schedule Reassessment Dialog */}
       <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>

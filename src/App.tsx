@@ -46,7 +46,6 @@ const BrandAssets = lazy(() => import("@/pages/BrandAssets"));
 const TermosDeUso = lazy(() => import("@/pages/TermosDeUso"));
 const PoliticaPrivacidade = lazy(() => import("@/pages/PoliticaPrivacidade"));
 const PoliticaLGPD = lazy(() => import("@/pages/PoliticaLGPD"));
-const VendorPortal = lazy(() => import("@/pages/VendorPortal"));
 const PolicyDashboard = lazy(() => import("@/pages/PolicyDashboard"));
 const Politicas = lazy(() => import("@/pages/Politicas"));
 const PolicyWorkflows = lazy(() => import("@/pages/PolicyWorkflows"));
@@ -125,7 +124,6 @@ const App = () => (
                       <Route path="/termos" element={<TermosDeUso />} />
                       <Route path="/privacidade" element={<PoliticaPrivacidade />} />
                       <Route path="/lgpd" element={<PoliticaLGPD />} />
-                      <Route path="/vendor-portal/:token" element={<VendorPortal />} />
                       <Route path="/qualification/:token" element={<VendorQualificationPortal />} />
                       
                       {/* Módulo Frameworks (GRC) */}
