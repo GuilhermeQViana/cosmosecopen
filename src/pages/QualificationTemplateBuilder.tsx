@@ -636,6 +636,14 @@ export default function QualificationTemplateBuilder() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Import Questions Dialog */}
+      <ImportQuestionsDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        templateId={id!}
+        existingCount={questions.length}
+      />
     </div>
   );
 }
