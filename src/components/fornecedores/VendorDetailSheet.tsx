@@ -51,7 +51,6 @@ import {
   AlertTriangle,
   Gauge,
   LogOut,
-  ExternalLink,
   Award,
 } from 'lucide-react';
 
