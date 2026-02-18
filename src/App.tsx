@@ -147,6 +147,8 @@ const App = () => (
                         <Route path="/vrm/requisitos" element={<VendorRequisitos />} />
                         <Route path="/vrm/evidencias" element={<VendorEvidencias />} />
                         <Route path="/vrm/agenda" element={<VendorAgenda />} />
+                        <Route path="/vrm/qualificacao/templates" element={<QualificationTemplates />} />
+                        <Route path="/vrm/qualificacao/templates/:id" element={<QualificationTemplateBuilder />} />
                         <Route path="/vrm/configuracoes" element={<Configuracoes />} />
                       </Route>
 

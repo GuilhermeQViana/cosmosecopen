@@ -179,7 +179,7 @@ export function VendorSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === item.url}
+                    isActive={location.pathname === item.url || location.pathname.startsWith(item.url + '/')}
                     tooltip={item.title}
                   >
                     <RouterNavLink to={item.url}>
