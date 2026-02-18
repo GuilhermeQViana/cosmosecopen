@@ -53,7 +53,9 @@ import {
   Hash,
   ChevronDown,
   ChevronUp,
+  FileUp,
 } from 'lucide-react';
+import { ImportQuestionsDialog } from '@/components/configuracoes/ImportQuestionsDialog';
 
 const QUESTION_TYPES = [
   { value: 'text', label: 'Texto', icon: Type },
@@ -87,6 +89,7 @@ export default function QualificationTemplateBuilder() {
   const [editingQuestion, setEditingQuestion] = useState<Partial<QualificationQuestion> | null>(null);
   const [showQuestionEditor, setShowQuestionEditor] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [options, setOptions] = useState<QuestionOption[]>([]);
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
@@ -262,6 +265,10 @@ export default function QualificationTemplateBuilder() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
+            <FileUp className="h-4 w-4 mr-2" />
+            Importar
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowPreview(true)}>
             <Eye className="h-4 w-4 mr-2" />
             Preview
@@ -289,10 +296,16 @@ export default function QualificationTemplateBuilder() {
             <Card>
               <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground mb-3">Nenhuma pergunta adicionada ainda.</p>
-                <Button onClick={handleAddQuestion} variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Pergunta
-                </Button>
+                <div className="flex items-center justify-center gap-2">
+                  <Button onClick={handleAddQuestion} variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Pergunta
+                  </Button>
+                  <Button onClick={() => setShowImportDialog(true)} variant="outline">
+                    <FileUp className="h-4 w-4 mr-2" />
+                    Importar via Excel
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ) : (
@@ -623,6 +636,14 @@ export default function QualificationTemplateBuilder() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Import Questions Dialog */}
+      <ImportQuestionsDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        templateId={id!}
+        existingCount={questions.length}
+      />
     </div>
   );
 }
