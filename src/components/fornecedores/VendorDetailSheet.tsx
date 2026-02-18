@@ -52,6 +52,7 @@ import {
   Gauge,
   LogOut,
   ExternalLink,
+  Award,
 } from 'lucide-react';
 
 interface VendorDetailSheetProps {
