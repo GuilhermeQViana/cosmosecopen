@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { authenticate, handleCors, isAuthError, errorResponse } from "../_shared/auth.ts";
+import { authenticate, handleCors, isAuthError, errorResponse, getCorsHeaders } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 serve(async (req) => {
@@ -83,8 +83,7 @@ serve(async (req) => {
     return new Response(html, {
       status: 200,
       headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        ...getCorsHeaders(req),
         "Content-Type": "text/html; charset=utf-8",
       },
     });
