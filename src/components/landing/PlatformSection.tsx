@@ -75,15 +75,6 @@ const moduleColors: Record<string, ModuleColor> = {
     glow: 'hover:shadow-[0_0_40px_rgba(245,158,11,0.15)]',
     badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   },
-  consultoria: {
-    border: 'border-emerald-500/20',
-    borderHover: 'hover:border-emerald-500/50',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    icon: 'from-emerald-600 to-emerald-400',
-    glow: 'hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]',
-    badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  },
 };
 
 const platforms: Platform[] = [
