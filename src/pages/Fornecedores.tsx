@@ -243,6 +243,15 @@ export default function Fornecedores() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setQualCampaignOpen(true)}
+              className="hover:bg-primary/10 hover:border-primary/30"
+            >
+              <ClipboardList className="h-4 w-4 mr-2" />
+              Qualificar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setImportOpen(true)}
               className="hover:bg-primary/10 hover:border-primary/30"
             >
