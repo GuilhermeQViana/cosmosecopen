@@ -78,6 +78,7 @@ export default function QualificationTemplateBuilder() {
   const { data: templates = [] } = useQualificationTemplates();
   const template = templates.find(t => t.id === id);
   const { data: questions = [], isLoading: questionsLoading } = useQualificationQuestions(id);
+  const { data: hasResponses = false } = useTemplateHasResponses(id);
   const upsertQuestion = useUpsertQualificationQuestion();
   const deleteQuestion = useDeleteQualificationQuestion();
   const reorderQuestions = useReorderQualificationQuestions();
