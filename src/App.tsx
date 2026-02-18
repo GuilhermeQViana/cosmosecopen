@@ -17,7 +17,7 @@ import { AUTH_ROUTE } from "@/lib/constants";
 // Lazy loaded pages
 const Landing = lazy(() => import("@/pages/Landing"));
 const ConhecaCosmoSec = lazy(() => import("@/pages/ConhecaCosmoSec"));
-const Auth = lazy(() => import("@/pages/Auth"));
+const Gateway = lazy(() => import("@/pages/Gateway"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
