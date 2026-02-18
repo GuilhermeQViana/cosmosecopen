@@ -102,14 +102,14 @@ export function HeroSection() {
           <div className="text-center lg:text-left">
             <div className="animate-fade-in" style={{ animationDuration: '0.8s' }}>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl font-bold text-foreground leading-tight mb-6 font-space tracking-tight">
-                Consultoria em GRC com{' '}
-                <span className="text-gradient-cosmic">Tecnologia Própria.</span>
+                Não Gerencie Compliance.{' '}
+                <span className="text-gradient-cosmic">Domine.</span>
               </h1>
             </div>
 
             <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
               <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Somos especialistas em conformidade e segurança da informação. Usamos nossa própria plataforma para entregar resultados — ou disponibilizamos ela para sua equipe.
+                A plataforma GRC + VRM + Gestão de Políticas para empresas, consultorias e auditores que precisam dominar conformidade de ponta a ponta.
               </p>
             </div>
 
