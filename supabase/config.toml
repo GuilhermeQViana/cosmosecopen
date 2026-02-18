@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.vendor-risk-analysis]
 verify_jwt = false
+
+[functions.vendor-qualification-portal]
+verify_jwt = false

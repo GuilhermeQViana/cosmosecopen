@@ -42,10 +42,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Building2, Download, Upload, LayoutGrid, Columns3 } from 'lucide-react';
+import { Plus, Search, Building2, Download, Upload, LayoutGrid, Columns3, ClipboardList } from 'lucide-react';
 import { VendorPipeline } from '@/components/fornecedores/VendorPipeline';
 import { DueDiligenceDialog } from '@/components/fornecedores/DueDiligenceDialog';
 import { ImportVendorsDialog } from '@/components/fornecedores/ImportVendorsDialog';
+import { StartQualificationCampaignDialog } from '@/components/fornecedores/StartQualificationCampaignDialog';
 
 const RISK_LEVEL_FILTERS = [
   { value: 'all', label: 'Todos os níveis' },
@@ -73,6 +74,7 @@ export default function Fornecedores() {
   const [assessmentFormVendor, setAssessmentFormVendor] = useState<Vendor | null>(null);
   const [ddVendor, setDdVendor] = useState<Vendor | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [qualCampaignOpen, setQualCampaignOpen] = useState(false);
   const { toast } = useToast();
   const { data: vendors, isLoading } = useVendors();
   const { data: nextCode } = useNextVendorCode();
@@ -238,6 +240,15 @@ export default function Fornecedores() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setQualCampaignOpen(true)}
+              className="hover:bg-primary/10 hover:border-primary/30"
+            >
+              <ClipboardList className="h-4 w-4 mr-2" />
+              Qualificar
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -419,6 +430,9 @@ export default function Fornecedores() {
 
       {/* Import Dialog */}
       <ImportVendorsDialog open={importOpen} onOpenChange={setImportOpen} />
+
+      {/* Qualification Campaign Dialog */}
+      <StartQualificationCampaignDialog open={qualCampaignOpen} onOpenChange={setQualCampaignOpen} />
 
       {/* Due Diligence Dialog */}
       <DueDiligenceDialog

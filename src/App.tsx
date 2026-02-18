@@ -55,6 +55,7 @@ const PolicyTemplates = lazy(() => import("@/pages/PolicyTemplates"));
 const PoliticaEditor = lazy(() => import("@/pages/PoliticaEditor"));
 const QualificationTemplates = lazy(() => import("@/pages/QualificationTemplates"));
 const QualificationTemplateBuilder = lazy(() => import("@/pages/QualificationTemplateBuilder"));
+const VendorQualificationPortal = lazy(() => import("@/pages/VendorQualificationPortal"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -124,6 +125,7 @@ const App = () => (
                       <Route path="/privacidade" element={<PoliticaPrivacidade />} />
                       <Route path="/lgpd" element={<PoliticaLGPD />} />
                       <Route path="/vendor-portal/:token" element={<VendorPortal />} />
+                      <Route path="/qualification/:token" element={<VendorQualificationPortal />} />
                       
                       {/* Módulo Frameworks (GRC) */}
                       <Route element={<AppLayout />}>
