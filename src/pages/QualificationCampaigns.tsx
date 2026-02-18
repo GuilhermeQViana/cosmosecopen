@@ -590,6 +590,15 @@ export default function QualificationCampaigns() {
 
       {/* Comparison Dialog */}
       <QualificationComparison open={comparisonOpen} onOpenChange={setComparisonOpen} />
+
+      {/* Hidden file input for CSV import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={handleFileSelected}
+      />
     </div>
   );
 }
