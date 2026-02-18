@@ -46,6 +46,7 @@ import { Plus, Search, Building2, Download, Upload, LayoutGrid, Columns3 } from 
 import { VendorPipeline } from '@/components/fornecedores/VendorPipeline';
 import { DueDiligenceDialog } from '@/components/fornecedores/DueDiligenceDialog';
 import { ImportVendorsDialog } from '@/components/fornecedores/ImportVendorsDialog';
+import { StartQualificationCampaignDialog } from '@/components/fornecedores/StartQualificationCampaignDialog';
 
 const RISK_LEVEL_FILTERS = [
   { value: 'all', label: 'Todos os níveis' },
