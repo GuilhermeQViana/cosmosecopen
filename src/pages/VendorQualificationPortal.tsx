@@ -223,7 +223,7 @@ export default function VendorQualificationPortal() {
       {/* Reviewer notes (if returned) */}
       {data?.campaign.status === 'devolvido' && data.campaign.reviewer_notes && (
         <div className="container mx-auto px-4 mt-4 max-w-2xl">
-          <div className="flex items-start gap-3 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400">
+          <div className="flex items-start gap-3 p-4 rounded-lg border border-destructive/30 bg-destructive/10 text-destructive">
             <MessageSquareWarning className="h-5 w-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium">Correções solicitadas</p>
