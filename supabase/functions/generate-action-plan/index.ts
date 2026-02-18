@@ -117,7 +117,6 @@ Responda APENAS em formato JSON válido, sem texto adicional:
     return jsonResponse(actionPlan);
   } catch (error) {
     console.error('Error generating action plan:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return errorResponse(errorMessage, 500);
+    return errorResponse('Erro ao gerar plano de ação. Tente novamente mais tarde.', 500);
   }
 });

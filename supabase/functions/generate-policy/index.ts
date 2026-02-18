@@ -121,6 +121,6 @@ Responda APENAS com o HTML da política, sem explicações adicionais.`;
     return jsonResponse({ content });
   } catch (error) {
     console.error('Error generating policy:', error);
-    return errorResponse(error instanceof Error ? error.message : 'Unknown error', 500);
+    return errorResponse('Erro ao gerar política. Tente novamente mais tarde.', 500);
   }
 });

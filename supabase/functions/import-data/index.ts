@@ -310,8 +310,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     console.error('Import error:', error);
-    return errorResponse(errorMessage, 500);
+    return errorResponse('Erro ao importar dados. Tente novamente mais tarde.', 500);
   }
 });

@@ -8,6 +8,60 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
+// Validation helpers
+function isValidUUID(str: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
+function sanitizeString(str: unknown, maxLength: number): string | null {
+  if (str === null || str === undefined) return null;
+  if (typeof str !== "string") return null;
+  return str.slice(0, maxLength).trim();
+}
+
+interface ValidatedResponse {
+  question_id: string;
+  answer_text: string | null;
+  answer_option: string | null;
+  answer_file_url: string | null;
+}
+
+function validateResponses(responses: unknown): { valid: ValidatedResponse[]; errors: string[] } {
+  const errors: string[] = [];
+  const valid: ValidatedResponse[] = [];
+
+  if (!Array.isArray(responses)) {
+    return { valid: [], errors: ["responses deve ser um array"] };
+  }
+
+  if (responses.length > 500) {
+    return { valid: [], errors: ["Máximo de 500 respostas por envio"] };
+  }
+
+  for (let i = 0; i < responses.length; i++) {
+    const r = responses[i];
+    if (!r || typeof r !== "object") {
+      errors.push(`Resposta ${i + 1}: formato inválido`);
+      continue;
+    }
+
+    const questionId = r.question_id;
+    if (!questionId || typeof questionId !== "string" || !isValidUUID(questionId)) {
+      errors.push(`Resposta ${i + 1}: question_id inválido`);
+      continue;
+    }
+
+    valid.push({
+      question_id: questionId,
+      answer_text: sanitizeString(r.answer_text, 5000),
+      answer_option: sanitizeString(r.answer_option, 1000),
+      answer_file_url: sanitizeString(r.answer_file_url, 2000),
+    });
+  }
+
+  return { valid, errors };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,7 +77,7 @@ Deno.serve(async (req) => {
   try {
     if (req.method === "GET") {
       const token = url.searchParams.get("token");
-      if (!token) return jsonResponse({ error: "Token obrigatório" }, 400);
+      if (!token || !isValidUUID(token)) return jsonResponse({ error: "Token inválido" }, 400);
 
       // Fetch campaign by token
       const { data: campaign, error: cErr } = await supabase
@@ -83,11 +137,24 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === "POST" || req.method === "PUT") {
+      // Enforce payload size limit (~1MB)
+      const contentLength = req.headers.get("content-length");
+      if (contentLength && parseInt(contentLength) > 1_048_576) {
+        return jsonResponse({ error: "Payload excede o limite de 1MB" }, 413);
+      }
+
       const body = await req.json();
       const { campaign_id, responses, is_draft } = body;
 
-      if (!campaign_id || !responses) {
-        return jsonResponse({ error: "campaign_id e responses são obrigatórios" }, 400);
+      if (!campaign_id || typeof campaign_id !== "string" || !isValidUUID(campaign_id)) {
+        return jsonResponse({ error: "campaign_id inválido" }, 400);
+      }
+
+      // Validate responses
+      const { valid: validResponses, errors: validationErrors } = validateResponses(responses);
+
+      if (validResponses.length === 0) {
+        return jsonResponse({ error: "Nenhuma resposta válida", details: validationErrors }, 400);
       }
 
       // Validate campaign exists and is in valid state
@@ -104,8 +171,20 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Esta campanha não aceita mais respostas" }, 400);
       }
 
-      // Upsert responses
-      for (const resp of responses) {
+      // Fetch valid question IDs for this campaign's template
+      const { data: templateQuestions } = await supabase
+        .from("qualification_questions")
+        .select("id")
+        .eq("template_id", campaign.template_id);
+
+      const validQuestionIds = new Set((templateQuestions || []).map((q: { id: string }) => q.id));
+
+      // Upsert only validated responses with valid question IDs
+      for (const resp of validResponses) {
+        if (!validQuestionIds.has(resp.question_id)) {
+          continue; // Skip responses for questions not in this template
+        }
+
         const existing = await supabase
           .from("qualification_responses")
           .select("id")
@@ -117,9 +196,9 @@ Deno.serve(async (req) => {
           await supabase
             .from("qualification_responses")
             .update({
-              answer_text: resp.answer_text || null,
-              answer_option: resp.answer_option || null,
-              answer_file_url: resp.answer_file_url || null,
+              answer_text: resp.answer_text,
+              answer_option: resp.answer_option,
+              answer_file_url: resp.answer_file_url,
               updated_at: new Date().toISOString(),
             })
             .eq("id", existing.data.id);
@@ -129,9 +208,9 @@ Deno.serve(async (req) => {
             .insert({
               campaign_id,
               question_id: resp.question_id,
-              answer_text: resp.answer_text || null,
-              answer_option: resp.answer_option || null,
-              answer_file_url: resp.answer_file_url || null,
+              answer_text: resp.answer_text,
+              answer_option: resp.answer_option,
+              answer_file_url: resp.answer_file_url,
             });
         }
       }
@@ -148,6 +227,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ error: "Method not allowed" }, 405);
   } catch (err) {
-    return jsonResponse({ error: err.message }, 500);
+    console.error("vendor-qualification-portal error:", err);
+    return jsonResponse({ error: "Erro interno ao processar a solicitação" }, 500);
   }
 });

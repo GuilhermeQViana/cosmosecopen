@@ -142,7 +142,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error exporting data:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return errorResponse(errorMessage, 500);
+    return errorResponse("Erro ao exportar dados. Tente novamente mais tarde.", 500);
   }
 });
