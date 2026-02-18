@@ -48,6 +48,10 @@ export default function QualificationCampaigns() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [detailCampaignId, setDetailCampaignId] = useState<string | null>(null);
   const [comparisonOpen, setComparisonOpen] = useState(false);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+  const [importCampaignId, setImportCampaignId] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: campaigns, isLoading } = useQualificationCampaigns(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
