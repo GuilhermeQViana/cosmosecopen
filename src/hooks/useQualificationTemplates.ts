@@ -38,7 +38,8 @@ export function useQualificationTemplates() {
 
 export function useCreateQualificationTemplate() {
   const queryClient = useQueryClient();
-  const { organization, user } = useAuth();
+  const { organization } = useOrganization();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: { name: string; description?: string }) => {

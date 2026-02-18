@@ -53,7 +53,8 @@ export function useQualificationCampaigns(filters?: { vendorId?: string; templat
 
 export function useCreateQualificationCampaign() {
   const queryClient = useQueryClient();
-  const { organization, user } = useAuth();
+  const { organization } = useOrganization();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: { templateId: string; templateVersion: number; vendorIds: string[]; expiresInDays: number }) => {
