@@ -6,7 +6,8 @@ import { useFrameworkContext } from '@/contexts/FrameworkContext';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { CosmicPageLoader } from './GlobalCosmicLoader';
 import { CommandPalette } from '@/components/CommandPalette';
 import { NotificationCenter } from './NotificationCenter';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
@@ -58,26 +59,12 @@ export function AppLayout() {
   const isInitialLoading = authLoading;
   
   if (isInitialLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
+    return <CosmicPageLoader message="Iniciando CosmoSec..." />;
   }
   
   // Show loading only if org context is still doing initial load (not cached)
   if (orgLoading && !organization && organizations.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
+    return <CosmicPageLoader message="Carregando organização..." />;
   }
 
   if (!user) {

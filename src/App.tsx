@@ -66,11 +66,32 @@ const queryClient = new QueryClient({
   },
 });
 
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="animate-pulse text-muted-foreground">Carregando...</div>
-  </div>
-);
+const PageLoader = () => {
+  // Lazy import to avoid circular deps - inline the cosmic loader
+  return (
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/10 blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-secondary/10 blur-3xl animate-pulse" style={{ animationDelay: '500ms' }} />
+      </div>
+      <div className="relative z-10 flex flex-col items-center gap-6">
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 rounded-full border-2 border-primary/30" style={{ animation: 'spin 3s linear infinite' }}>
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+          </div>
+          <div className="absolute inset-1 rounded-full border border-secondary/40" style={{ animation: 'spin 2s linear infinite reverse' }}>
+            <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-secondary" />
+          </div>
+          <div className="absolute inset-2 rounded-full bg-gradient-to-br from-primary/80 to-secondary/80 animate-pulse" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+          </div>
+        </div>
+        <p className="text-muted-foreground text-sm animate-pulse">Carregando CosmoSec...</p>
+      </div>
+    </div>
+  );
+};
 
 const App = () => (
   <ErrorBoundary>

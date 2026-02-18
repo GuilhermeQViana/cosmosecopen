@@ -39,6 +39,8 @@ import { ResizableDashboardGrid, DashboardWidget } from '@/components/dashboard/
 // New Executive Components
 import { ExecutiveSummaryCard } from '@/components/dashboard/ExecutiveSummaryCard';
 import { SecurityPostureScore } from '@/components/dashboard/SecurityPostureScore';
+import { EmptyDashboard } from '@/components/dashboard/EmptyDashboard';
+import { CountUp } from '@/components/ui/count-up';
 import { RiskHeatmapMatrix } from '@/components/dashboard/RiskHeatmapMatrix';
 import { RemediationMetrics } from '@/components/dashboard/RemediationMetrics';
 import { TopThreatsWidget } from '@/components/dashboard/TopThreatsWidget';
@@ -344,6 +346,34 @@ export default function Dashboard() {
     },
   ], [controls, assessments, risks, actionPlans, evidences, isChartsLoading, risksLoading, assessmentsLoading, actionPlansLoading]);
 
+  // Check if user has no data at all (new user)
+  const hasNoData = !isChartsLoading && assessments.length === 0 && risks.length === 0 && actionPlans.length === 0 && evidences.length === 0;
+
+  if (hasNoData) {
+    return (
+      <div className="space-y-6 relative">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-3xl" />
+        </div>
+        <AnimatedItem animation="fade-up" delay={0} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground font-space">Dashboard Executivo</h1>
+            <p className="text-muted-foreground">
+              Visão geral de conformidade da {organization?.name || 'organização'}
+            </p>
+          </div>
+        </AnimatedItem>
+        <AnimatedItem animation="fade-up" delay={50}>
+          <OnboardingChecklist />
+        </AnimatedItem>
+        <AnimatedItem animation="scale-in" delay={100}>
+          <EmptyDashboard />
+        </AnimatedItem>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 relative">
       {/* Subtle cosmic background effects */}
@@ -416,7 +446,9 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold font-space">{metric.value}</span>
+                  <span className="text-3xl font-bold font-space">
+                    <CountUp end={metric.numericValue} suffix={metric.value.includes('%') ? '%' : ''} />
+                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{metric.description}</p>
                 {metric.previousValue > 0 && (
@@ -444,7 +476,9 @@ export default function Dashboard() {
                 <Target className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
               <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-2xl font-bold font-space">{kpi.value}</span>
+                <span className="text-2xl font-bold font-space">
+                  <CountUp end={parseInt(kpi.value)} />
+                </span>
                 <span className="text-sm text-muted-foreground">/ {kpi.total}</span>
               </div>
               <Progress value={kpi.percent} className="h-1.5" />
