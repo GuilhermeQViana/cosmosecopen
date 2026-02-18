@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQualificationCampaigns, useUpdateQualificationCampaign } from '@/hooks/useQualificationCampaigns';
-import { useCalculateQualificationScore } from '@/hooks/useQualificationResponses';
+import { useCalculateQualificationScore, useQualificationResponses } from '@/hooks/useQualificationResponses';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
