@@ -4,8 +4,7 @@ import {
   LayoutDashboard, AlertTriangle, FolderLock, ListTodo, Map,
   Users, Search, Timer, Globe, FileSignature,
   PenTool, Workflow, Mail, BookTemplate, GitBranch,
-  Brain, Lightbulb, FileBarChart, History, MessageSquare, ShieldAlert,
-  Handshake, BarChart3, UserMinus,
+  Brain, Lightbulb, FileBarChart, MessageSquare, ShieldAlert,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -74,15 +73,6 @@ const moduleColors: Record<string, ModuleColor> = {
     icon: 'from-amber-500 to-orange-400',
     glow: 'hover:shadow-[0_0_40px_rgba(245,158,11,0.15)]',
     badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  },
-  consultoria: {
-    border: 'border-emerald-500/20',
-    borderHover: 'hover:border-emerald-500/50',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    icon: 'from-emerald-600 to-emerald-400',
-    glow: 'hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]',
-    badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   },
 };
 
@@ -171,27 +161,6 @@ const platforms: Platform[] = [
       { icon: Shield, title: 'Frameworks Customizados', description: 'Crie frameworks do zero ou importe via CSV.', highlights: ['Import CSV', 'Edição completa'] },
     ],
   },
-  {
-    id: 'consultoria',
-    icon: ClipboardCheck,
-    title: 'Consultoria & Auditoria',
-    description: 'Gerencie múltiplos clientes em um único painel com padronização e escalabilidade.',
-    features: [
-      'Painel multi-organizações',
-      'Relatórios com branding personalizado',
-      'Templates de diagnóstico reutilizáveis',
-      'Trilha de auditoria completa por cliente',
-    ],
-    color: moduleColors.consultoria,
-    subFeatures: [
-      { icon: Handshake, title: 'Multi-Organizações', description: 'Gerencie múltiplos clientes em um único painel centralizado.', highlights: ['Painel único', 'Troca rápida'] },
-      { icon: BarChart3, title: 'Relatórios Customizados', description: 'Relatórios executivos com branding personalizado do cliente.', highlights: ['Branding', 'Export PDF'] },
-      { icon: ClipboardCheck, title: 'Templates de Diagnóstico', description: 'Templates reutilizáveis para padronizar avaliações entre clientes.', highlights: ['Reutilizáveis', 'Padronização'] },
-      { icon: History, title: 'Trilha de Auditoria', description: 'Registro completo de ações por cliente para compliance.', highlights: ['Log completo', 'Filtros avançados'] },
-      { icon: Users, title: 'Equipe e Permissões', description: 'Controle de acesso granular por organização e papel.', highlights: ['Convites', 'Roles'] },
-      { icon: UserMinus, title: 'Ciclo de Vida do Cliente', description: 'Onboarding ao offboarding com histórico preservado.', highlights: ['Onboarding', 'Histórico'] },
-    ],
-  },
 ];
 
 export function PlatformSection() {
@@ -216,25 +185,13 @@ export function PlatformSection() {
             <span className="text-gradient-cosmic">Segurança Completa.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Consolide governança, fornecedores, políticas e operações de consultoria em uma única solução com IA.
+            Consolide governança, fornecedores e políticas em uma única solução com IA — usada pela nossa consultoria e disponível para sua equipe.
           </p>
         </div>
 
-        {/* Top Row: 3 cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1200px] mx-auto mb-6">
-          {topRow.map((platform) => (
-            <PlatformCard
-              key={platform.id}
-              platform={platform}
-              isExpanded={expandedId === platform.id}
-              onToggle={() => toggleExpanded(platform.id)}
-            />
-          ))}
-        </div>
-
-        {/* Bottom Row: 2 cards centered */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
-          {bottomRow.map((platform) => (
+        {/* 2x2 Grid */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-[900px] mx-auto">
+          {platforms.map((platform) => (
             <PlatformCard
               key={platform.id}
               platform={platform}

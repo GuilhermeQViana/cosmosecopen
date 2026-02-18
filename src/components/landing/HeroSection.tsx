@@ -43,15 +43,15 @@ export function HeroSection() {
           {/* Animated entrance for headline */}
           <div className="animate-fade-in" style={{ animationDuration: '0.8s' }}>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight mb-6 font-space tracking-tight">
-              Não Gerencie Compliance.{' '}
-              <span className="text-gradient-cosmic">Domine.</span>
+              Consultoria em GRC com{' '}
+              <span className="text-gradient-cosmic">Tecnologia Própria.</span>
             </h1>
           </div>
 
           {/* Subheadline with delay */}
           <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
             <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-              A plataforma GRC + VRM + Gestão de Políticas para empresas, consultorias e auditores que precisam dominar conformidade de ponta a ponta.
+              Somos especialistas em conformidade e segurança da informação. Usamos nossa própria plataforma para entregar resultados — ou disponibilizamos ela para sua equipe.
             </p>
           </div>
 
@@ -71,7 +71,7 @@ export function HeroSection() {
                 asChild 
                 className="text-base px-8 py-6 text-lg border-primary/30 hover:border-secondary/50 hover:bg-secondary/10 dark:border-primary/40 dark:hover:border-secondary/60"
               >
-                <Link to="/tour">Ver Plataforma</Link>
+                <Link to="/tour">Conhecer a Plataforma</Link>
               </Button>
             </div>
           </div>
@@ -79,7 +79,7 @@ export function HeroSection() {
           {/* Trust Indicator with delay */}
           <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.6s', animationFillMode: 'backwards' }}>
             <p className="text-sm text-muted-foreground">
-              NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893 • Frameworks Custom • Multi-organizações
+              NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893 • Frameworks Custom • Consultoria Especializada
             </p>
           </div>
         </div>
