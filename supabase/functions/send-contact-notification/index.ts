@@ -1,10 +1,6 @@
 import { Resend } from "https://esm.sh/resend@2.0.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders, getCorsHeaders } from "../_shared/auth.ts";
+import { buildEmailHtml, emailGreeting, emailText, emailButton, emailInfoBox } from "../_shared/email-template.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -34,16 +30,14 @@ const INTEREST_TYPE_LABELS: Record<string, string> = {
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Received contact notification request");
+  const headers = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers });
   }
 
   try {
     const contactData: ContactRequest = await req.json();
-    
-    console.log(`Sending contact notification for ${contactData.company}`);
 
     const howFoundLabel = contactData.how_found 
       ? HOW_FOUND_LABELS[contactData.how_found] || contactData.how_found 
@@ -91,56 +85,14 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
 
             <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Nome Completo</strong><br>
-                  <span style="color: #0f172a; font-size: 16px;">${contactData.name}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Email Corporativo</strong><br>
-                  <span style="color: #0f172a; font-size: 16px;">${contactData.email}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Empresa</strong><br>
-                  <span style="color: #0f172a; font-size: 16px; font-weight: 600;">${contactData.company}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Cargo</strong><br>
-                  <span style="color: #0f172a; font-size: 16px;">${contactData.role || 'Não informado'}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Tipo de Interesse</strong><br>
-                  <span style="color: #0f172a; font-size: 16px; font-weight: 600;">${interestTypeLabel}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Tamanho da Empresa</strong><br>
-                  <span style="color: #0f172a; font-size: 16px;">${contactData.company_size || 'Não informado'}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Como Conheceu</strong><br>
-                  <span style="color: #0f172a; font-size: 16px;">${howFoundLabel}</span>
-                </td>
-              </tr>
-              ${contactData.message ? `
-              <tr>
-                <td style="padding: 12px 0;">
-                  <strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Mensagem</strong><br>
-                  <div style="color: #0f172a; font-size: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 8px; white-space: pre-wrap;">${contactData.message}</div>
-                </td>
-              </tr>
-              ` : ''}
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Nome Completo</strong><br><span style="color: #0f172a; font-size: 16px;">${contactData.name}</span></td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Email Corporativo</strong><br><span style="color: #0f172a; font-size: 16px;">${contactData.email}</span></td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Empresa</strong><br><span style="color: #0f172a; font-size: 16px; font-weight: 600;">${contactData.company}</span></td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Cargo</strong><br><span style="color: #0f172a; font-size: 16px;">${contactData.role || 'Não informado'}</span></td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Tipo de Interesse</strong><br><span style="color: #0f172a; font-size: 16px; font-weight: 600;">${interestTypeLabel}</span></td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Tamanho da Empresa</strong><br><span style="color: #0f172a; font-size: 16px;">${contactData.company_size || 'Não informado'}</span></td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Como Conheceu</strong><br><span style="color: #0f172a; font-size: 16px;">${howFoundLabel}</span></td></tr>
+              ${contactData.message ? `<tr><td style="padding: 12px 0;"><strong style="color: #64748b; font-size: 12px; text-transform: uppercase;">Mensagem</strong><br><div style="color: #0f172a; font-size: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 8px; white-space: pre-wrap;">${contactData.message}</div></td></tr>` : ''}
             </table>
 
             <div style="text-align: center; margin-top: 30px; background: #f0f9ff; border-radius: 8px; padding: 15px;">
@@ -158,23 +110,15 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Contact notification email sent successfully:", emailResponse);
-
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...headers },
     });
   } catch (error: any) {
     console.error("Error in send-contact-notification function:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 500, headers: { "Content-Type": "application/json", ...headers } }
     );
   }
 };
