@@ -373,6 +373,7 @@ export default function QualificationCampaigns() {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Importar respostas CSV</TooltipContent>
+                      </Tooltip>
 
                       {campaign.status === 'respondido' && (
                         <Button
