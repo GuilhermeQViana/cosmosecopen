@@ -127,6 +127,14 @@ export function VendorCard({
           {!vendor.last_assessment && (
             <span className="text-xs text-muted-foreground italic">Sem avaliação</span>
           )}
+          {latestQual && (
+            <span className={`inline-flex items-center gap-1 text-xs font-medium ${
+              (latestQual.score ?? 0) >= 81 ? 'text-green-500' : (latestQual.score ?? 0) >= 51 ? 'text-yellow-500' : 'text-red-500'
+            }`}>
+              <Award className="h-3 w-3" />
+              {latestQual.score}%
+            </span>
+          )}
         </div>
 
         {/* Category */}
