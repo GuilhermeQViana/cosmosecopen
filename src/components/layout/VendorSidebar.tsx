@@ -182,7 +182,9 @@ export function VendorSidebar() {
                     isActive={
                       item.url === '/vrm'
                         ? location.pathname === '/vrm'
-                        : location.pathname === item.url || location.pathname.startsWith(item.url + '/')
+                        : item.url === '/vrm/qualificacao'
+                          ? location.pathname.startsWith('/vrm/qualificacao')
+                          : location.pathname === item.url || location.pathname.startsWith(item.url + '/')
                     }
                     tooltip={item.title}
                   >

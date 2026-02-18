@@ -117,6 +117,21 @@ export default function QualificationTemplates() {
         </Button>
       </div>
 
+      {/* Sub-navigation tabs */}
+      <div className="flex gap-1 border-b border-border">
+        <button
+          className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => navigate('/vrm/qualificacao/campanhas')}
+        >
+          Campanhas
+        </button>
+        <button
+          className="px-4 py-2 text-sm font-medium border-b-2 border-primary text-foreground"
+        >
+          Templates
+        </button>
+      </div>
+
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
