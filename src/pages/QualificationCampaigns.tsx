@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQualificationCampaigns, useUpdateQualificationCampaign } from '@/hooks/useQualificationCampaigns';
 import { useCalculateQualificationScore, useQualificationResponses } from '@/hooks/useQualificationResponses';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,12 +15,13 @@ import { useToast } from '@/hooks/use-toast';
 import { AnimatedItem, StaggeredGrid } from '@/components/ui/staggered-list';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { QualificationComparison } from '@/components/fornecedores/QualificationComparison';
+import { supabase } from '@/integrations/supabase/client';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ClipboardList, Search, Clock, CheckCircle2, XCircle, AlertTriangle,
   BarChart3, Eye, RotateCcw, ThumbsUp, ThumbsDown, Copy, ExternalLink,
-  Send, FileText, Calculator, Filter, Users
+  Send, FileText, Calculator, Filter, Users, Download, Upload
 } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
