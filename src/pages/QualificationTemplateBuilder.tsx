@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useQualificationTemplates,
   useUpdateQualificationTemplate,
+  useTemplateHasResponses,
 } from '@/hooks/useQualificationTemplates';
 import {
   useQualificationQuestions,
