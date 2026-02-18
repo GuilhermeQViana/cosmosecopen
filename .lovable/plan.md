@@ -1,43 +1,50 @@
 
-# Fix: Vendor Creation Error - Organization Mismatch
+# Fix: Qualification Flow Navigation
 
-## Root Cause
+## Problem
 
-The error "Nao foi possivel salvar o fornecedor" is caused by an **organization ID mismatch** between the frontend and the database.
+The qualification module has all the pages implemented but they are **not connected**:
 
-- The frontend (OrganizationContext) believes the active organization is `615b8b14-...`
-- The database `profiles.organization_id` is set to `fd2deb13-...`
-- When inserting a vendor with `organization_id = 615b8b14-...`, the RLS policy calls `user_belongs_to_org()`, which checks `profiles.organization_id` -- and it does not match, so the insert is **rejected**.
-
-This can happen when:
-- The user switches organizations in the UI, but the `set_active_organization` RPC fails silently or the profile update does not persist
-- The organization list loads from `get_user_organizations` (which uses `user_roles`) but the profile is stale
+1. The sidebar "Qualificação" link goes directly to the Campaigns page -- there is no way to access the **Templates** page from the UI
+2. The Campaigns page has no **"New Campaign"** button -- the `StartQualificationCampaignDialog` component exists but is never rendered on this page
+3. The full workflow (Create Template -> Publish -> Start Campaign -> Review) is broken because users can't navigate between steps
 
 ## Solution
 
-### 1. Sync profile before mutations (defensive fix)
+### 1. Add sub-navigation tabs on the Campaigns page
 
-Update `useCreateVendor` to call `set_active_organization` before inserting, ensuring the profile is always in sync with the frontend context.
+Add a **tab bar** at the top of the Campaigns page with two tabs:
+- **Campanhas** (current page content)
+- **Templates** (links to `/vrm/qualificacao/templates`)
 
-### 2. Improve `setActiveOrganization` reliability
+This lets users switch between campaigns and templates without needing extra sidebar items.
 
-In `OrganizationContext.tsx`, after calling the RPC, also update the local profile cache to confirm the switch took effect. If the RPC fails, show a toast error so the user knows.
+### 2. Add "New Campaign" button to the Campaigns page
 
-### 3. Add error logging for debugging
+Add a button in the header that opens the existing `StartQualificationCampaignDialog`. This is the missing piece that connects templates to campaigns.
 
-Log the actual Supabase error message in the vendor creation catch block so future issues are easier to diagnose.
+### 3. Update the sidebar navigation
+
+Change the "Qualificação" sidebar item to expand into two sub-items or keep as-is pointing to campaigns (since tabs handle navigation). The simplest approach: keep sidebar as-is, use tabs on the page.
 
 ---
 
 ## Technical Details
 
-**File: `src/hooks/useVendors.ts`** -- In `useCreateVendor`, before the insert, call:
-```typescript
-await supabase.rpc('set_active_organization', { _org_id: organization.id });
-```
+### File: `src/pages/QualificationCampaigns.tsx`
 
-**File: `src/pages/Fornecedores.tsx`** -- In the `handleSubmit` catch block, log `error` to console for debugging.
+- Import `StartQualificationCampaignDialog` and `useNavigate`
+- Add state `showNewCampaign` for dialog toggle
+- Add a tab bar (using buttons or Tabs component) linking to Templates (`/vrm/qualificacao/templates`) and Campaigns (active)
+- Add "Nova Campanha" button in the header next to "Comparar"
 
-**File: `src/contexts/OrganizationContext.tsx`** -- In `setActiveOrganization`, after the RPC, verify the profile was updated. If not, retry or report the error.
+### File: `src/pages/QualificationTemplates.tsx`
 
-This ensures the profile is always synced before any data operation, preventing the RLS violation.
+- Add matching tab bar linking back to Campaigns (`/vrm/qualificacao/campanhas`) and Templates (active)
+- Ensure consistent navigation between the two pages
+
+### File: `src/components/layout/VendorSidebar.tsx`
+
+- Update the `isActive` check for "Qualificação" to highlight on both `/vrm/qualificacao/templates` and `/vrm/qualificacao/campanhas`
+
+No database or backend changes needed -- all components already exist, they just need to be wired together.
