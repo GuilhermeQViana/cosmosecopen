@@ -4,8 +4,7 @@ import {
   LayoutDashboard, AlertTriangle, FolderLock, ListTodo, Map,
   Users, Search, Timer, Globe, FileSignature,
   PenTool, Workflow, Mail, BookTemplate, GitBranch,
-  Brain, Lightbulb, FileBarChart, History, MessageSquare, ShieldAlert,
-  Handshake, BarChart3, UserMinus,
+  Brain, Lightbulb, FileBarChart, MessageSquare, ShieldAlert,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
