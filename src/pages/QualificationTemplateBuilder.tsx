@@ -296,10 +296,16 @@ export default function QualificationTemplateBuilder() {
             <Card>
               <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground mb-3">Nenhuma pergunta adicionada ainda.</p>
-                <Button onClick={handleAddQuestion} variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Pergunta
-                </Button>
+                <div className="flex items-center justify-center gap-2">
+                  <Button onClick={handleAddQuestion} variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Pergunta
+                  </Button>
+                  <Button onClick={() => setShowImportDialog(true)} variant="outline">
+                    <FileUp className="h-4 w-4 mr-2" />
+                    Importar via Excel
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ) : (
