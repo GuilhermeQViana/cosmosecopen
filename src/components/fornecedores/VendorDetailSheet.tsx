@@ -80,7 +80,6 @@ export function VendorDetailSheet({
   const [incidentsOpen, setIncidentsOpen] = useState(false);
   const [slasOpen, setSlasOpen] = useState(false);
   const [offboardingOpen, setOffboardingOpen] = useState(false);
-  const [portalOpen, setPortalOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
