@@ -74,6 +74,7 @@ export default function Fornecedores() {
   const [assessmentFormVendor, setAssessmentFormVendor] = useState<Vendor | null>(null);
   const [ddVendor, setDdVendor] = useState<Vendor | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [qualCampaignOpen, setQualCampaignOpen] = useState(false);
   const { toast } = useToast();
   const { data: vendors, isLoading } = useVendors();
   const { data: nextCode } = useNextVendorCode();
