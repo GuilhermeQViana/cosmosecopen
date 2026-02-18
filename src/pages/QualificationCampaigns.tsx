@@ -506,6 +506,9 @@ export default function QualificationCampaigns() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Comparison Dialog */}
+      <QualificationComparison open={comparisonOpen} onOpenChange={setComparisonOpen} />
     </div>
   );
 }
