@@ -424,12 +424,6 @@ export function VendorDetailSheet({
         vendor={vendor}
       />
 
-      {/* Portal Manager */}
-      <VendorPortalManager
-        open={portalOpen}
-        onOpenChange={setPortalOpen}
-        vendor={vendor}
-      />
 
       {/* Schedule Reassessment Dialog */}
       <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
