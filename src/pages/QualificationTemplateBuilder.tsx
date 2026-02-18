@@ -91,11 +91,13 @@ export default function QualificationTemplateBuilder() {
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
   const [nameEdited, setNameEdited] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-  // Initialize template name/description
-  if (template && !nameEdited) {
-    if (templateName === '') setTemplateName(template.name);
-    if (templateDescription === '') setTemplateDescription(template.description || '');
+  // Initialize template name/description once when template loads
+  if (template && !initialized) {
+    setInitialized(true);
+    setTemplateName(template.name);
+    setTemplateDescription(template.description || '');
   }
 
   const handleAddQuestion = () => {
