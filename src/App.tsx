@@ -55,6 +55,7 @@ const PolicyTemplates = lazy(() => import("@/pages/PolicyTemplates"));
 const PoliticaEditor = lazy(() => import("@/pages/PoliticaEditor"));
 const QualificationTemplates = lazy(() => import("@/pages/QualificationTemplates"));
 const QualificationTemplateBuilder = lazy(() => import("@/pages/QualificationTemplateBuilder"));
+const QualificationCampaigns = lazy(() => import("@/pages/QualificationCampaigns"));
 const VendorQualificationPortal = lazy(() => import("@/pages/VendorQualificationPortal"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -151,6 +152,7 @@ const App = () => (
                         <Route path="/vrm/agenda" element={<VendorAgenda />} />
                         <Route path="/vrm/qualificacao/templates" element={<QualificationTemplates />} />
                         <Route path="/vrm/qualificacao/templates/:id" element={<QualificationTemplateBuilder />} />
+                        <Route path="/vrm/qualificacao/campanhas" element={<QualificationCampaigns />} />
                         <Route path="/vrm/configuracoes" element={<Configuracoes />} />
                       </Route>
 

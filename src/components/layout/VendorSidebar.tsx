@@ -56,7 +56,7 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { title: 'Dashboard', url: '/vrm', icon: LayoutDashboard },
   { title: 'Fornecedores', url: '/vrm/fornecedores', icon: Building },
-  { title: 'Qualificação', url: '/vrm/qualificacao/templates', icon: ClipboardList },
+  { title: 'Qualificação', url: '/vrm/qualificacao', icon: ClipboardList },
   { title: 'Requisitos', url: '/vrm/requisitos', icon: FileText },
   { title: 'Evidências', url: '/vrm/evidencias', icon: FolderOpen },
   { title: 'Agenda', url: '/vrm/agenda', icon: Calendar },
@@ -179,10 +179,14 @@ export function VendorSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === item.url || location.pathname.startsWith(item.url + '/')}
+                    isActive={
+                      item.url === '/vrm'
+                        ? location.pathname === '/vrm'
+                        : location.pathname === item.url || location.pathname.startsWith(item.url + '/')
+                    }
                     tooltip={item.title}
                   >
-                    <RouterNavLink to={item.url}>
+                    <RouterNavLink to={item.url === '/vrm/qualificacao' ? '/vrm/qualificacao/campanhas' : item.url}>
                       <item.icon className="w-4 h-4" />
                       <span className="flex-1">{item.title}</span>
                     </RouterNavLink>
