@@ -24,6 +24,7 @@ import {
   Mail,
   Phone,
   FileBarChart,
+  Award,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
