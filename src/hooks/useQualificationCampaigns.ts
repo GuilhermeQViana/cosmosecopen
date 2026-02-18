@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface QualificationCampaign {
@@ -26,7 +27,7 @@ export interface QualificationCampaign {
 }
 
 export function useQualificationCampaigns(filters?: { vendorId?: string; templateId?: string; status?: string }) {
-  const { organization } = useAuth();
+  const { organization } = useOrganization();
   const orgId = organization?.id;
 
   return useQuery({
