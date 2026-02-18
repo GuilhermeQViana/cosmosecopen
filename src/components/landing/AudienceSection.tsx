@@ -55,15 +55,15 @@ export function AudienceSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6">
-            <UserCheck className="w-4 h-4" />
-            <span className="text-sm font-medium">Para Quem</span>
+            <Handshake className="w-4 h-4" />
+            <span className="text-sm font-medium">Nossos Serviços</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight font-space">
-            Uma plataforma,{' '}
-            <span className="text-gradient-cosmic">dois perfis</span>
+            Duas formas de{' '}
+            <span className="text-gradient-cosmic">alcançar conformidade</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Seja para governança interna ou para gestão de múltiplos clientes, a CosmoSec se adapta ao seu modelo de operação.
+            Escolha entre nossa consultoria especializada com tecnologia própria ou utilize a plataforma de forma independente com sua equipe.
           </p>
         </div>
 

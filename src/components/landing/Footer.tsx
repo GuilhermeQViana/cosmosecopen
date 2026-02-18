@@ -30,7 +30,7 @@ export function Footer() {
               <CosmoSecLogo size="md" />
             </Link>
             <p className="text-muted-foreground text-sm max-w-sm mb-6">
-              Plataforma completa de GRC para governança de segurança da informação 
+              Consultoria e plataforma de GRC para governança de segurança da informação 
               e gestão de riscos de terceiros.
             </p>
             {/* Social Links */}

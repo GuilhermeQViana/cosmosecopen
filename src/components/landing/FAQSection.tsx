@@ -40,12 +40,12 @@ const faqs = [
     answer: 'O tempo de implantação varia conforme a complexidade da organização. Em geral, a configuração inicial leva de 1 a 2 semanas, incluindo treinamento da equipe e importação de dados existentes. Nossa equipe de Customer Success acompanha todo o processo.',
   },
   {
-    question: 'A CosmoSec funciona para consultorias e auditores externos?',
-    answer: 'Sim. A plataforma permite gerenciar múltiplas organizações em um único painel, ideal para consultores que atendem vários clientes. Você pode padronizar diagnósticos, gerar relatórios com a identidade da sua consultoria, reutilizar templates de políticas e manter trilha de auditoria separada por cliente.',
+    question: 'Qual a diferença entre contratar a consultoria e apenas a plataforma?',
+    answer: 'Na consultoria completa, nossos especialistas conduzem todo o processo de conformidade usando a plataforma CosmoSec — do diagnóstico à implementação e acompanhamento contínuo. Na opção SaaS, sua equipe interna de GRC utiliza a plataforma de forma independente, com onboarding assistido e suporte técnico dedicado.',
   },
   {
-    question: 'Existe um programa de parceiros?',
-    answer: 'Sim. Consultores, auditores e empresas de tecnologia podem se cadastrar no nosso programa de parceiros para obter condições comerciais especiais, suporte prioritário, materiais de co-marketing e acesso antecipado a novos recursos. Entre em contato pelo formulário para saber mais.',
+    question: 'Posso começar com a plataforma e depois contratar a consultoria?',
+    answer: 'Sim. Muitos clientes começam utilizando a plataforma com sua equipe interna e, à medida que a demanda cresce ou surge a necessidade de expertise especializada, contratam nosso serviço de consultoria. A transição é natural, pois já estarão familiarizados com a ferramenta.',
   },
 ];
 

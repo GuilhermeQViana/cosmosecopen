@@ -190,21 +190,9 @@ export function PlatformSection() {
           </p>
         </div>
 
-        {/* Top Row: 3 cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1200px] mx-auto mb-6">
-          {topRow.map((platform) => (
-            <PlatformCard
-              key={platform.id}
-              platform={platform}
-              isExpanded={expandedId === platform.id}
-              onToggle={() => toggleExpanded(platform.id)}
-            />
-          ))}
-        </div>
-
-        {/* Bottom Row: 2 cards centered */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
-          {bottomRow.map((platform) => (
+        {/* 2x2 Grid */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-[900px] mx-auto">
+          {platforms.map((platform) => (
             <PlatformCard
               key={platform.id}
               platform={platform}

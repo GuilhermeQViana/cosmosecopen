@@ -27,9 +27,9 @@ const HOW_FOUND_OPTIONS = [
 ];
 
 const INTEREST_TYPES = [
-  { value: 'empresa', label: 'Quero para minha empresa' },
-  { value: 'consultoria', label: 'Quero para minha consultoria/auditoria' },
-  { value: 'parceiro', label: 'Quero ser parceiro' },
+  { value: 'consultoria_completa', label: 'Quero consultoria completa' },
+  { value: 'plataforma', label: 'Quero apenas a plataforma' },
+  { value: 'saber_mais', label: 'Quero saber mais' },
 ];
 
 const DASHBOARD_SCREENSHOTS = [

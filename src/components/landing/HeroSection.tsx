@@ -79,7 +79,7 @@ export function HeroSection() {
           {/* Trust Indicator with delay */}
           <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.6s', animationFillMode: 'backwards' }}>
             <p className="text-sm text-muted-foreground">
-              NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893 • Frameworks Custom • Multi-organizações
+              NIST CSF 2.0 • ISO 27001:2022 • BCB/CMN 4.893 • Frameworks Custom • Consultoria Especializada
             </p>
           </div>
         </div>
