@@ -193,10 +193,6 @@ export function VendorDetailSheet({
                   <CalendarClock className="h-4 w-4 mr-2" />
                   Reavaliação
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setPortalOpen(true)}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Portal
-                </Button>
               </div>
 
               {vendor.description && (
