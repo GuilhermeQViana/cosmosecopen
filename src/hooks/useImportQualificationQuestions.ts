@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export interface ParsedQuestion {
   rowNumber: number;
@@ -338,9 +338,22 @@ export function downloadQuestionsTemplate() {
 // Convert Excel to CSV
 export async function parseExcelQuestionsToCSV(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
-  const workbook = XLSX.read(buffer, { type: 'array' });
-  const firstSheet = workbook.SheetNames[0];
-  if (!firstSheet) throw new Error('O arquivo Excel não contém nenhuma aba');
-  const sheet = workbook.Sheets[firstSheet];
-  return XLSX.utils.sheet_to_csv(sheet, { FS: ';' });
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheet = workbook.worksheets[0];
+  if (!sheet) throw new Error('O arquivo Excel não contém nenhuma aba');
+  const rows: string[] = [];
+  sheet.eachRow((row) => {
+    const values = (row.values as (string | number | boolean | null | undefined)[]).slice(1);
+    rows.push(
+      values.map(v => {
+        const s = v == null ? '' : String(v);
+        if (s.includes(';') || s.includes('"') || s.includes('\n')) {
+          return `"${s.replace(/"/g, '""')}"`;
+        }
+        return s;
+      }).join(';')
+    );
+  });
+  return rows.join('\n');
 }

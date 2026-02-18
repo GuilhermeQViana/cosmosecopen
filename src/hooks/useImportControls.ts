@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { ControlInput } from './useCustomFrameworks';
 
 export type FieldMapping = Record<string, string | null>;
@@ -486,14 +486,26 @@ export function downloadTemplate() {
 // Convert Excel file to CSV string (client-side)
 export async function parseExcelToCSV(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
-  const workbook = XLSX.read(buffer, { type: 'array' });
-  const firstSheetName = workbook.SheetNames[0];
-  if (!firstSheetName) {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheet = workbook.worksheets[0];
+  if (!sheet) {
     throw new Error('O arquivo Excel não contém nenhuma aba');
   }
-  const sheet = workbook.Sheets[firstSheetName];
-  // Convert to CSV using semicolon (common in PT-BR locale)
-  return XLSX.utils.sheet_to_csv(sheet, { FS: ';' });
+  const rows: string[] = [];
+  sheet.eachRow((row) => {
+    const values = (row.values as (string | number | boolean | null | undefined)[]).slice(1); // exceljs is 1-indexed
+    rows.push(
+      values.map(v => {
+        const s = v == null ? '' : String(v);
+        if (s.includes(';') || s.includes('"') || s.includes('\n')) {
+          return `"${s.replace(/"/g, '""')}"`;
+        }
+        return s;
+      }).join(';')
+    );
+  });
+  return rows.join('\n');
 }
 
 // Fetch a public Google Sheets as CSV
