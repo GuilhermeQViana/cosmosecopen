@@ -126,6 +126,66 @@ export default function QualificationCampaigns() {
     window.open(`/qualification/${token}`, '_blank');
   };
 
+  const handleExportCSV = async (campaignId: string) => {
+    setExportingId(campaignId);
+    try {
+      const { data, error } = await supabase.functions.invoke('export-qualification-template', {
+        body: { campaignId },
+      });
+      if (error) throw error;
+      // data is the CSV string
+      const blob = new Blob([typeof data === 'string' ? data : JSON.stringify(data)], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `qualificacao-${campaignId.slice(0, 8)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'CSV exportado com sucesso!' });
+    } catch {
+      toast({ title: 'Erro ao exportar CSV', variant: 'destructive' });
+    } finally {
+      setExportingId(null);
+    }
+  };
+
+  const handleImportCSV = (campaignId: string) => {
+    setImportCampaignId(campaignId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !importCampaignId) return;
+    setImporting(true);
+    try {
+      const csvContent = await file.text();
+      const { data, error } = await supabase.functions.invoke('import-qualification-responses', {
+        body: { campaignId: importCampaignId, csvContent },
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result.success) {
+        toast({
+          title: `${result.imported} respostas importadas`,
+          description: result.errors?.length ? `${result.errors.length} avisos encontrados` : undefined,
+        });
+      } else {
+        toast({
+          title: 'Erro na importação',
+          description: result.errors?.slice(0, 3).join('\n'),
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({ title: 'Erro ao importar CSV', variant: 'destructive' });
+    } finally {
+      setImporting(false);
+      setImportCampaignId(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="space-y-6 relative">
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
