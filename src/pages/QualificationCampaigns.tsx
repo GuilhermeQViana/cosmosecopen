@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQualificationCampaigns, useUpdateQualificationCampaign } from '@/hooks/useQualificationCampaigns';
 import { useCalculateQualificationScore, useQualificationResponses } from '@/hooks/useQualificationResponses';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AnimatedItem, StaggeredGrid } from '@/components/ui/staggered-list';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { QualificationComparison } from '@/components/fornecedores/QualificationComparison';
+import { StartQualificationCampaignDialog } from '@/components/fornecedores/StartQualificationCampaignDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isPast, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -51,7 +53,9 @@ export default function QualificationCampaigns() {
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [importCampaignId, setImportCampaignId] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [showNewCampaign, setShowNewCampaign] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const { data: campaigns, isLoading } = useQualificationCampaigns(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
@@ -205,10 +209,33 @@ export default function QualificationCampaigns() {
             </h1>
             <p className="text-muted-foreground mt-1">Acompanhe e gerencie as campanhas enviadas aos fornecedores</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
-            <Users className="h-4 w-4 mr-2" />
-            Comparar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setComparisonOpen(true)}>
+              <Users className="h-4 w-4 mr-2" />
+              Comparar
+            </Button>
+            <Button size="sm" onClick={() => setShowNewCampaign(true)}>
+              <Send className="h-4 w-4 mr-2" />
+              Nova Campanha
+            </Button>
+          </div>
+        </div>
+      </AnimatedItem>
+
+      {/* Sub-navigation tabs */}
+      <AnimatedItem animation="fade-up" delay={25}>
+        <div className="flex gap-1 border-b border-border">
+          <button
+            className="px-4 py-2 text-sm font-medium border-b-2 border-primary text-foreground"
+          >
+            Campanhas
+          </button>
+          <button
+            className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => navigate('/vrm/qualificacao/templates')}
+          >
+            Templates
+          </button>
         </div>
       </AnimatedItem>
 
@@ -590,6 +617,9 @@ export default function QualificationCampaigns() {
 
       {/* Comparison Dialog */}
       <QualificationComparison open={comparisonOpen} onOpenChange={setComparisonOpen} />
+
+      {/* New Campaign Dialog */}
+      <StartQualificationCampaignDialog open={showNewCampaign} onOpenChange={setShowNewCampaign} />
 
       {/* Hidden file input for CSV import */}
       <input
