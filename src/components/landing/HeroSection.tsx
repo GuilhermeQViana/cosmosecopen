@@ -38,11 +38,11 @@ function HeroIllustration() {
       {/* Inner orbit */}
       <div className="absolute w-[40%] h-[40%] rounded-full border border-primary/15 dark:border-primary/25 animate-[spin_15s_linear_infinite]" style={{ transformOrigin: 'center' }} />
 
-      {/* Central shield */}
-      <div className="relative w-24 h-24 flex items-center justify-center">
+      {/* Central CosmoSec Logo */}
+      <div className="relative w-28 h-28 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 dark:from-primary/40 dark:to-secondary/40 blur-xl animate-pulse" />
-        <div className="relative w-20 h-20 rounded-2xl bg-card/80 dark:bg-card/60 backdrop-blur-md border border-primary/30 dark:border-primary/40 flex items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.3)]">
-          <Shield className="w-10 h-10 text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
+        <div className="relative w-24 h-24 rounded-2xl bg-card/80 dark:bg-card/60 backdrop-blur-md border border-primary/30 dark:border-primary/40 flex items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.3)]">
+          <CosmoSecLogo variant="icon" size="xl" showText={false} />
         </div>
       </div>
 
