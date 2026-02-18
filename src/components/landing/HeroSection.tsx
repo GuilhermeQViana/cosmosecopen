@@ -71,7 +71,7 @@ export function HeroSection() {
                 asChild 
                 className="text-base px-8 py-6 text-lg border-primary/30 hover:border-secondary/50 hover:bg-secondary/10 dark:border-primary/40 dark:hover:border-secondary/60"
               >
-                <Link to="/tour">Ver Plataforma</Link>
+                <Link to="/tour">Conhecer a Plataforma</Link>
               </Button>
             </div>
           </div>
