@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { ControlInput } from './useCustomFrameworks';
 
 export type FieldMapping = Record<string, string | null>;
