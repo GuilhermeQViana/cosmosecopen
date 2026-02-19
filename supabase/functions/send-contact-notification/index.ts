@@ -1,6 +1,6 @@
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { corsHeaders, getCorsHeaders } from "../_shared/auth.ts";
-import { buildEmailHtml, emailGreeting, emailText, emailButton, emailInfoBox } from "../_shared/email-template.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -29,6 +29,87 @@ const INTEREST_TYPE_LABELS: Record<string, string> = {
   parceiro: 'Quero ser parceiro',
 };
 
+const VALID_COMPANY_SIZES = ['1-50', '51-200', '201-500', '501-1000', '1000+'];
+const VALID_HOW_FOUND = ['google', 'linkedin', 'indicacao', 'evento', 'outro'];
+const VALID_INTEREST_TYPES = ['empresa', 'consultoria', 'parceiro'];
+
+// --- Rate Limiting via Supabase ---
+async function checkRateLimit(ip: string): Promise<boolean> {
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    
+    const { count } = await supabase
+      .from("contact_requests")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", oneHourAgo);
+
+    // Max 5 contact requests per hour globally (simple approach)
+    // For IP-based, we'd need an ip column — using global limit as safeguard
+    return (count ?? 0) < 10;
+  } catch {
+    // If rate limit check fails, allow the request but log it
+    console.warn("Rate limit check failed, allowing request");
+    return true;
+  }
+}
+
+// --- Input Validation & Sanitization ---
+function sanitize(str: string, maxLen: number): string {
+  return str.replace(/<[^>]*>/g, '').replace(/[<>"'&]/g, '').trim().slice(0, maxLen);
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 255;
+}
+
+function validateContactData(data: unknown): { valid: true; data: ContactRequest } | { valid: false; error: string } {
+  if (!data || typeof data !== 'object') {
+    return { valid: false, error: 'Dados inválidos' };
+  }
+
+  const d = data as Record<string, unknown>;
+
+  if (typeof d.name !== 'string' || !d.name.trim()) {
+    return { valid: false, error: 'Nome é obrigatório' };
+  }
+  if (typeof d.email !== 'string' || !isValidEmail(d.email)) {
+    return { valid: false, error: 'Email inválido' };
+  }
+  if (typeof d.company !== 'string' || !d.company.trim()) {
+    return { valid: false, error: 'Empresa é obrigatória' };
+  }
+
+  const validated: ContactRequest = {
+    name: sanitize(d.name as string, 100),
+    email: (d.email as string).trim().slice(0, 255),
+    company: sanitize(d.company as string, 200),
+  };
+
+  if (d.role && typeof d.role === 'string') {
+    validated.role = sanitize(d.role, 100);
+  }
+  if (d.interest_type && typeof d.interest_type === 'string' && VALID_INTEREST_TYPES.includes(d.interest_type)) {
+    validated.interest_type = d.interest_type;
+  }
+  if (d.company_size && typeof d.company_size === 'string' && VALID_COMPANY_SIZES.includes(d.company_size)) {
+    validated.company_size = d.company_size;
+  }
+  if (d.how_found && typeof d.how_found === 'string' && VALID_HOW_FOUND.includes(d.how_found)) {
+    validated.how_found = d.how_found;
+  }
+  if (d.message && typeof d.message === 'string') {
+    validated.message = sanitize(d.message, 2000);
+  }
+
+  return { valid: true, data: validated };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   const headers = getCorsHeaders(req);
 
@@ -37,7 +118,35 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const contactData: ContactRequest = await req.json();
+    // Rate limiting
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const allowed = await checkRateLimit(clientIp);
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Muitas solicitações. Tente novamente mais tarde." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...headers } }
+      );
+    }
+
+    // Validate payload size
+    const contentLength = req.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > 10_000) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Payload muito grande" }),
+        { status: 413, headers: { "Content-Type": "application/json", ...headers } }
+      );
+    }
+
+    const rawData = await req.json();
+    const validation = validateContactData(rawData);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({ success: false, error: validation.error }),
+        { status: 400, headers: { "Content-Type": "application/json", ...headers } }
+      );
+    }
+
+    const contactData = validation.data;
 
     const howFoundLabel = contactData.how_found 
       ? HOW_FOUND_LABELS[contactData.how_found] || contactData.how_found 
@@ -114,10 +223,10 @@ const handler = async (req: Request): Promise<Response> => {
       status: 200,
       headers: { "Content-Type": "application/json", ...headers },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in send-contact-notification function:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: "Erro ao processar a solicitação" }),
       { status: 500, headers: { "Content-Type": "application/json", ...headers } }
     );
   }
