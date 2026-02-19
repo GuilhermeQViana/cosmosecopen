@@ -1,70 +1,75 @@
 
+# Notificação de Novo Cadastro para Super Admins
 
-# Import de Perguntas via Excel no Template Builder
+## O que será feito
 
-## Objetivo
-Adicionar ao builder de templates de qualificacao a possibilidade de importar perguntas em massa via arquivo Excel/CSV, com um template para download como modelo.
+Sempre que um novo usuário criar uma conta na CosmoSec, todos os super admins receberão:
+1. Uma **notificação interna** na central de notificações (sino no topo da plataforma)
+2. Um **email formatado** via Resend com os dados do novo usuário
 
-## Como vai funcionar
+---
 
-1. Um novo botao "Importar Perguntas" aparece ao lado de "Adicionar Pergunta" no builder
-2. Ao clicar, abre um dialog com:
-   - Botao para baixar o template Excel modelo
-   - Area de upload (drag-and-drop) para CSV/XLSX
-3. O sistema le o arquivo, valida as perguntas e mostra um preview
-4. O usuario confirma e as perguntas sao inseridas no template
+## Arquitetura da solução
 
-## Template de Modelo
+```text
+Novo usuário se cadastra (auth.users)
+        │
+        ▼
+Trigger: handle_new_user (modificado)
+        │
+        ├─► Insere notificação na tabela notifications
+        │   para cada super admin
+        │
+        └─► net.http_post (pg_net) ──► Edge Function: notify-new-signup
+                                               │
+                                               └─► Resend: envia email
+                                                   para cada super admin
+```
 
-O arquivo Excel tera as seguintes colunas:
+---
 
-| Coluna | Obrigatoria | Descricao |
-|--------|-------------|-----------|
-| pergunta | Sim | Texto da pergunta |
-| tipo | Nao | text, multiple_choice, number, date, currency, upload (padrao: text) |
-| peso | Nao | Peso em pontos, 1-100 (padrao: 10) |
-| obrigatoria | Nao | sim/nao (padrao: sim) |
-| ko | Nao | sim/nao - pergunta eliminatoria (padrao: nao) |
-| valor_ko | Nao | Valor que elimina (para KO) |
-| opcoes | Nao | Para multipla escolha: "Sim(10);Nao(0);Parcial(5)" - label(score) separados por ; |
+## Detalhes técnicos
 
-O template vira com 2-3 linhas de exemplo preenchidas.
+### 1. Migração SQL — Alterar trigger `handle_new_user`
 
-## Detalhes Tecnicos
+A função atual só cria o perfil do usuário. Vamos adicionar:
 
-### Novo arquivo: `src/hooks/useImportQualificationQuestions.ts`
+- Loop pelos `user_id` em `public.super_admins` e inserção de uma notificação para cada um na tabela `notifications`:
+  - Título: `👤 Novo cadastro: [email do usuário]`
+  - Mensagem: nome completo (se disponível) + data/hora do cadastro
+  - Tipo: `info`
+  - Link: `/configuracoes` (ou página de gestão de usuários)
 
-- Funcao `generateQuestionsTemplate()` - gera o CSV modelo
-- Funcao `downloadQuestionsTemplate()` - dispara o download
-- Funcao `parseQuestionsFile(content, delimiter)` - parseia o conteudo e retorna as perguntas validadas
-  - Valida campo obrigatorio `pergunta`
-  - Normaliza tipo (text, multiple_choice, etc)
-  - Parseia opcoes no formato "Label(score);Label(score)"
-  - Retorna lista com erros por linha
+- Chamada HTTP assíncrona via `net.http_post` para a nova edge function, passando email, nome e timestamp do novo usuário. O cabeçalho incluirá a `SUPABASE_SERVICE_ROLE_KEY` como autenticação interna.
 
-Reutiliza utilitarios existentes do `useImportControls` (detectDelimiter, parseCSVLine, removeBOM, splitCSVLines, parseExcelToCSV).
+### 2. Nova Edge Function: `notify-new-signup`
 
-### Novo componente: `src/components/configuracoes/ImportQuestionsDialog.tsx`
+- Valida que a chamada veio do backend (verifica o header `Authorization` com a service role key)
+- Busca os emails de todos os super admins via `auth.admin.listUsers()`
+- Envia um email para cada super admin usando o template padrão CosmoSec (dark mode) com:
+  - Emoji: 👤
+  - Título: "Novo cadastro na plataforma"
+  - Info box com: nome, email, data/hora do cadastro
 
-- Dialog com 2 etapas: Upload e Preview
-- Etapa Upload: botao download template + dropzone para arquivo
-- Etapa Preview: tabela com perguntas parseadas, indicando validas/invalidas
-- Botao "Importar X perguntas" que chama `useUpsertQualificationQuestion` para cada pergunta valida
-- Usa o mesmo visual pattern do `ImportControlsCSV` existente (dropzone, tabela de preview, badges de erro)
+### 3. Configuração
 
-### Arquivo modificado: `src/pages/QualificationTemplateBuilder.tsx`
+- Adicionar `[functions.notify-new-signup] verify_jwt = false` ao `supabase/config.toml`
 
-- Importar o novo `ImportQuestionsDialog`
-- Adicionar estado `showImportDialog`
-- Adicionar botao "Importar" (icone Upload) no header, ao lado de "Preview" e "Salvar"
-- Tambem adicionar como opcao na area vazia ("Nenhuma pergunta adicionada ainda") ao lado de "Adicionar Pergunta"
+---
 
-### Fluxo de dados
+## Arquivos afetados
 
-1. Usuario faz upload do arquivo
-2. Sistema detecta formato (CSV/XLSX) e converte para CSV se necessario
-3. Parser extrai perguntas e valida cada linha
-4. Preview mostra resultado com contagem de validos/invalidos
-5. Ao confirmar, insere cada pergunta via `useUpsertQualificationQuestion` com `order_index` sequencial (continuando apos as existentes)
-6. Dialog fecha, lista de perguntas atualiza automaticamente via invalidacao do React Query
+| Ação | Arquivo |
+|------|---------|
+| Novo | `supabase/functions/notify-new-signup/index.ts` |
+| Nova migração SQL | Altera `handle_new_user` para inserir notificações + chamar edge function via `pg_net` |
+| Editado | `supabase/config.toml` (nova entrada da função) |
 
+---
+
+## Segurança
+
+- A edge function valida que a chamada veio internamente (header com service role key)
+- Nenhum dado sensível além de nome e email é exposto
+- O trigger só dispara 1x por cadastro (não há risco de duplicatas em condições normais)
+- A chamada `pg_net` é assíncrona — não bloqueia o cadastro do usuário em caso de falha no envio do email
