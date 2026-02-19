@@ -1,5 +1,5 @@
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { getCorsHeaders } from "../_shared/auth.ts";
+import { authenticate, getCorsHeaders, isAuthError, errorResponse } from "../_shared/auth.ts";
 import { buildEmailHtml, emailButton, emailInfoBox, emailMutedText } from "../_shared/email-template.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -27,7 +27,36 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Authenticate the caller
+    const auth = await authenticate(req);
+    if (isAuthError(auth)) return auth;
+
+    const { user, supabase } = auth;
+
     const { email, organizationName, inviterName, role, inviteToken, appUrl }: InviteEmailRequest = await req.json();
+
+    // Verify user is admin in an organization
+    const { data: userRole } = await supabase
+      .from('user_roles')
+      .select('role, organization_id')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (!userRole) {
+      return errorResponse('Only admins can send invitations', 403);
+    }
+
+    // Verify the invite token belongs to their organization
+    const { data: invite } = await supabase
+      .from('organization_invites')
+      .select('organization_id')
+      .eq('token', inviteToken)
+      .maybeSingle();
+
+    if (!invite || invite.organization_id !== userRole.organization_id) {
+      return errorResponse('Invalid invite token', 403);
+    }
 
     const roleLabel = ROLE_LABELS[role] || role;
     const inviteUrl = `${appUrl}/auth?invite=${inviteToken}`;
@@ -75,7 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-invite-email function:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: "Erro ao processar solicitação" }),
       { status: 500, headers: { "Content-Type": "application/json", ...headers } }
     );
   }
