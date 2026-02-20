@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.import-qualification-responses]
 verify_jwt = false
+
+[functions.notify-new-signup]
+verify_jwt = false
