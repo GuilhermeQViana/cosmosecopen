@@ -218,6 +218,7 @@ export default function Equipe() {
 
   const filteredMembers = members?.filter(member =>
     member.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.profile?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
