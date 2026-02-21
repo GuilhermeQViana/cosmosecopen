@@ -13,6 +13,7 @@ import {
 } from '@/lib/slide-generator';
 
 const CATEGORIES = [
+  { id: 'demo', label: 'Demonstração' },
   { id: 'fundos', label: 'Fundos' },
   { id: 'capas', label: 'Capas' },
   { id: 'transicao', label: 'Transição' },
@@ -81,7 +82,7 @@ function SlidePreviewCard({ slide }: { slide: SlideDefinition }) {
 
 export default function PresentationSlidesSection() {
   const [downloadingAll, setDownloadingAll] = useState(false);
-  const [activeTab, setActiveTab] = useState('fundos');
+  const [activeTab, setActiveTab] = useState('demo');
 
   const handleDownloadAll = async () => {
     setDownloadingAll(true);
