@@ -850,6 +850,61 @@ export type Database = {
           },
         ]
       }
+      generated_reports: {
+        Row: {
+          created_at: string
+          file_name: string
+          framework_id: string | null
+          id: string
+          organization_id: string
+          period: string | null
+          report_type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          framework_id?: string | null
+          id?: string
+          organization_id: string
+          period?: string | null
+          report_type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          framework_id?: string | null
+          id?: string
+          organization_id?: string
+          period?: string | null
+          report_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_reports_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "frameworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
