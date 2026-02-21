@@ -126,6 +126,7 @@ const App = () => (
                       <Route path="/privacidade" element={<PoliticaPrivacidade />} />
                       <Route path="/lgpd" element={<PoliticaLGPD />} />
                       <Route path="/qualification/:token" element={<VendorQualificationPortal />} />
+                      <Route path="/aceitar-convite/:token" element={<AcceptInvite />} />
                       
                       {/* Módulo Frameworks (GRC) */}
                       <Route element={<AppLayout />}>
