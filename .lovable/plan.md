@@ -1,125 +1,98 @@
 
 
-# Segunda Rodada: 10 Novas Melhorias para o Lançamento da CosmoSec
+# Atualizar Documentacao com Todos os Recursos da Plataforma
 
-Apos a correcao dos 10 primeiros itens, esta segunda auditoria identificou mais 10 pontos que impactam a experiencia do cliente, a seguranca e a robustez da plataforma.
+## Resumo
 
----
-
-## 1. CRITICO -- Sem controle de permissoes por funcao (RBAC nao aplicado no frontend)
-
-**Arquivos:** Todas as paginas (`Diagnostico.tsx`, `Riscos.tsx`, `Evidencias.tsx`, `PlanoAcao.tsx`, etc.)
-
-A plataforma tem 3 funcoes definidas (admin, auditor, analyst), mas nenhuma pagina verifica a funcao do usuario. Um `analyst` pode acessar e usar todas as funcionalidades identicamente a um `admin`. As unicas verificacoes de `isAdmin` existentes estao em `Equipe.tsx` (botao de convidar) e `Configuracoes.tsx` (edicao da organizacao). Todas as acoes criticas como excluir riscos, resetar avaliacoes, excluir todos os planos de acao e exportar backups estao disponiveis para qualquer funcao.
-
-**Solucao:** Criar um hook `usePermissions()` que retorna as permissoes do usuario atual baseado na sua funcao. Desabilitar/ocultar botoes destrutivos e de gestao para funcoes nao autorizadas. No minimo: auditores devem ter somente leitura, analistas nao devem gerenciar equipe nem configuracoes da organizacao.
+A pagina de documentacao atual cobre apenas uma fracao dos recursos da plataforma. Apos analise de mais de 40 arquivos (paginas, hooks, componentes, sidebars), foram identificados **3 modulos inteiros** e **dezenas de funcionalidades** que nao estao documentadas. A atualizacao ira expandir a documentacao de ~480 linhas para cobrir tudo o que existe na plataforma.
 
 ---
 
-## 2. CRITICO -- Botao "Excluir Todos" nos Planos de Acao sem confirmacao adequada
+## O que falta na documentacao atual
 
-**Arquivo:** `src/pages/PlanoAcao.tsx` (linha 250-255)
+### Modulos inteiros ausentes
 
-Existe um botao "Excluir Todos" que deleta TODOS os planos de acao da organizacao com apenas um clique de confirmacao simples. Nao ha verificacao de quantidade, nao pede digitacao do nome da organizacao, e nao ha log de auditoria especifico. Um clique acidental ou de um usuario mal-intencionado pode destruir meses de trabalho de remediacao.
+1. **Modulo de Politicas** -- 5 paginas completas (Dashboard, Central, Editor, Fluxos de Aprovacao, Campanhas de Aceite, Biblioteca de Modelos) nao tem nenhuma mencao na documentacao
+2. **VRM: Qualificacao de Fornecedores** -- Templates de qualificacao, campanhas com portal externo para o fornecedor responder, calculo automatico de score
+3. **VRM: Cofre de Evidencias** -- Pagina dedicada para armazenar documentos de fornecedores com classificacao e categorias
+4. **VRM: Contratos, SLAs, Incidentes e Due Diligence** -- Funcionalidades completas que aparecem no VendorDetailSheet mas nao na docs
 
-**Solucao:** Exigir digitacao de uma frase de confirmacao (ex: "EXCLUIR TODOS") antes de executar. Mostrar a quantidade de planos que serao excluidos. Restringir essa acao apenas para admins. Registrar a acao no log de auditoria com detalhes dos itens excluidos.
+### Funcionalidades ausentes em secoes existentes
 
----
-
-## 3. ALTO -- `OFFICIAL_DOMAIN` ainda esta hardcoded e nao e usado em lugar nenhum
-
-**Arquivo:** `src/lib/constants.ts`
-
-A constante `OFFICIAL_DOMAIN = 'https://cosmosec.com.br'` ainda existe mas ja nao e importada em nenhum arquivo (a correcao anterior mudou para `window.location.origin`). Isso e codigo morto que pode causar confusao se alguem voltar a usa-la pensando que e o dominio correto.
-
-**Solucao:** Remover `OFFICIAL_DOMAIN` de `constants.ts` completamente, ja que o dominio agora e dinamico.
-
----
-
-## 4. ALTO -- Funcao `accept_organization_invite` nao valida expiracaoo do convite
-
-**Arquivo:** `supabase/migrations/...sql` (funcao `accept_organization_invite`)
-
-A pagina `AcceptInvite.tsx` chama `supabase.rpc('accept_organization_invite')`, mas ao analisar a funcao SQL, nao e claro se ela verifica se o convite ja expirou (`expires_at`), se ja foi aceito (`accepted_at IS NOT NULL`), ou se o email do usuario logado corresponde ao email do convite. Um usuario com qualquer conta poderia aceitar convites de terceiros se tiver o token UUID.
-
-**Solucao:** Verificar na funcao SQL que: (a) o convite nao expirou, (b) nao foi aceito anteriormente, (c) o email do usuario autenticado corresponde ao email do convite. Retornar mensagens de erro claras para cada caso.
+- **RBAC (Permissoes por Funcao)**: O sistema agora tem 3 funcoes com permissoes distintas (admin, auditor, analyst) -- implementado recentemente
+- **Notificacoes em Tempo Real**: Centro de notificacoes com atualizacao instantanea
+- **Geracao com IA em lote**: Dialog que gera planos de acao automaticamente para todos os gaps
+- **Historico de Relatorios**: Tabela no banco que persiste relatorios gerados -- implementado recentemente
+- **Snapshots de Diagnostico**: Salvar versoes do diagnostico para comparacao temporal
+- **Importacao/Exportacao**: Importar controles via CSV, importar dados JSON, exportar backups
+- **Feedbacks**: Sistema de avaliacoes por modulo com estrelas
+- **Onboarding Checklist**: Widget guia de primeiros passos
 
 ---
 
-## 5. ALTO -- Pagina de Relatorios ainda nao persiste historico de relatorios gerados
+## Plano de Implementacao
 
-**Arquivo:** `src/pages/Relatorios.tsx` (aba "Historico")
+### 1. Atualizar a Sidebar (DocumentationSidebar.tsx)
 
-A correcao anterior removeu os dados fictcios e colocou uma mensagem "Nenhum relatorio gerado ainda", mas o sistema continua sem persistir os relatorios gerados. Quando o usuario gera um relatorio, ele e baixado como HTML mas nenhum registro e salvo no banco. Se o usuario gerar 10 relatorios ao longo do mes, a aba de historico sempre mostrara "nenhum relatorio".
+Adicionar 3 novas secoes na sidebar:
 
-**Solucao:** Criar a tabela `generated_reports` no banco de dados (id, organization_id, user_id, report_type, framework_id, period, file_name, created_at) e inserir um registro cada vez que `handleGenerateReport` for chamado com sucesso. A aba de historico listaria esses registros.
+- **Modulo de Politicas** (com subsecoes: Dashboard, Central de Politicas, Editor de Politicas, Fluxos de Aprovacao, Campanhas de Aceite, Biblioteca de Modelos)
+- **Qualificacao de Fornecedores** (com subsecoes: Templates, Campanhas, Portal do Fornecedor) -- dentro do VRM existente
+- **Inteligencia Artificial** (com subsecoes: Geracao de Planos de Acao, Analise de Risco de Fornecedores, Escritor de Politicas com IA)
 
----
+E expandir as subsecoes existentes:
+- VRM: adicionar Cofre de Evidencias VRM, Contratos e SLAs, Incidentes, Due Diligence, Analise de Risco IA
+- Equipe: adicionar Permissoes por Funcao (RBAC), Convites por Email
+- Configuracoes: adicionar Importacao/Exportacao de Dados
+- Primeiros Passos: adicionar Onboarding Checklist
 
-## 6. MEDIO -- Edge Function `generate-action-plan` usa endpoint de API desatualizado
+### 2. Atualizar o conteudo principal (Documentacao.tsx)
 
-**Arquivo:** `supabase/functions/generate-action-plan/index.ts` (linha 62)
+#### Secao nova: Modulo de Politicas
+- Dashboard de Politicas: metricas de total, publicadas, em revisao, expiradas, proximas revisoes
+- Central de Politicas: listagem com filtros por status e categoria, criacao de novas politicas
+- Editor de Politicas: editor rico TipTap com toolbar completa, tabelas, links, imagens; painel lateral de metadados, versionamento automatico, comentarios e vinculacoes com controles/riscos
+- Fluxos de Aprovacao: criacao de workflows multi-nivel, SLA de aprovacao, aprovacoes pendentes e historico
+- Campanhas de Aceite: criar campanhas para funcionarios confirmarem leitura, progresso por campanha
+- Biblioteca de Modelos: modelos por categoria e framework, preview, importar/exportar DOCX, usar como base
 
-Esta funcao chama `https://api.lovable.dev/v1/chat` em vez do gateway padrao `https://ai.gateway.lovable.dev/v1/chat/completions` que todas as outras funcoes de IA usam (como `vendor-risk-analysis`). Alem disso, ela usa `LOVABLE_API_KEY` e o modelo `openai/gpt-5-mini` sem tool calling, enquanto as funcoes mais recentes usam tool calling estruturado para garantir respostas JSON validas.
+#### Expandir secao VRM
+- Qualificacao de Fornecedores: templates de perguntas com peso e KO, campanhas enviadas por link, portal externo, calculo automatico de score e classificacao de risco
+- Cofre de Evidencias VRM: upload categorizado (contrato, certificacao, DDQ, politica, etc.), classificacao por confidencialidade, validade/expiracao
+- Contratos e SLAs: gestao de contratos com valores, moedas, datas; acompanhamento de SLAs por metrica
+- Incidentes de Fornecedores: registro com severidade, categoria, causa raiz, acoes corretivas
+- Due Diligence: checklist estruturado por categoria, status por item, aprovacao final
+- Analise de Risco com IA: geracao automatica de analise de risco, top concerns, recomendacoes
 
-**Solucao:** Atualizar o endpoint para `https://ai.gateway.lovable.dev/v1/chat/completions` e usar tool calling como nas outras funcoes. Isso garante consistencia e previne falhas de parsing JSON.
+#### Expandir secao GRC
+- Relatorios: mencionar historico de relatorios gerados (persistencia no banco)
+- Diagnostico: snapshots/versoes, geracao de planos em lote com IA, modo auditoria, filtros avancados
+- Plano de Acao: mencionar restricao de "Excluir Todos" apenas para admins
 
----
+#### Expandir secao Equipe
+- Permissoes RBAC: tabela detalhada mostrando o que cada funcao pode e nao pode fazer (canEdit, canBulkDelete, canManageTeam, canManageOrg, canExportImport)
+- Convites por Email: fluxo de envio de convite, aceitacao por token, validacao de email/expiracao
 
-## 7. MEDIO -- Sem paginacao na listagem de controles, riscos e planos de acao
+#### Nova secao: Inteligencia Artificial
+- Visao geral dos recursos de IA disponiveis na plataforma
+- Geracao de Planos de Acao: individual ou em lote para gaps identificados
+- Assistente de Implementacao: guia contextual para implementar controles
+- Escritor de Politicas com IA: geracao de rascunho baseado em framework
+- Analise de Risco de Fornecedores: avaliacao automatica com score e recomendacoes
+- Classificacao de Criticidade: sugestao automatica de nivel de criticidade
 
-**Arquivos:** `src/hooks/useControls.ts`, `src/hooks/useRisks.ts`, `src/hooks/useActionPlans.ts`
+### 3. Arquivos a serem modificados
 
-Todos os hooks buscam TODOS os registros da organizacao de uma vez. O limite padrao do Supabase e 1000 linhas por query. Uma organizacao com mais de 1000 controles (comum em ISO 27001 + NIST combinados), 1000+ riscos, ou 1000+ planos de acao simplesmente nao vera os registros excedentes -- sem nenhum aviso de erro.
+| Arquivo | Alteracao |
+|---------|-----------|
+| `src/components/documentacao/DocumentationSidebar.tsx` | Adicionar novas secoes e subsecoes ao array `documentationSections` |
+| `src/pages/Documentacao.tsx` | Adicionar todo o conteudo das novas secoes e expandir as existentes |
 
-**Solucao:** Adicionar paginacao ou usar `.range()` para buscar todos os registros em lotes. Alternativamente, adicionar um parametro `count: 'exact'` para detectar quando ha mais registros do que o retornado e exibir um aviso ao usuario.
+### Detalhes tecnicos
 
----
-
-## 8. MEDIO -- Login redireciona para `/selecionar-modulo` sem preservar URL de destino
-
-**Arquivo:** `src/pages/Gateway.tsx` (linha 157)
-
-Quando um usuario tenta acessar uma URL protegida (ex: `/diagnostico?control=AC-1`) sem estar logado, o `AppLayout` redireciona para `/entrar`. Apos o login, o usuario e enviado para `/selecionar-modulo` em vez de voltar para a URL original. Isso e especialmente problematico para links compartilhados e links de convite que redirecionam para paginas especificas.
-
-**Solucao:** Salvar a URL de destino como query parameter na rota de auth (ex: `/entrar?redirect=/diagnostico?control=AC-1`) e apos login bem-sucedido, navegar para essa URL em vez de `/selecionar-modulo`.
-
----
-
-## 9. BAIXO -- Dados de evidencias nao tem validacao de tamanho de arquivo no frontend
-
-**Arquivo:** `src/components/evidencias/UploadEvidenceDialog.tsx`
-
-Nao ha validacao visivel do tamanho maximo de arquivo ao fazer upload de evidencias. Se o bucket de storage tiver um limite (ex: 50MB), o usuario so descobre apos tentar enviar, recebendo uma mensagem de erro generica. Tambem nao ha indicacao de progresso de upload para arquivos grandes.
-
-**Solucao:** Adicionar validacao de tamanho no frontend (ex: maximo 50MB) com mensagem clara antes do upload. Exibir uma barra de progresso durante o upload usando `onUploadProgress` do Supabase Storage.
-
----
-
-## 10. BAIXO -- Configuracoes tem 9 abas que nao cabem em telas menores
-
-**Arquivo:** `src/pages/Configuracoes.tsx` (linha 441)
-
-A pagina de configuracoes tem 9 abas (`grid-cols-9`) que ficam completamente inutilizaveis em telas menores. As abas ficam esmagadas e os textos truncados tornam impossivel identificar qual aba e qual. Nao ha scroll horizontal ou menu dropdown para mobile.
-
-**Solucao:** Usar um `ScrollArea` horizontal para as abas ou agrupar abas relacionadas (ex: "Conta" englobando Perfil + Aparencia + Notificacoes). Alternativamente, substituir por um sidebar de navegacao em telas menores.
-
----
-
-## Resumo de Prioridades
-
-| # | Problema | Impacto | Esforco |
-|---|----------|---------|---------|
-| 1 | RBAC nao aplicado no frontend | Critico | Alto |
-| 2 | "Excluir Todos" sem protecao adequada | Critico | Baixo |
-| 3 | OFFICIAL_DOMAIN codigo morto | Alto | Minimo |
-| 4 | Convite nao valida expiracao/email | Alto | Medio |
-| 5 | Historico de relatorios nao persiste | Alto | Medio |
-| 6 | Edge function com endpoint desatualizado | Medio | Baixo |
-| 7 | Sem paginacao (limite 1000 registros) | Medio | Medio |
-| 8 | Login nao preserva URL de destino | Medio | Baixo |
-| 9 | Upload sem validacao de tamanho | Baixo | Baixo |
-| 10 | Abas de configuracoes em telas pequenas | Baixo | Baixo |
-
-As correcoes de maior impacto imediato sao os itens 1 (RBAC), 2 (protecao contra exclusao em massa) e 4 (validacao de convites), pois representam riscos de seguranca e perda de dados para clientes reais.
+- Reutilizar os componentes existentes: `DocFeature`, `DocStep`, `DocTip`, `DocBadgeList`, `DocTable`, `DocKeyboardShortcut`
+- Manter o padrao visual e estrutura identica as secoes ja existentes
+- Todos os novos IDs de secao serao unicos e compativeis com navegacao por hash (#)
+- Nenhuma dependencia nova necessaria
+- A sidebar expandira de 8 para 11 secoes principais
 
