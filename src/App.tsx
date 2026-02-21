@@ -56,6 +56,7 @@ const QualificationTemplates = lazy(() => import("@/pages/QualificationTemplates
 const QualificationTemplateBuilder = lazy(() => import("@/pages/QualificationTemplateBuilder"));
 const QualificationCampaigns = lazy(() => import("@/pages/QualificationCampaigns"));
 const VendorQualificationPortal = lazy(() => import("@/pages/VendorQualificationPortal"));
+const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
