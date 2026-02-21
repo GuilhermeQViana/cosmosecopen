@@ -1511,6 +1511,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           due_date_reminders: boolean | null
+          email: string | null
           email_notifications: boolean | null
           full_name: string | null
           id: string
@@ -1523,6 +1524,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           due_date_reminders?: boolean | null
+          email?: string | null
           email_notifications?: boolean | null
           full_name?: string | null
           id: string
@@ -1535,6 +1537,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           due_date_reminders?: boolean | null
+          email?: string | null
           email_notifications?: boolean | null
           full_name?: string | null
           id?: string

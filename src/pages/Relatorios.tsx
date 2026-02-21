@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useFrameworks } from '@/hooks/useFrameworks';
+import { useControls } from '@/hooks/useControls';
+import { useRisks } from '@/hooks/useRisks';
+import { useActionPlans } from '@/hooks/useActionPlans';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -84,14 +88,12 @@ const reportTypes = [
   },
 ];
 
-const recentReports = [
-  { id: 1, name: 'Relatório de Conformidade - Janeiro 2026', date: '2026-01-02', type: 'HTML', size: '1.2 MB' },
-  { id: 2, name: 'Gap Analysis NIST CSF', date: '2025-12-28', type: 'HTML', size: '0.9 MB' },
-  { id: 3, name: 'Relatório Executivo Q4', date: '2025-12-25', type: 'HTML', size: '1.5 MB' },
-];
-
 export default function Relatorios() {
   const { organization } = useOrganization();
+  const { data: frameworks = [] } = useFrameworks();
+  const { data: controls = [] } = useControls();
+  const { data: risks = [] } = useRisks();
+  const { data: actionPlans = [] } = useActionPlans();
   const [selectedFramework, setSelectedFramework] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState('current');
   const [generating, setGenerating] = useState<string | null>(null);
@@ -173,9 +175,9 @@ export default function Relatorios() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os Frameworks</SelectItem>
-                  <SelectItem value="nist">NIST CSF 2.0</SelectItem>
-                  <SelectItem value="iso">ISO 27001:2022</SelectItem>
-                  <SelectItem value="bcb">BCB/CMN 4.893</SelectItem>
+                  {frameworks.map((fw) => (
+                    <SelectItem key={fw.id} value={fw.id}>{fw.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -268,156 +270,155 @@ export default function Relatorios() {
               <CardDescription>Histórico de relatórios exportados</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {recentReports.map((report) => (
-                  <div
-                    key={report.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium text-sm">{report.name}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {report.date}
-                          <span>•</span>
-                          {report.size}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{report.type}</Badge>
-                      <Button size="sm" variant="ghost">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                <p className="font-medium text-muted-foreground">Nenhum relatório gerado ainda</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">
+                  Use a aba "Gerar Relatórios" para criar seu primeiro relatório.
+                </p>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="preview" className="space-y-4">
-          <Card className="print:shadow-none">
-            <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Relatório de Conformidade</CardTitle>
-                  <CardDescription>
-                    {organization?.name} • Dezembro 2024
-                  </CardDescription>
-                </div>
-                <Badge>Prévia</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              {/* Executive Summary */}
-              <div>
-                <h3 className="font-semibold mb-3">Resumo Executivo</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <p className="text-3xl font-bold text-primary">72%</p>
-                    <p className="text-xs text-muted-foreground">Score Geral</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <p className="text-3xl font-bold text-[hsl(var(--success))]">142</p>
-                    <p className="text-xs text-muted-foreground">Conformes</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <p className="text-3xl font-bold text-[hsl(var(--warning))]">45</p>
-                    <p className="text-xs text-muted-foreground">Parciais</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <p className="text-3xl font-bold text-destructive">30</p>
-                    <p className="text-xs text-muted-foreground">Não Conformes</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Framework Status */}
-              <div>
-                <h3 className="font-semibold mb-3">Conformidade por Framework</h3>
-                <div className="space-y-4">
-                  {[
-                    { name: 'NIST CSF 2.0', value: 68, controls: 75 },
-                    { name: 'ISO 27001:2022', value: 75, controls: 93 },
-                    { name: 'BCB/CMN 4.893', value: 71, controls: 49 },
-                  ].map((fw) => (
-                    <div key={fw.name} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="font-medium">{fw.name}</span>
-                        <span>{fw.value}%</span>
-                      </div>
-                      <Progress value={fw.value} className="h-2" />
-                      <p className="text-xs text-muted-foreground">{fw.controls} controles avaliados</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Top Risks */}
-              <div>
-                <h3 className="font-semibold mb-3">Principais Riscos</h3>
-                <div className="space-y-2">
-                  {[
-                    { title: 'Vazamento de dados sensíveis', level: 'Crítico', status: 'Em tratamento' },
-                    { title: 'Acesso não autorizado', level: 'Alto', status: 'Mitigado' },
-                    { title: 'Falha em backup', level: 'Médio', status: 'Em tratamento' },
-                  ].map((risk, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                      <span className="text-sm">{risk.title}</span>
-                      <div className="flex gap-2">
-                        <Badge className={
-                          risk.level === 'Crítico' ? 'badge-risk-critical' :
-                          risk.level === 'Alto' ? 'badge-risk-high' : 'badge-risk-medium'
-                        }>
-                          {risk.level}
-                        </Badge>
-                        <Badge variant="outline">{risk.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Action Items */}
-              <div>
-                <h3 className="font-semibold mb-3">Planos de Ação Prioritários</h3>
-                <div className="space-y-2">
-                  {[
-                    { title: 'Implementar MFA', due: '15/01/2025', status: 'Em progresso' },
-                    { title: 'Revisar políticas de acesso', due: '20/01/2025', status: 'Pendente' },
-                    { title: 'Atualizar documentação ISO', due: '30/01/2025', status: 'Pendente' },
-                  ].map((action, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                      <div className="flex items-center gap-2">
-                        {action.status === 'Em progresso' ? (
-                          <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span className="text-sm">{action.title}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {action.due}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ReportPreview
+            organization={organization}
+            controls={controls}
+            risks={risks}
+            actionPlans={actionPlans}
+          />
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function ReportPreview({ organization, controls, risks, actionPlans }: {
+  organization: any;
+  controls: any[];
+  risks: any[];
+  actionPlans: any[];
+}) {
+  const totalControls = controls.length;
+  const conformeCount = controls.filter(c => c.status === 'conforme' || c.status === 'parcialmente_conforme').length;
+  const score = totalControls > 0 ? Math.round((conformeCount / totalControls) * 100) : 0;
+
+  const criticalRisks = risks.filter(r => (r.inherent_probability * r.inherent_impact) >= 20);
+  const highRisks = risks.filter(r => {
+    const level = r.inherent_probability * r.inherent_impact;
+    return level >= 12 && level < 20;
+  });
+
+  const pendingActions = actionPlans.filter(a => a.status !== 'done');
+  const inProgressActions = actionPlans.filter(a => a.status === 'in_progress');
+
+  const getRiskLevelLabel = (r: any) => {
+    const level = r.inherent_probability * r.inherent_impact;
+    if (level >= 20) return 'Crítico';
+    if (level >= 12) return 'Alto';
+    if (level >= 6) return 'Médio';
+    return 'Baixo';
+  };
+
+  const now = new Date();
+  const monthYear = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  return (
+    <Card className="print:shadow-none">
+      <CardHeader className="border-b">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Relatório de Conformidade</CardTitle>
+            <CardDescription>
+              {organization?.name} • {monthYear}
+            </CardDescription>
+          </div>
+          <Badge>Prévia</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6 space-y-6">
+        {/* Executive Summary */}
+        <div>
+          <h3 className="font-semibold mb-3">Resumo Executivo</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold text-primary">{score}%</p>
+              <p className="text-xs text-muted-foreground">Score Geral</p>
+            </div>
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold text-[hsl(var(--success))]">{totalControls}</p>
+              <p className="text-xs text-muted-foreground">Controles</p>
+            </div>
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold text-[hsl(var(--warning))]">{risks.length}</p>
+              <p className="text-xs text-muted-foreground">Riscos</p>
+            </div>
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold text-destructive">{pendingActions.length}</p>
+              <p className="text-xs text-muted-foreground">Ações Pendentes</p>
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Top Risks */}
+        <div>
+          <h3 className="font-semibold mb-3">Principais Riscos</h3>
+          {risks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum risco cadastrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {risks.slice(0, 5).map((risk) => (
+                <div key={risk.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                  <span className="text-sm">{risk.title}</span>
+                  <div className="flex gap-2">
+                    <Badge className={
+                      getRiskLevelLabel(risk) === 'Crítico' ? 'badge-risk-critical' :
+                      getRiskLevelLabel(risk) === 'Alto' ? 'badge-risk-high' : 'badge-risk-medium'
+                    }>
+                      {getRiskLevelLabel(risk)}
+                    </Badge>
+                    <Badge variant="outline">{risk.treatment === 'mitigar' ? 'Em tratamento' : risk.treatment}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
+        {/* Action Items */}
+        <div>
+          <h3 className="font-semibold mb-3">Planos de Ação Prioritários</h3>
+          {actionPlans.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum plano de ação cadastrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {actionPlans.slice(0, 5).map((action) => (
+                <div key={action.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                  <div className="flex items-center gap-2">
+                    {action.status === 'in_progress' ? (
+                      <Clock className="h-4 w-4 text-[hsl(var(--warning))]" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="text-sm">{action.title}</span>
+                  </div>
+                  {action.due_date && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(action.due_date).toLocaleDateString('pt-BR')}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

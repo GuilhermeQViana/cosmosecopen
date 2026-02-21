@@ -3,7 +3,6 @@ import { useTeamMembers, useCreateInvite, useUpdateMemberRole, useRemoveMember }
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { OFFICIAL_DOMAIN } from '@/lib/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -136,7 +135,7 @@ export default function Equipe() {
           inviterName: user?.user_metadata?.full_name || 'Um administrador',
           role: inviteRole,
           inviteToken: inviteData.token,
-          appUrl: OFFICIAL_DOMAIN,
+          appUrl: window.location.origin,
         },
       });
 
@@ -219,6 +218,7 @@ export default function Equipe() {
 
   const filteredMembers = members?.filter(member =>
     member.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.profile?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -448,7 +448,7 @@ export default function Equipe() {
                               )}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              ID: {member.user_id.slice(0, 8)}...
+                              {member.profile?.email || `ID: ${member.user_id.slice(0, 8)}...`}
                             </p>
                           </div>
                         </div>
