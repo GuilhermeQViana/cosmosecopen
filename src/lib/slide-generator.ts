@@ -248,7 +248,7 @@ export const SLIDE_DEFINITIONS: SlideDefinition[] = [
   { id: 'demo-beneficios', name: 'Impacto Mensurável', category: 'demo', description: 'Métricas: 70% redução de riscos, 50h economizadas' },
   { id: 'demo-servicos', name: 'Formas de Contratar', category: 'demo', description: 'Consultoria Completa vs. Plataforma SaaS' },
   { id: 'demo-frameworks', name: 'Frameworks Suportados', category: 'demo', description: 'NIST, ISO 27001, BCB/CMN, CIS, Custom' },
-  { id: 'demo-pricing', name: 'Plano & Investimento', category: 'demo', description: 'R$ 449,90/mês com tudo incluso' },
+  { id: 'demo-pricing', name: 'Plano & Investimento', category: 'demo', description: '3 faixas: R$ 30k, R$ 45k e R$ 60k/ano por porte' },
   { id: 'demo-diferencial', name: 'Diferenciais', category: 'demo', description: 'Multi-org, RBAC, trilha de auditoria, IA integrada' },
 ];
 

@@ -452,38 +452,72 @@ export async function renderDemoSlide(ctx: CanvasRenderingContext2D, slideId: st
     case 'demo-pricing': {
       bgDemo(ctx, 111);
       drawTitle(ctx, 'Plano & Investimento');
-      drawSubtitle(ctx, 'Tudo incluso em um único plano — sem surpresas');
+      drawSubtitle(ctx, 'Precificação por porte de operação');
       drawHLine(ctx, H * 0.24, W * 0.2, W * 0.8);
 
-      // Price block
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = 'bold 72px "Space Grotesk", sans-serif';
-      ctx.fillStyle = COLORS.nebula;
-      ctx.fillText('R$ 449,90', W / 2, H * 0.36);
-      ctx.font = '26px "Space Grotesk", sans-serif';
-      ctx.fillStyle = COLORS.lightGray;
-      ctx.fillText('/mês  •  7 dias grátis  •  Sem contrato mínimo', W / 2, H * 0.43);
+      // 3 pricing cards
+      const pcw = 480, pch = 320;
+      const pgap = 60;
+      const ptotalW = pcw * 3 + pgap * 2;
+      const psx = (W - ptotalW) / 2;
+      const pcy = H * 0.30;
 
-      drawHLine(ctx, H * 0.48, W * 0.25, W * 0.75);
-
-      // Feature columns
-      const col1 = [
-        'Todos os módulos (GRC + VRM + Políticas)',
-        'Frameworks ilimitados',
-        'Geração de relatórios PDF/Excel',
-        'Inteligência Artificial integrada',
-        'Multi-organização',
+      const tiers = [
+        { name: 'Pequeno', price: 'R$ 30.000', criteria: ['Até 3 pessoas', 'Até 2 frameworks'] },
+        { name: 'Médio', price: 'R$ 45.000', criteria: ['4–7 pessoas', 'ou 3 frameworks'] },
+        { name: 'Grande', price: 'R$ 60.000', criteria: ['8+ pessoas', 'ou 4+ frameworks'] },
       ];
-      const col2 = [
+
+      tiers.forEach((tier, i) => {
+        const tx = psx + i * (pcw + pgap);
+        // Card bg
+        ctx.fillStyle = i === 1 ? 'rgba(46,92,255,0.12)' : 'rgba(26,31,46,0.6)';
+        ctx.strokeStyle = i === 1 ? 'rgba(0,212,255,0.4)' : 'rgba(46,92,255,0.2)';
+        ctx.lineWidth = i === 1 ? 2 : 1;
+        ctx.beginPath(); ctx.roundRect(tx, pcy, pcw, pch, 12); ctx.fill(); ctx.stroke();
+
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        // Tier name
+        ctx.font = 'bold 28px "Space Grotesk", sans-serif';
+        ctx.fillStyle = COLORS.nebula;
+        ctx.fillText(tier.name, tx + pcw / 2, pcy + 50);
+        // Price
+        ctx.font = 'bold 56px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(tier.price, tx + pcw / 2, pcy + 130);
+        // /ano
+        ctx.font = '24px "Space Grotesk", sans-serif';
+        ctx.fillStyle = COLORS.lightGray;
+        ctx.fillText('/ano', tx + pcw / 2, pcy + 175);
+        // Criteria
+        ctx.font = '22px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#CBD5E1';
+        tier.criteria.forEach((c, ci) => {
+          ctx.fillText(c, tx + pcw / 2, pcy + 225 + ci * 34);
+        });
+      });
+
+      // Features included
+      drawHLine(ctx, H * 0.68, W * 0.2, W * 0.8);
+
+      ctx.font = 'bold 24px "Space Grotesk", sans-serif';
+      ctx.fillStyle = COLORS.nebula; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Todas as faixas incluem:', W / 2, H * 0.73);
+
+      const pcol1 = [
+        'GRC + VRM + Políticas',
+        'Frameworks ilimitados',
+        'Relatórios PDF/Excel',
+        'IA integrada',
+      ];
+      const pcol2 = [
         'Portal de fornecedores',
-        'RBAC com 3 perfis de acesso',
-        'Trilha de auditoria completa',
-        'Notificações em tempo real',
+        'RBAC com 3 perfis',
+        'Trilha de auditoria',
         'Suporte por chat e e-mail',
       ];
-
-      drawBulletList(ctx, col1, W * 0.18, H * 0.54, { spacing: 46, fontSize: 24 });
-      drawBulletList(ctx, col2, W * 0.55, H * 0.54, { spacing: 46, fontSize: 24 });
+      drawBulletList(ctx, pcol1, W * 0.2, H * 0.78, { spacing: 38, fontSize: 22 });
+      drawBulletList(ctx, pcol2, W * 0.55, H * 0.78, { spacing: 38, fontSize: 22 });
 
       drawFooterLogo(ctx, logo);
       break;
