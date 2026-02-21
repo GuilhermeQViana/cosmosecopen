@@ -5,6 +5,7 @@ import { useFrameworks } from '@/hooks/useFrameworks';
 import { useControls } from '@/hooks/useControls';
 import { useRisks } from '@/hooks/useRisks';
 import { useActionPlans } from '@/hooks/useActionPlans';
+import { useGeneratedReports, useLogGeneratedReport } from '@/hooks/useGeneratedReports';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,6 +95,8 @@ export default function Relatorios() {
   const { data: controls = [] } = useControls();
   const { data: risks = [] } = useRisks();
   const { data: actionPlans = [] } = useActionPlans();
+  const { data: reportHistory = [] } = useGeneratedReports();
+  const logReport = useLogGeneratedReport();
   const [selectedFramework, setSelectedFramework] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState('current');
   const [generating, setGenerating] = useState<string | null>(null);
@@ -122,12 +125,21 @@ export default function Relatorios() {
       const blob = new Blob([data.html], { type: 'text/html;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
+      const fileName = `relatorio-${reportId}-${new Date().toISOString().split('T')[0]}.html`;
       link.href = url;
-      link.download = `relatorio-${reportId}-${new Date().toISOString().split('T')[0]}.html`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+
+      // Log to history
+      logReport.mutate({
+        report_type: reportId,
+        framework_id: selectedFramework !== 'all' ? selectedFramework : null,
+        period: selectedPeriod,
+        file_name: fileName,
+      });
 
       toast.success('Relatório gerado com sucesso!', {
         description: 'O download foi iniciado. Abra o arquivo HTML no navegador para visualizar ou imprimir como PDF.',
@@ -270,13 +282,39 @@ export default function Relatorios() {
               <CardDescription>Histórico de relatórios exportados</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <FileText className="h-12 w-12 text-muted-foreground/40 mb-4" />
-                <p className="font-medium text-muted-foreground">Nenhum relatório gerado ainda</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">
-                  Use a aba "Gerar Relatórios" para criar seu primeiro relatório.
-                </p>
-              </div>
+              {reportHistory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                  <p className="font-medium text-muted-foreground">Nenhum relatório gerado ainda</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">
+                    Use a aba "Gerar Relatórios" para criar seu primeiro relatório.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {reportHistory.map((report) => {
+                    const typeInfo = reportTypes.find(r => r.id === report.report_type);
+                    const TypeIcon = typeInfo?.icon || FileText;
+                    return (
+                      <div key={report.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-1.5 rounded ${typeInfo?.bgColor || 'bg-muted'}`}>
+                            <TypeIcon className={`h-4 w-4 ${typeInfo?.color || 'text-muted-foreground'}`} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{typeInfo?.title || report.report_type}</p>
+                            <p className="text-xs text-muted-foreground">{report.file_name}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(report.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

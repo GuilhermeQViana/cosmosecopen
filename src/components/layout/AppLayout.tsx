@@ -68,7 +68,9 @@ export function AppLayout() {
   }
 
   if (!user) {
-    return <Navigate to={AUTH_ROUTE} replace />;
+    const redirectPath = location.pathname + location.search;
+    const redirectParam = redirectPath !== '/' ? `?redirect=${encodeURIComponent(redirectPath)}` : '';
+    return <Navigate to={`${AUTH_ROUTE}${redirectParam}`} replace />;
   }
 
   // Usuário não tem nenhuma organização -> onboarding

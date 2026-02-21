@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -40,11 +40,13 @@ const LOCKOUT_DURATION = 30; // seconds
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const redirectTo = searchParams.get('redirect') || '/selecionar-modulo';
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -154,7 +156,7 @@ export default function Auth() {
       }
     } else {
       setLoginAttempts(0);
-      navigate('/selecionar-modulo');
+      navigate(redirectTo);
     }
   };
 

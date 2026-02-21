@@ -34,14 +34,27 @@ export function useControls(frameworkId?: string | null) {
     queryFn: async () => {
       if (!activeFrameworkId) return [];
       
-      const { data, error } = await supabase
-        .from('controls')
-        .select('*')
-        .eq('framework_id', activeFrameworkId)
-        .order('order_index');
+      // Fetch all controls using pagination to avoid 1000-row limit
+      let allData: any[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from('controls')
+          .select('*')
+          .eq('framework_id', activeFrameworkId)
+          .order('order_index')
+          .range(from, from + batchSize - 1);
 
-      if (error) throw error;
-      return data as Control[];
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        allData = allData.concat(data);
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
+
+      return allData as Control[];
     },
     enabled: !!activeFrameworkId,
   });

@@ -56,7 +56,7 @@ export function useRisks(options?: { filterByFramework?: boolean }) {
 
       let query = supabase
         .from('risks')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('organization_id', organization.id)
         .order('created_at', { ascending: false });
 
@@ -65,9 +65,13 @@ export function useRisks(options?: { filterByFramework?: boolean }) {
         query = query.or(`framework_id.eq.${currentFramework.id},framework_id.is.null`);
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) throw error;
+      
+      if (count && count > 1000) {
+        console.warn(`Organization has ${count} risks, but only 1000 were loaded.`);
+      }
       
       if (!data || data.length === 0) return [];
       
