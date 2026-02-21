@@ -5,7 +5,7 @@ import { useFrameworks } from '@/hooks/useFrameworks';
 import { useControls } from '@/hooks/useControls';
 import { useRisks } from '@/hooks/useRisks';
 import { useActionPlans } from '@/hooks/useActionPlans';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useGeneratedReports, useLogGeneratedReport } from '@/hooks/useGeneratedReports';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
