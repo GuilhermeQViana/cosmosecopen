@@ -136,7 +136,7 @@ export default function Equipe() {
           inviterName: user?.user_metadata?.full_name || 'Um administrador',
           role: inviteRole,
           inviteToken: inviteData.token,
-          appUrl: OFFICIAL_DOMAIN,
+          appUrl: window.location.origin,
         },
       });
 
