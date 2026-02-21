@@ -217,7 +217,7 @@ function drawLogoOnCanvas(ctx: CanvasRenderingContext2D, logo: HTMLImageElement,
 export interface SlideDefinition {
   id: string;
   name: string;
-  category: 'fundos' | 'capas' | 'transicao' | 'finalizacao';
+  category: 'fundos' | 'capas' | 'transicao' | 'finalizacao' | 'demo';
   description: string;
 }
 
