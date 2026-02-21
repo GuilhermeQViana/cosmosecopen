@@ -470,15 +470,29 @@ export default function PlanoAcao() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete All Confirmation */}
+      {/* Delete All Confirmation - requires typing "EXCLUIR TODOS" */}
       <AlertDialog open={deleteAllOpen} onOpenChange={setDeleteAllOpen}>
         <AlertDialogContent className="border-border/50 bg-card/95 backdrop-blur-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-space text-destructive">Excluir Todos os Planos de Ação</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir <strong>todos os {plans?.length || 0} planos de ação</strong>?
-              <br /><br />
-              Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Tem certeza que deseja excluir <strong>todos os {plans?.length || 0} planos de ação</strong>?
+                  Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.
+                </p>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">
+                    Digite <strong className="text-destructive">EXCLUIR TODOS</strong> para confirmar:
+                  </p>
+                  <Input
+                    value={deleteAllConfirmText}
+                    onChange={(e) => setDeleteAllConfirmText(e.target.value)}
+                    placeholder="EXCLUIR TODOS"
+                    className="border-destructive/30"
+                  />
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -486,7 +500,7 @@ export default function PlanoAcao() {
             <AlertDialogAction
               onClick={handleDeleteAll}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteAllMutation.isPending}
+              disabled={deleteAllMutation.isPending || deleteAllConfirmText !== 'EXCLUIR TODOS'}
             >
               {deleteAllMutation.isPending ? 'Excluindo...' : 'Excluir Todos'}
             </AlertDialogAction>

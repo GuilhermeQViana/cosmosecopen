@@ -156,7 +156,7 @@ export default function Auth() {
       }
     } else {
       setLoginAttempts(0);
-      navigate('/selecionar-modulo');
+      navigate(redirectTo);
     }
   };
 
