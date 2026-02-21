@@ -237,6 +237,19 @@ export const SLIDE_DEFINITIONS: SlideDefinition[] = [
   // Finalização
   { id: 'end-thanks', name: 'Obrigado', category: 'finalizacao', description: 'Slide de agradecimento com logo e contato' },
   { id: 'end-next', name: 'Próximos Passos', category: 'finalizacao', description: 'CTA com 3 bullet points e próximos passos' },
+  // Demonstração
+  { id: 'demo-problema', name: 'O Problema', category: 'demo', description: 'Dores do mercado: auditorias manuais, planilhas, gaps' },
+  { id: 'demo-solucao', name: 'A Solução', category: 'demo', description: 'CosmoSec como plataforma unificada GRC + VRM + Políticas' },
+  { id: 'demo-modulos', name: 'Três Módulos', category: 'demo', description: 'Visão geral dos módulos GRC, VRM e Políticas' },
+  { id: 'demo-grc', name: 'Módulo GRC', category: 'demo', description: 'Diagnóstico, Riscos, Evidências, Plano de Ação' },
+  { id: 'demo-vrm', name: 'Módulo VRM', category: 'demo', description: 'Avaliação, Qualificação, Contratos, Due Diligence' },
+  { id: 'demo-politicas', name: 'Módulo Políticas', category: 'demo', description: 'Editor, Workflows, Campanhas de Aceite, Templates' },
+  { id: 'demo-ia', name: 'Inteligência Artificial', category: 'demo', description: 'IA para planos de ação, políticas e análise de risco' },
+  { id: 'demo-beneficios', name: 'Impacto Mensurável', category: 'demo', description: 'Métricas: 70% redução de riscos, 50h economizadas' },
+  { id: 'demo-servicos', name: 'Formas de Contratar', category: 'demo', description: 'Consultoria Completa vs. Plataforma SaaS' },
+  { id: 'demo-frameworks', name: 'Frameworks Suportados', category: 'demo', description: 'NIST, ISO 27001, BCB/CMN, CIS, Custom' },
+  { id: 'demo-pricing', name: 'Plano & Investimento', category: 'demo', description: 'R$ 449,90/mês com tudo incluso' },
+  { id: 'demo-diferencial', name: 'Diferenciais', category: 'demo', description: 'Multi-org, RBAC, trilha de auditoria, IA integrada' },
 ];
 
 // ─── Render Each Slide ──────────────────────────────────────────
