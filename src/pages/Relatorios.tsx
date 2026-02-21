@@ -175,9 +175,9 @@ export default function Relatorios() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os Frameworks</SelectItem>
-                  <SelectItem value="nist">NIST CSF 2.0</SelectItem>
-                  <SelectItem value="iso">ISO 27001:2022</SelectItem>
-                  <SelectItem value="bcb">BCB/CMN 4.893</SelectItem>
+                  {frameworks.map((fw) => (
+                    <SelectItem key={fw.id} value={fw.id}>{fw.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

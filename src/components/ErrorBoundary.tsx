@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Algo deu errado
             </h1>
             <p className="text-muted-foreground">
-              Ocorreu um erro inesperado. Nossa equipe foi notificada e está trabalhando na correção.
+              Ocorreu um erro inesperado. Tente recarregar a página ou voltar ao início.
             </p>
             {import.meta.env.DEV && this.state.error && (
               <pre className="text-left text-xs bg-muted p-4 rounded-lg overflow-auto max-h-40 text-destructive">

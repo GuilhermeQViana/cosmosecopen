@@ -448,7 +448,7 @@ export default function Equipe() {
                               )}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              ID: {member.user_id.slice(0, 8)}...
+                              {member.profile?.email || `ID: ${member.user_id.slice(0, 8)}...`}
                             </p>
                           </div>
                         </div>
