@@ -39,7 +39,31 @@ import {
   Lock,
   Zap,
   Target,
-  Layers
+  Layers,
+  FileText,
+  Edit3,
+  CheckCircle2,
+  BookOpen,
+  Send,
+  Brain,
+  Sparkles,
+  Bot,
+  Eye,
+  ShieldCheck,
+  Mail,
+  UserCheck,
+  Download,
+  Save,
+  History,
+  Filter,
+  FileSpreadsheet,
+  Briefcase,
+  Scale,
+  AlertCircle,
+  Search,
+  Clipboard,
+  FolderOpen,
+  Link2
 } from 'lucide-react';
 
 export default function Documentacao() {
@@ -103,7 +127,7 @@ export default function Documentacao() {
         <ScrollArea className="flex-1">
           <main className="max-w-4xl mx-auto p-8 space-y-8">
             
-            {/* Primeiros Passos */}
+            {/* ==================== PRIMEIROS PASSOS ==================== */}
             <DocumentationSection
               id="primeiros-passos"
               title="Primeiros Passos"
@@ -151,18 +175,23 @@ export default function Documentacao() {
 
               <h3 id="escolhendo-modulo" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Escolhendo um módulo</h3>
               <p className="text-muted-foreground mb-4">
-                A CosmoSec oferece dois módulos principais:
+                A CosmoSec oferece três módulos principais:
               </p>
-              <div className="grid gap-4 md:grid-cols-2 mb-4">
+              <div className="grid gap-4 md:grid-cols-3 mb-4">
                 <DocFeature 
                   icon={Shield}
                   title="GRC Frameworks"
                   description="Gestão de conformidade com frameworks como NIST CSF, ISO 27001 e BCB/CMN."
                 />
                 <DocFeature 
+                  icon={FileText}
+                  title="Gestão de Políticas"
+                  description="Crie, aprove e distribua políticas de segurança com versionamento e fluxos de aprovação."
+                />
+                <DocFeature 
                   icon={Building2}
                   title="VRM (Fornecedores)"
-                  description="Gestão de riscos de terceiros com avaliações e monitoramento contínuo."
+                  description="Gestão de riscos de terceiros com avaliações, qualificações e monitoramento contínuo."
                 />
               </div>
 
@@ -176,9 +205,21 @@ export default function Documentacao() {
                 { label: 'BCB/CMN', description: 'Regulamentações do Banco Central e CMN para instituições financeiras.' },
                 { label: 'Custom', description: 'Crie seus próprios frameworks personalizados.', color: 'warning' },
               ]} />
+
+              <h3 id="onboarding-checklist" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Onboarding Checklist</h3>
+              <p className="text-muted-foreground mb-4">
+                Ao acessar a plataforma pela primeira vez, um widget de checklist aparecerá no canto inferior direito com tarefas guiadas para configurar sua organização:
+              </p>
+              <DocStep number={1} title="Criar organização">Defina o nome e descrição da sua empresa.</DocStep>
+              <DocStep number={2} title="Selecionar módulo">Escolha entre GRC, Políticas ou VRM.</DocStep>
+              <DocStep number={3} title="Configurar framework">Selecione o framework de conformidade desejado.</DocStep>
+              <DocStep number={4} title="Realizar primeiro diagnóstico">Avalie pelo menos um controle para começar.</DocStep>
+              <DocTip variant="tip">
+                O checklist desaparece automaticamente ao completar todas as etapas, mas você pode ocultá-lo a qualquer momento.
+              </DocTip>
             </DocumentationSection>
 
-            {/* Módulo GRC */}
+            {/* ==================== MÓDULO GRC ==================== */}
             <DocumentationSection
               id="modulo-grc"
               title="Módulo GRC Frameworks"
@@ -195,7 +236,7 @@ export default function Documentacao() {
                 <DocFeature icon={ListTodo} title="Ações Pendentes" description="Planos de ação em andamento ou atrasados." />
               </div>
               <DocTip variant="tip">
-                Use os filtros de período para comparar métricas ao longo do tempo e identificar tendências.
+                Use os filtros de período para comparar métricas ao longo do tempo e identificar tendências. O dashboard é personalizável com widgets redimensionáveis e reposicionáveis.
               </DocTip>
 
               <h3 id="diagnostico-controles" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Diagnóstico de Controles</h3>
@@ -216,6 +257,23 @@ export default function Documentacao() {
               <DocTip variant="info" title="Risk Score">
                 O Risk Score é calculado automaticamente: (Maturidade Alvo - Maturidade Atual) × Peso do Controle.
               </DocTip>
+              <p className="text-muted-foreground mt-4 mb-2">Recursos avançados do diagnóstico:</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <DocFeature icon={Filter} title="Filtros Avançados" description="Filtre controles por status de conformidade, categoria, criticidade e risk score." />
+                <DocFeature icon={Eye} title="Modo Auditoria" description="Visualize controles em formato de tabela otimizado para auditores, com foco em evidências e observações." />
+                <DocFeature icon={Sparkles} title="Geração em Lote com IA" description="Gere planos de ação automaticamente para todos os gaps identificados de uma só vez." />
+                <DocFeature icon={ClipboardCheck} title="Edição em Massa" description="Selecione múltiplos controles para aplicar status ou maturidade de uma vez." />
+              </div>
+
+              <h3 id="snapshots-diagnostico" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Snapshots de Diagnóstico</h3>
+              <p className="text-muted-foreground mb-4">
+                Salve versões do seu diagnóstico para comparação temporal. Cada snapshot captura o estado completo de todas as avaliações naquele momento:
+              </p>
+              <DocStep number={1} title="Salvar Versão">Clique em "Salvar Versão" na barra de ações do diagnóstico e dê um nome descritivo (ex: "Pré-auditoria Q1 2026").</DocStep>
+              <DocStep number={2} title="Comparar Versões">Acesse o histórico para visualizar snapshots anteriores e comparar a evolução da maturidade ao longo do tempo.</DocStep>
+              <DocTip variant="tip">
+                Snapshots são ideais para apresentar evolução em auditorias e comitês executivos.
+              </DocTip>
 
               <h3 id="registro-riscos" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Registro de Riscos</h3>
               <p className="text-muted-foreground mb-4">
@@ -234,8 +292,8 @@ export default function Documentacao() {
                 Armazene e organize documentos que comprovam a implementação de controles:
               </p>
               <div className="grid gap-4 md:grid-cols-2">
-                <DocFeature icon={Upload} title="Upload de Arquivos" description="Arraste ou selecione arquivos para upload seguro." />
-                <DocFeature icon={Layers} title="Organização em Pastas" description="Crie estrutura de pastas para categorizar evidências." />
+                <DocFeature icon={Upload} title="Upload de Arquivos" description="Arraste ou selecione arquivos para upload seguro com classificação por confidencialidade." />
+                <DocFeature icon={Layers} title="Organização em Pastas" description="Crie estrutura de pastas hierárquicas para categorizar evidências." />
               </div>
 
               <h3 id="plano-acao" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Plano de Ação</h3>
@@ -243,34 +301,112 @@ export default function Documentacao() {
                 Gerencie ações de remediação e melhorias:
               </p>
               <div className="grid gap-4 md:grid-cols-2 mb-4">
-                <DocFeature icon={Kanban} title="Visualização Kanban" description="Arraste cards entre colunas de status." />
+                <DocFeature icon={Kanban} title="Visualização Kanban" description="Arraste cards entre colunas de status (Pendente, Em Progresso, Concluído)." />
                 <DocFeature icon={Calendar} title="Visualização Calendário" description="Veja prazos em formato de calendário mensal." />
               </div>
               <DocTip variant="tip">
-                Use a geração automática com IA para criar planos de ação a partir de gaps identificados.
+                Use a geração automática com IA para criar planos de ação a partir de gaps identificados. A ação "Excluir Todos" é restrita a administradores e exige confirmação por digitação.
               </DocTip>
 
               <h3 id="relatorios" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Relatórios</h3>
               <p className="text-muted-foreground mb-4">
-                Gere relatórios executivos e detalhados para stakeholders.
+                Gere relatórios executivos e detalhados para stakeholders. Todos os relatórios gerados são persistidos em um histórico consultável:
               </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <DocFeature icon={FileBarChart} title="Relatório Executivo" description="Visão resumida com métricas-chave, score de conformidade e principais riscos." />
+                <DocFeature icon={History} title="Histórico de Relatórios" description="Consulte todos os relatórios previamente gerados na aba Histórico com data, tipo e framework." />
+              </div>
 
               <h3 id="mapeamento-frameworks" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Mapeamento de Frameworks</h3>
               <p className="text-muted-foreground mb-4">
-                Crie equivalências entre controles de diferentes frameworks para reutilizar avaliações.
+                Crie equivalências entre controles de diferentes frameworks para reutilizar avaliações. Utilize a matriz visual para mapear correspondências entre frameworks como NIST CSF e ISO 27001.
               </p>
 
               <h3 id="auditoria-logs" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Auditoria de Logs</h3>
               <p className="text-muted-foreground mb-4">
-                Rastreie todas as ações realizadas na plataforma para fins de auditoria e compliance.
+                Rastreie todas as ações realizadas na plataforma para fins de auditoria e compliance. Visualize quem fez o quê e quando com timeline cronológica e filtros por tipo de ação.
               </p>
             </DocumentationSection>
 
-            {/* Módulo VRM */}
+            {/* ==================== MÓDULO DE POLÍTICAS ==================== */}
+            <DocumentationSection
+              id="modulo-politicas"
+              title="Módulo de Políticas"
+              description="Crie, aprove e distribua políticas de segurança da informação"
+            >
+              <h3 id="dashboard-politicas" className="text-lg font-semibold mb-4 scroll-mt-24">Dashboard de Políticas</h3>
+              <p className="text-muted-foreground mb-4">
+                Visão consolidada do ciclo de vida das suas políticas:
+              </p>
+              <div className="grid gap-4 md:grid-cols-2 mb-6">
+                <DocFeature icon={FileText} title="Total de Políticas" description="Quantidade total de políticas cadastradas na organização." />
+                <DocFeature icon={CheckCircle2} title="Publicadas" description="Políticas aprovadas e publicadas para consulta." />
+                <DocFeature icon={Edit3} title="Em Revisão" description="Políticas em processo de edição ou aguardando aprovação." />
+                <DocFeature icon={AlertCircle} title="Próximas Revisões" description="Políticas com data de revisão próxima ou expiradas." />
+              </div>
+
+              <h3 id="central-politicas" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Central de Políticas</h3>
+              <p className="text-muted-foreground mb-4">
+                Listagem completa das políticas da organização com filtros por status (Rascunho, Em Revisão, Publicada, Expirada) e por categoria (Segurança, Privacidade, Continuidade, etc.).
+              </p>
+              <DocStep number={1} title="Criar Nova Política">Clique em "Nova Política", defina título, categoria e framework associado.</DocStep>
+              <DocStep number={2} title="Editar Conteúdo">Use o editor rico para escrever o corpo da política.</DocStep>
+              <DocStep number={3} title="Submeter para Aprovação">Envie a política para o fluxo de aprovação configurado.</DocStep>
+
+              <h3 id="editor-politicas" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Editor de Políticas</h3>
+              <p className="text-muted-foreground mb-4">
+                Editor profissional WYSIWYG baseado em TipTap com recursos avançados:
+              </p>
+              <div className="grid gap-4 md:grid-cols-2 mb-4">
+                <DocFeature icon={Edit3} title="Formatação Rica" description="Negrito, itálico, headings, listas, tabelas, links e imagens inline." />
+                <DocFeature icon={Save} title="Salvamento Automático" description="Conteúdo salvo automaticamente a cada 30 segundos. Atalho Ctrl+S para salvamento manual." />
+                <DocFeature icon={History} title="Versionamento Automático" description="Cada salvamento cria uma versão imutável com possibilidade de restaurar versões anteriores." />
+                <DocFeature icon={Link2} title="Vinculações" description="Vincule a política a controles e riscos específicos para rastreabilidade completa." />
+              </div>
+              <DocTip variant="info" title="Painel Lateral">
+                O editor possui um painel lateral colapsável com abas para Metadados, Vínculos, Histórico de Versões e Discussões (comentários).
+              </DocTip>
+
+              <h3 id="fluxos-aprovacao" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Fluxos de Aprovação</h3>
+              <p className="text-muted-foreground mb-4">
+                Configure workflows de aprovação multi-nível para governança de políticas:
+              </p>
+              <DocTable
+                headers={['Recurso', 'Descrição']}
+                rows={[
+                  ['Até 5 Níveis', 'Defina até 5 etapas de aprovação sequenciais, cada uma com aprovador e área responsável (ex: TI, Jurídico, Diretoria).'],
+                  ['SLA de Aprovação', 'Configure o prazo em dias para cada nível de aprovação.'],
+                  ['Comentários Obrigatórios', 'Rejeições exigem justificativa. Aprovações permitem comentários opcionais.'],
+                  ['Histórico Completo', 'Todas as decisões (aprovação/rejeição) ficam registradas com data, autor e comentário.'],
+                ]}
+              />
+
+              <h3 id="campanhas-aceite" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Campanhas de Aceite</h3>
+              <p className="text-muted-foreground mb-4">
+                Distribua políticas publicadas para que funcionários confirmem leitura e aceite:
+              </p>
+              <DocStep number={1} title="Criar Campanha">Selecione a política publicada, defina título, público-alvo e prazo.</DocStep>
+              <DocStep number={2} title="Acompanhar Progresso">Monitore a taxa de aceite em tempo real no dashboard de campanhas.</DocStep>
+              <DocStep number={3} title="Relatório de Conformidade">Exporte a lista de quem aceitou e quem ainda está pendente.</DocStep>
+
+              <h3 id="biblioteca-modelos" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Biblioteca de Modelos</h3>
+              <p className="text-muted-foreground mb-4">
+                Acesse modelos pré-construídos de políticas organizados por categoria e framework:
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <DocFeature icon={BookOpen} title="Modelos por Categoria" description="Modelos para Segurança da Informação, Privacidade, Uso Aceitável, Continuidade e mais." />
+                <DocFeature icon={Download} title="Importar/Exportar DOCX" description="Importe documentos Word existentes ou exporte políticas para DOCX." />
+              </div>
+              <DocTip variant="tip">
+                Use o Escritor de Políticas com IA para gerar rascunhos baseados no framework selecionado e adaptar modelos ao contexto da sua organização.
+              </DocTip>
+            </DocumentationSection>
+
+            {/* ==================== MÓDULO VRM ==================== */}
             <DocumentationSection
               id="modulo-vrm"
               title="Módulo VRM (Gestão de Fornecedores)"
-              description="Avalie e monitore riscos de terceiros"
+              description="Avalie, qualifique e monitore riscos de terceiros"
             >
               <h3 id="dashboard-vrm" className="text-lg font-semibold mb-4 scroll-mt-24">Dashboard VRM</h3>
               <p className="text-muted-foreground mb-4">
@@ -308,10 +444,64 @@ export default function Documentacao() {
                 ]}
               />
 
+              <h3 id="qualificacao-fornecedores" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Qualificação de Fornecedores</h3>
+              <p className="text-muted-foreground mb-4">
+                Sistema completo de qualificação com templates, campanhas e portal externo:
+              </p>
+              <DocTable
+                headers={['Recurso', 'Descrição']}
+                rows={[
+                  ['Templates de Qualificação', 'Crie questionários com perguntas por seção, cada uma com peso numérico. Marque perguntas como KO (eliminatórias).'],
+                  ['Versionamento de Templates', 'Cada edição cria uma nova versão, preservando dados de campanhas anteriores.'],
+                  ['Campanhas por Link', 'Envie campanhas para fornecedores preencherem via portal externo, sem necessidade de conta na plataforma.'],
+                  ['Score Automático (0-100)', 'O sistema calcula automaticamente o score ponderado e classifica o risco (Baixo, Médio, Alto, Crítico).'],
+                  ['Comparativo Side-by-Side', 'Compare resultados de múltiplos fornecedores lado a lado.'],
+                ]}
+              />
+              <DocTip variant="info" title="Perguntas KO">
+                Perguntas marcadas como KO (Knock-Out) reprovam automaticamente o fornecedor se respondidas negativamente, independente do score geral.
+              </DocTip>
+
               <h3 id="requisitos-customizados" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Requisitos Customizados</h3>
               <p className="text-muted-foreground mb-4">
-                Crie requisitos específicos para sua organização além dos padrões.
+                Crie requisitos específicos para sua organização além dos 45 padrões incluídos.
               </p>
+
+              <h3 id="cofre-evidencias-vrm" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Cofre de Evidências VRM</h3>
+              <p className="text-muted-foreground mb-4">
+                Página dedicada para armazenar e gerenciar documentos de fornecedores:
+              </p>
+              <DocTable
+                headers={['Categoria', 'Exemplos']}
+                rows={[
+                  ['Contrato', 'Contratos assinados, aditivos, termos de confidencialidade'],
+                  ['Certificação', 'ISO 27001, SOC 2, PCI-DSS'],
+                  ['DDQ (Questionário)', 'Questionários de due diligence preenchidos'],
+                  ['Política', 'Políticas de segurança do fornecedor'],
+                  ['Relatório de Auditoria', 'Relatórios de auditoria independente'],
+                ]}
+              />
+              <DocTip variant="tip">
+                Configure datas de validade para receber alertas automáticos quando certificações ou documentos expirarem.
+              </DocTip>
+
+              <h3 id="contratos-slas" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Contratos e SLAs</h3>
+              <p className="text-muted-foreground mb-4">
+                Gerencie contratos com valores, moedas e datas de vigência. Acompanhe SLAs com métricas como disponibilidade, tempo de resposta e tempo de resolução de incidentes.
+              </p>
+
+              <h3 id="incidentes-fornecedores" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Incidentes de Fornecedores</h3>
+              <p className="text-muted-foreground mb-4">
+                Registre incidentes com severidade (Baixa, Média, Alta, Crítica), categoria, causa raiz e ações corretivas. Utilize IA para analisar automaticamente o impacto e gerar recomendações.
+              </p>
+
+              <h3 id="due-diligence" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Due Diligence</h3>
+              <p className="text-muted-foreground mb-4">
+                Checklist estruturado por categoria para avaliação aprofundada de fornecedores:
+              </p>
+              <DocStep number={1} title="Iniciar Due Diligence">Selecione o fornecedor e inicie o processo de avaliação.</DocStep>
+              <DocStep number={2} title="Preencher Checklist">Avalie cada item por categoria (Jurídico, Financeiro, Técnico, Compliance) marcando como Aprovado, Reprovado ou Pendente.</DocStep>
+              <DocStep number={3} title="Aprovação Final">Após avaliar todos os itens, aprove ou reprove a due diligence com comentários de justificativa.</DocStep>
 
               <h3 id="agenda-reavaliacao" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Agenda de Reavaliação</h3>
               <p className="text-muted-foreground mb-4">
@@ -320,36 +510,112 @@ export default function Documentacao() {
 
               <h3 id="planos-acao-vrm" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Planos de Ação VRM</h3>
               <p className="text-muted-foreground mb-4">
-                Crie ações de mitigação específicas para gaps identificados em fornecedores.
+                Crie ações de mitigação específicas para gaps identificados em fornecedores, com responsáveis, prazos e acompanhamento de progresso.
               </p>
             </DocumentationSection>
 
-            {/* Equipe e Colaboração */}
+            {/* ==================== EQUIPE E COLABORAÇÃO ==================== */}
             <DocumentationSection
               id="equipe-colaboracao"
               title="Equipe e Colaboração"
-              description="Trabalhe em equipe com controle de acesso"
+              description="Trabalhe em equipe com controle de acesso granular"
             >
               <h3 id="gestao-equipe" className="text-lg font-semibold mb-4 scroll-mt-24">Gestão de Equipe</h3>
               <p className="text-muted-foreground mb-4">
-                Convide membros e defina permissões:
+                Convide membros e gerencie sua equipe. Administradores podem convidar novos membros, alterar funções e remover usuários da organização.
+              </p>
+
+              <h3 id="permissoes-rbac" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Permissões por Função (RBAC)</h3>
+              <p className="text-muted-foreground mb-4">
+                A plataforma implementa controle de acesso baseado em funções (Role-Based Access Control) com 3 perfis:
               </p>
               <DocTable 
-                headers={['Papel', 'Permissões']}
+                headers={['Permissão', 'Admin', 'Analista', 'Auditor']}
                 rows={[
-                  ['Admin', 'Acesso total: configurações, equipe, exclusão de dados'],
-                  ['Auditor', 'Leitura completa, comentários, exportação de relatórios'],
-                  ['Analista', 'Edição de avaliações, riscos e planos de ação'],
+                  ['Criar, editar e excluir registros', '✅', '✅', '❌'],
+                  ['Excluir em massa (Excluir Todos)', '✅', '❌', '❌'],
+                  ['Gerenciar equipe e convites', '✅', '❌', '❌'],
+                  ['Configurações da organização', '✅', '❌', '❌'],
+                  ['Exportar e importar dados', '✅', '❌', '✅'],
+                  ['Visualizar todos os dados', '✅', '✅', '✅'],
+                  ['Adicionar comentários', '✅', '✅', '✅'],
                 ]}
               />
+              <DocTip variant="warning" title="Auditor = Somente Leitura">
+                O perfil Auditor tem acesso completo de visualização e pode exportar relatórios, mas não pode criar, editar ou excluir nenhum registro.
+              </DocTip>
+
+              <h3 id="convites-email" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Convites por Email</h3>
+              <p className="text-muted-foreground mb-4">
+                O fluxo de convite funciona da seguinte forma:
+              </p>
+              <DocStep number={1} title="Enviar Convite">O administrador informa o email e a função do novo membro. Um email é enviado com um link de convite.</DocStep>
+              <DocStep number={2} title="Aceitar Convite">O convidado clica no link, cria sua conta (ou faz login se já tiver) e é adicionado automaticamente à organização.</DocStep>
+              <DocStep number={3} title="Validações">O sistema verifica se o convite não expirou, se não foi aceito anteriormente e se o email do usuário logado corresponde ao email do convite.</DocStep>
+              <DocTip variant="info" title="Expiração">
+                Convites expiram após 7 dias. Convites vencidos podem ser reenviados pelo administrador.
+              </DocTip>
 
               <h3 id="comentarios-discussoes" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Comentários e Discussões</h3>
               <p className="text-muted-foreground mb-4">
-                Colabore em avaliações e controles através de threads de comentários com reações e respostas.
+                Colabore em avaliações, controles e políticas através de threads de comentários com respostas aninhadas, reações com emoji e possibilidade de fixar comentários importantes.
               </p>
             </DocumentationSection>
 
-            {/* Configurações */}
+            {/* ==================== INTELIGÊNCIA ARTIFICIAL ==================== */}
+            <DocumentationSection
+              id="inteligencia-artificial"
+              title="Inteligência Artificial"
+              description="Recursos de IA integrados para acelerar seu programa de segurança"
+            >
+              <h3 id="ia-visao-geral" className="text-lg font-semibold mb-4 scroll-mt-24">Visão Geral da IA</h3>
+              <p className="text-muted-foreground mb-4">
+                A CosmoSec integra inteligência artificial em diversos pontos da plataforma para automatizar tarefas repetitivas e fornecer insights acionáveis. Todos os recursos de IA são opcionais e os resultados podem ser editados antes de salvar.
+              </p>
+              <div className="grid gap-4 md:grid-cols-2 mb-6">
+                <DocFeature icon={Sparkles} title="Geração Automática" description="Crie planos de ação, análises de risco e rascunhos de políticas com um clique." />
+                <DocFeature icon={Bot} title="Assistentes Contextuais" description="Receba orientações específicas para implementação de controles de segurança." />
+              </div>
+
+              <h3 id="ia-planos-acao" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Geração de Planos de Ação</h3>
+              <p className="text-muted-foreground mb-4">
+                Disponível em dois modos:
+              </p>
+              <DocTable
+                headers={['Modo', 'Descrição']}
+                rows={[
+                  ['Individual', 'Gere um plano de ação específico para um controle com gap, com título, descrição e passos detalhados.'],
+                  ['Em Lote', 'Gere planos de ação automaticamente para TODOS os controles com gap identificado no diagnóstico. Ideal para preencher rapidamente o backlog de remediação.'],
+                ]}
+              />
+
+              <h3 id="ia-implementacao" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Assistente de Implementação</h3>
+              <p className="text-muted-foreground mb-4">
+                Receba um guia contextual e passo a passo para implementar controles de segurança específicos. O assistente considera o framework selecionado e o contexto do controle para fornecer orientações práticas.
+              </p>
+
+              <h3 id="ia-politicas" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Escritor de Políticas com IA</h3>
+              <p className="text-muted-foreground mb-4">
+                Gere rascunhos completos de políticas baseados no framework selecionado. Informe o tipo de política desejada e a IA gera um documento estruturado que pode ser editado e refinado no editor.
+              </p>
+
+              <h3 id="ia-risco-fornecedores" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Análise de Risco de Fornecedores</h3>
+              <p className="text-muted-foreground mb-4">
+                Solicite uma análise automática de risco para qualquer fornecedor. A IA avalia o perfil, categoria, criticidade e dados disponíveis para gerar:
+              </p>
+              <DocBadgeList items={[
+                { label: 'Risk Score', description: 'Score numérico de 0-100 indicando o nível de risco.' },
+                { label: 'Top Concerns', description: 'Lista dos principais pontos de atenção identificados.' },
+                { label: 'Recomendações', description: 'Ações sugeridas para mitigar os riscos encontrados.' },
+              ]} />
+
+              <h3 id="ia-criticidade" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Classificação de Criticidade</h3>
+              <p className="text-muted-foreground mb-4">
+                A IA sugere automaticamente o nível de criticidade de fornecedores com base em fatores como categoria de serviço, acesso a dados e sistemas, e dependência operacional.
+              </p>
+            </DocumentationSection>
+
+            {/* ==================== CONFIGURAÇÕES ==================== */}
             <DocumentationSection
               id="configuracoes"
               title="Configurações"
@@ -357,36 +623,50 @@ export default function Documentacao() {
             >
               <h3 id="perfil-usuario" className="text-lg font-semibold mb-4 scroll-mt-24">Perfil do Usuário</h3>
               <p className="text-muted-foreground mb-4">
-                Atualize foto de perfil, nome e altere sua senha.
+                Atualize foto de perfil (com recorte de imagem), nome e altere sua senha.
               </p>
 
               <h3 id="configuracao-organizacao" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Organização</h3>
               <p className="text-muted-foreground mb-4">
-                Configure nome, descrição e logo da organização.
+                Configure nome, descrição e logo da organização. Apenas administradores podem alterar essas configurações.
               </p>
 
               <h3 id="frameworks-customizados" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Frameworks Customizados</h3>
               <p className="text-muted-foreground mb-4">
-                Crie frameworks personalizados e importe controles via CSV.
+                Crie frameworks personalizados com controles próprios. Importe controles em massa via CSV com mapeamento de campos configurável.
               </p>
+
+              <h3 id="importacao-exportacao" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Importação e Exportação de Dados</h3>
+              <p className="text-muted-foreground mb-4">
+                Recursos de portabilidade de dados da plataforma:
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <DocFeature icon={Upload} title="Importar Controles CSV" description="Importe controles de frameworks externos via arquivo CSV com mapeamento de colunas." />
+                <DocFeature icon={Download} title="Exportar Backup JSON" description="Exporte todos os dados da organização em formato JSON para backup ou migração." />
+                <DocFeature icon={FileSpreadsheet} title="Importar Dados JSON" description="Restaure dados a partir de um backup JSON previamente exportado." />
+                <DocFeature icon={FileBarChart} title="Exportar Relatórios" description="Gere e exporte relatórios em formato HTML com gráficos e métricas." />
+              </div>
+              <DocTip variant="warning" title="Permissão Necessária">
+                Importação e exportação de dados requerem perfil Admin ou Auditor. Analistas não têm acesso a esses recursos.
+              </DocTip>
 
               <h3 id="notificacoes" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Notificações</h3>
               <p className="text-muted-foreground mb-4">
-                Configure alertas de prazos, riscos críticos e emails.
+                A plataforma possui um centro de notificações em tempo real acessível pelo ícone de sino no cabeçalho. Receba alertas sobre prazos de planos de ação, riscos críticos, convites de equipe e atualizações relevantes.
               </p>
 
               <h3 id="aparencia" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Aparência</h3>
               <p className="text-muted-foreground mb-4">
-                Alterne entre tema claro e escuro. Ajuste a densidade do layout.
+                Alterne entre tema claro e escuro. A preferência é salva por usuário e persiste entre sessões.
               </p>
 
               <h3 id="backup-dados" className="text-lg font-semibold mt-8 mb-4 scroll-mt-24">Backup de Dados</h3>
               <p className="text-muted-foreground mb-4">
-                Exporte e importe dados da organização em formato JSON.
+                Exporte e importe dados da organização em formato JSON. O backup inclui avaliações, riscos, planos de ação, evidências e configurações.
               </p>
             </DocumentationSection>
 
-            {/* Assinatura e Planos */}
+            {/* ==================== ASSINATURA ==================== */}
             <DocumentationSection
               id="assinatura-planos"
               title="Assinatura e Planos"
@@ -397,9 +677,9 @@ export default function Documentacao() {
                 O plano Pro desbloqueia funcionalidades avançadas:
               </p>
               <div className="grid gap-4 md:grid-cols-2">
-                <DocFeature icon={Zap} title="Geração com IA" description="Crie planos de ação automaticamente." />
-                <DocFeature icon={FileBarChart} title="Relatórios Avançados" description="Relatórios executivos e comparativos." />
-                <DocFeature icon={Users} title="Equipe Ilimitada" description="Convide quantos membros precisar." />
+                <DocFeature icon={Zap} title="Geração com IA" description="Crie planos de ação, análises e políticas automaticamente." />
+                <DocFeature icon={FileBarChart} title="Relatórios Avançados" description="Relatórios executivos e comparativos com persistência de histórico." />
+                <DocFeature icon={Users} title="Equipe Ilimitada" description="Convide quantos membros precisar com RBAC." />
                 <DocFeature icon={Lock} title="Suporte Prioritário" description="Atendimento prioritário por email." />
               </div>
 
@@ -409,7 +689,7 @@ export default function Documentacao() {
               </p>
             </DocumentationSection>
 
-            {/* Atalhos de Teclado */}
+            {/* ==================== ATALHOS ==================== */}
             <DocumentationSection
               id="atalhos-teclado"
               title="Atalhos de Teclado"
@@ -422,12 +702,13 @@ export default function Documentacao() {
                 <DocKeyboardShortcut keys={['Ctrl', 'R']} description="Ir para Riscos" />
                 <DocKeyboardShortcut keys={['Ctrl', 'P']} description="Ir para Plano de Ação" />
                 <DocKeyboardShortcut keys={['Ctrl', 'E']} description="Ir para Evidências" />
+                <DocKeyboardShortcut keys={['Ctrl', 'S']} description="Salvar (no editor de políticas)" />
                 <DocKeyboardShortcut keys={['Ctrl', 'T']} description="Alternar Tema" />
                 <DocKeyboardShortcut keys={['?']} description="Ver todos os atalhos" />
               </div>
             </DocumentationSection>
 
-            {/* Metodologia de Risco */}
+            {/* ==================== METODOLOGIA ==================== */}
             <DocumentationSection
               id="metodologia-risco"
               title="Metodologia de Risco"

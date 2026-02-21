@@ -5,13 +5,7 @@ import { Input } from '@/components/ui/input';
 import { 
   Search,
   Rocket,
-  LayoutDashboard,
   ClipboardCheck,
-  AlertTriangle,
-  FileCheck,
-  ListTodo,
-  FileBarChart,
-  Map,
   Building,
   Users,
   Settings,
@@ -19,7 +13,9 @@ import {
   Keyboard,
   Calculator,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  FileText,
+  Brain
 } from 'lucide-react';
 
 export interface DocSection {
@@ -40,6 +36,7 @@ export const documentationSections: DocSection[] = [
       { id: 'navegacao', title: 'Navegação na plataforma' },
       { id: 'escolhendo-modulo', title: 'Escolhendo um módulo' },
       { id: 'selecionando-framework', title: 'Selecionando um framework' },
+      { id: 'onboarding-checklist', title: 'Onboarding Checklist' },
     ],
   },
   {
@@ -49,12 +46,26 @@ export const documentationSections: DocSection[] = [
     subsections: [
       { id: 'dashboard-executivo', title: 'Dashboard Executivo' },
       { id: 'diagnostico-controles', title: 'Diagnóstico de Controles' },
+      { id: 'snapshots-diagnostico', title: 'Snapshots de Diagnóstico' },
       { id: 'registro-riscos', title: 'Registro de Riscos' },
       { id: 'cofre-evidencias', title: 'Cofre de Evidências' },
       { id: 'plano-acao', title: 'Plano de Ação' },
       { id: 'relatorios', title: 'Relatórios' },
       { id: 'mapeamento-frameworks', title: 'Mapeamento de Frameworks' },
       { id: 'auditoria-logs', title: 'Auditoria de Logs' },
+    ],
+  },
+  {
+    id: 'modulo-politicas',
+    title: 'Módulo de Políticas',
+    icon: FileText,
+    subsections: [
+      { id: 'dashboard-politicas', title: 'Dashboard de Políticas' },
+      { id: 'central-politicas', title: 'Central de Políticas' },
+      { id: 'editor-politicas', title: 'Editor de Políticas' },
+      { id: 'fluxos-aprovacao', title: 'Fluxos de Aprovação' },
+      { id: 'campanhas-aceite', title: 'Campanhas de Aceite' },
+      { id: 'biblioteca-modelos', title: 'Biblioteca de Modelos' },
     ],
   },
   {
@@ -65,7 +76,12 @@ export const documentationSections: DocSection[] = [
       { id: 'dashboard-vrm', title: 'Dashboard VRM' },
       { id: 'cadastro-fornecedores', title: 'Cadastro de Fornecedores' },
       { id: 'avaliacoes-fornecedores', title: 'Avaliações' },
+      { id: 'qualificacao-fornecedores', title: 'Qualificação de Fornecedores' },
       { id: 'requisitos-customizados', title: 'Requisitos Customizados' },
+      { id: 'cofre-evidencias-vrm', title: 'Cofre de Evidências VRM' },
+      { id: 'contratos-slas', title: 'Contratos e SLAs' },
+      { id: 'incidentes-fornecedores', title: 'Incidentes' },
+      { id: 'due-diligence', title: 'Due Diligence' },
       { id: 'agenda-reavaliacao', title: 'Agenda de Reavaliação' },
       { id: 'planos-acao-vrm', title: 'Planos de Ação VRM' },
     ],
@@ -76,7 +92,22 @@ export const documentationSections: DocSection[] = [
     icon: Users,
     subsections: [
       { id: 'gestao-equipe', title: 'Gestão de Equipe' },
+      { id: 'permissoes-rbac', title: 'Permissões por Função (RBAC)' },
+      { id: 'convites-email', title: 'Convites por Email' },
       { id: 'comentarios-discussoes', title: 'Comentários e Discussões' },
+    ],
+  },
+  {
+    id: 'inteligencia-artificial',
+    title: 'Inteligência Artificial',
+    icon: Brain,
+    subsections: [
+      { id: 'ia-visao-geral', title: 'Visão Geral da IA' },
+      { id: 'ia-planos-acao', title: 'Geração de Planos de Ação' },
+      { id: 'ia-implementacao', title: 'Assistente de Implementação' },
+      { id: 'ia-politicas', title: 'Escritor de Políticas' },
+      { id: 'ia-risco-fornecedores', title: 'Análise de Risco de Fornecedores' },
+      { id: 'ia-criticidade', title: 'Classificação de Criticidade' },
     ],
   },
   {
@@ -87,6 +118,7 @@ export const documentationSections: DocSection[] = [
       { id: 'perfil-usuario', title: 'Perfil do Usuário' },
       { id: 'configuracao-organizacao', title: 'Organização' },
       { id: 'frameworks-customizados', title: 'Frameworks Customizados' },
+      { id: 'importacao-exportacao', title: 'Importação e Exportação' },
       { id: 'notificacoes', title: 'Notificações' },
       { id: 'aparencia', title: 'Aparência' },
       { id: 'backup-dados', title: 'Backup de Dados' },
