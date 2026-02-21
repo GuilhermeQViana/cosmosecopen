@@ -82,7 +82,7 @@ function SlidePreviewCard({ slide }: { slide: SlideDefinition }) {
 
 export default function PresentationSlidesSection() {
   const [downloadingAll, setDownloadingAll] = useState(false);
-  const [activeTab, setActiveTab] = useState('fundos');
+  const [activeTab, setActiveTab] = useState('demo');
 
   const handleDownloadAll = async () => {
     setDownloadingAll(true);

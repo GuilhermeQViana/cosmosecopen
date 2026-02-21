@@ -255,6 +255,12 @@ export const SLIDE_DEFINITIONS: SlideDefinition[] = [
 // ─── Render Each Slide ──────────────────────────────────────────
 
 async function renderSlide(ctx: CanvasRenderingContext2D, slideId: string) {
+  // Delegate demo slides to dedicated module
+  if (slideId.startsWith('demo-')) {
+    const { renderDemoSlide } = await import('./slide-generator-demo');
+    await renderDemoSlide(ctx, slideId);
+    return;
+  }
   const logo = await loadLogo();
 
   switch (slideId) {
