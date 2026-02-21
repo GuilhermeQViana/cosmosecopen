@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useFrameworks } from '@/hooks/useFrameworks';
+import { useControls } from '@/hooks/useControls';
+import { useRisks } from '@/hooks/useRisks';
+import { useActionPlans } from '@/hooks/useActionPlans';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
