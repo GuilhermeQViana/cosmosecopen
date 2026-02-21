@@ -248,14 +248,16 @@ export default function PlanoAcao() {
               <>
                 <SendDeadlineNotifications />
                 <ExportActionPlans plans={filteredPlans} />
-                <Button 
-                  variant="outline" 
-                  onClick={() => setDeleteAllOpen(true)}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir Todos
-                </Button>
+                {canBulkDelete && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => { setDeleteAllOpen(true); setDeleteAllConfirmText(''); }}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Excluir Todos
+                  </Button>
+                )}
               </>
             )}
             <Button onClick={() => handleOpenForm()} className="bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-primary/30 group">
