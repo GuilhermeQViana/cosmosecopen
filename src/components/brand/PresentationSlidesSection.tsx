@@ -13,6 +13,7 @@ import {
 } from '@/lib/slide-generator';
 
 const CATEGORIES = [
+  { id: 'demo', label: 'Demonstração' },
   { id: 'fundos', label: 'Fundos' },
   { id: 'capas', label: 'Capas' },
   { id: 'transicao', label: 'Transição' },
