@@ -1,58 +1,61 @@
 
 
-# Criar Slides de Demonstracao para Clientes
+# Atualizar Slide de Pricing com Faixas da Calculadora de ROI
 
-## Objetivo
+## Problema
 
-Expandir o gerador de slides existente (`slide-generator.ts`) com **12 novos slides de conteudo** prontos para apresentacao comercial. Cada slide tera textos reais da plataforma CosmoSec, dados de beneficios, funcionalidades e pricing -- tudo renderizado em Canvas 1920x1080 e baixavel como PNG para importar no PowerPoint.
+O slide `demo-pricing` mostra um plano unico de R$ 449,90/mes, mas a calculadora de ROI ja utiliza 3 faixas de preco anuais baseadas no porte da operacao:
 
-## Novos Slides (12)
+- **Pequeno**: R$ 30.000/ano (ate 3 pessoas, ate 2 frameworks)
+- **Medio**: R$ 45.000/ano (4-7 pessoas ou 3 frameworks)
+- **Grande**: R$ 60.000/ano (8+ pessoas ou 4+ frameworks)
 
-| # | ID | Categoria | Conteudo |
-|---|-----|-----------|----------|
-| 1 | `demo-problema` | demo | "O Problema" -- lista de dores do mercado (auditorias manuais, planilhas, gaps nao rastreados) |
-| 2 | `demo-solucao` | demo | "A Solucao" -- CosmoSec como plataforma unificada GRC + VRM + Politicas |
-| 3 | `demo-modulos` | demo | Visao geral dos 3 modulos com icones e descricoes curtas |
-| 4 | `demo-grc` | demo | Detalhes do modulo GRC: Diagnostico, Riscos, Evidencias, Plano de Acao, Relatorios, Auditoria |
-| 5 | `demo-vrm` | demo | Detalhes do modulo VRM: Avaliacao, Qualificacao, Radar, Heatmap, Contratos, Due Diligence |
-| 6 | `demo-politicas` | demo | Detalhes do modulo Politicas: Editor, Workflows, Campanhas de Aceite, Templates |
-| 7 | `demo-ia` | demo | Recursos de IA: Planos de acao, analise de risco, escritor de politicas, classificacao |
-| 8 | `demo-beneficios` | demo | Metricas de impacto: 70% reducao de riscos, 50h economizadas, 45+ requisitos, IA |
-| 9 | `demo-servicos` | demo | Duas formas de contratar: Consultoria Completa vs. Plataforma SaaS |
-| 10 | `demo-frameworks` | demo | Frameworks suportados: NIST CSF 2.0, ISO 27001:2022, BCB/CMN, Custom |
-| 11 | `demo-pricing` | demo | Plano Completo R$449,90/mes, 7 dias gratis, lista de features incluidas |
-| 12 | `demo-diferencial` | demo | Diferenciais competitivos: multi-org, RBAC, trilha de auditoria, notificacoes realtime |
+O slide deve refletir essa precificacao por faixa.
 
-## Arquivos a Modificar
+---
 
-| Arquivo | Alteracao |
-|---------|-----------|
-| `src/lib/slide-generator.ts` | Adicionar os 12 novos slides ao array `SLIDE_DEFINITIONS` e implementar a funcao de renderizacao de cada um no `switch` de `renderSlide()` |
-| `src/components/brand/PresentationSlidesSection.tsx` | Adicionar a nova categoria "demo" ao array `CATEGORIES` com label "Demonstracao" |
+## Alteracao
 
-## Detalhes Tecnicos
+### Arquivo: `src/lib/slide-generator-demo.ts` (caso `demo-pricing`, linhas 452-489)
 
-### Padrao Visual dos Slides de Conteudo
-- Fundo: reutilizar `bgGradientDiagonal()` ou `bgDeepVoid()` ja existentes
-- Titulo: fonte bold 52-56px em branco, posicionado no topo (Y ~12-15%)
-- Subtitulo: fonte 24px em cor Nebula (#00D4FF)
-- Corpo: textos em 22-28px, cor lightGray (#94A3B8)
-- Bullet points: renderizados com circulos coloridos + texto ao lado
-- Cards/blocos: retangulos com borda semi-transparente e fundo semi-transparente
-- Logo pequeno no canto inferior direito (40px)
-- Linha decorativa gradiente separando titulo do corpo
+Substituir o bloco de preco unico por **3 cards lado a lado**, cada um mostrando:
 
-### Helpers Novos
-- `drawBulletList()`: renderiza lista de items com marcadores coloridos
-- `drawContentCard()`: desenha retangulo com borda, titulo e descricao internos
-- `drawMetricBlock()`: bloco com numero grande + titulo + descricao (para slide de beneficios)
+| Card | Titulo | Preco | Criterio |
+|------|--------|-------|----------|
+| 1 | Pequeno | R$ 30.000/ano | Ate 3 pessoas, ate 2 frameworks |
+| 2 | Medio | R$ 45.000/ano | 4-7 pessoas ou 3 frameworks |
+| 3 | Grande | R$ 60.000/ano | 8+ pessoas ou 4+ frameworks |
 
-### Textos Reais Extraidos da Plataforma
-Todos os textos serao extraidos dos componentes ja existentes (HeroSection, BenefitsSection, FeaturesSection, AudienceSection, PricingSection) para garantir consistencia com o marketing atual.
+Abaixo dos cards, manter a lista de features incluidas em todas as faixas (mesma lista atual dividida em 2 colunas).
 
-### Experiencia do Usuario
-- Os novos slides aparecem na aba "Demonstracao" da pagina Brand Assets
-- Cada slide pode ser baixado individualmente como PNG
-- O botao "Baixar Todos" ja existente incluira os novos slides automaticamente
-- Preview em miniatura mostra exatamente o que sera baixado
+### Arquivo: `src/lib/slide-generator.ts` (linha 251)
+
+Atualizar a descricao do slide de `'R$ 449,90/mês com tudo incluso'` para `'3 faixas: R$ 30k, R$ 45k e R$ 60k/ano por porte'`.
+
+### Layout do slide atualizado
+
+```text
++----------------------------------------------------------+
+|            Plano & Investimento                          |
+|     Precificacao por porte de operacao                   |
+|  --------------------------------------------------------|
+|                                                          |
+|  +-------------+  +--------------+  +---------------+   |
+|  |  PEQUENO    |  |   MEDIO      |  |   GRANDE      |   |
+|  | R$ 30.000   |  |  R$ 45.000   |  |  R$ 60.000    |   |
+|  |   /ano      |  |    /ano      |  |    /ano       |   |
+|  | Ate 3 pess  |  | 4-7 pessoas  |  | 8+ pessoas    |   |
+|  | Ate 2 frmwk |  | ou 3 frmwk   |  | ou 4+ frmwk   |   |
+|  +-------------+  +--------------+  +---------------+   |
+|                                                          |
+|  Todas as faixas incluem:                                |
+|  * GRC + VRM + Politicas    * Portal fornecedores        |
+|  * Frameworks ilimitados    * RBAC 3 perfis              |
+|  * Relatorios PDF/Excel     * Trilha de auditoria        |
+|  * IA integrada             * Suporte chat/email         |
+|                                                          |
++----------------------------------------------------------+
+```
+
+Serao usados os helpers `drawContentCard` e `drawBulletList` ja existentes no arquivo.
 
