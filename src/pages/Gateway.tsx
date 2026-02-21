@@ -40,11 +40,13 @@ const LOCKOUT_DURATION = 30; // seconds
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const redirectTo = searchParams.get('redirect') || '/selecionar-modulo';
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
