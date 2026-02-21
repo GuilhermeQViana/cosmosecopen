@@ -94,6 +94,8 @@ export default function Relatorios() {
   const { data: controls = [] } = useControls();
   const { data: risks = [] } = useRisks();
   const { data: actionPlans = [] } = useActionPlans();
+  const { data: reportHistory = [] } = useGeneratedReports();
+  const logReport = useLogGeneratedReport();
   const [selectedFramework, setSelectedFramework] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState('current');
   const [generating, setGenerating] = useState<string | null>(null);
