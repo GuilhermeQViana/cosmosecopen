@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Kanban, Calendar, ListTodo, Sparkles, Search, X, Trash2 } from 'lucide-react';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function PlanoAcao() {
   const [searchParams, setSearchParams] = useSearchParams();
