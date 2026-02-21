@@ -57,7 +57,9 @@ export default function PlanoAcao() {
   const [detailPlan, setDetailPlan] = useState<ActionPlan | null>(null);
   const [deletePlan, setDeletePlan] = useState<ActionPlan | null>(null);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deleteAllConfirmText, setDeleteAllConfirmText] = useState('');
   const [prefillDate, setPrefillDate] = useState<Date | null>(null);
+  const { canBulkDelete, canEdit } = usePermissions();
 
   // Pre-fill data from URL params (coming from ControlCard or RiskCard)
   const [prefillData, setPrefillData] = useState<{
