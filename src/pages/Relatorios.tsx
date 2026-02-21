@@ -124,12 +124,21 @@ export default function Relatorios() {
       const blob = new Blob([data.html], { type: 'text/html;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
+      const fileName = `relatorio-${reportId}-${new Date().toISOString().split('T')[0]}.html`;
       link.href = url;
-      link.download = `relatorio-${reportId}-${new Date().toISOString().split('T')[0]}.html`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+
+      // Log to history
+      logReport.mutate({
+        report_type: reportId,
+        framework_id: selectedFramework !== 'all' ? selectedFramework : null,
+        period: selectedPeriod,
+        file_name: fileName,
+      });
 
       toast.success('Relatório gerado com sucesso!', {
         description: 'O download foi iniciado. Abra o arquivo HTML no navegador para visualizar ou imprimir como PDF.',
