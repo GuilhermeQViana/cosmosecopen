@@ -5,13 +5,7 @@ import { Input } from '@/components/ui/input';
 import { 
   Search,
   Rocket,
-  LayoutDashboard,
   ClipboardCheck,
-  AlertTriangle,
-  FileCheck,
-  ListTodo,
-  FileBarChart,
-  Map,
   Building,
   Users,
   Settings,
@@ -19,7 +13,9 @@ import {
   Keyboard,
   Calculator,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  FileText,
+  Brain
 } from 'lucide-react';
 
 export interface DocSection {
