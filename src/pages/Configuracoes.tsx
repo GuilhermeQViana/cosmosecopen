@@ -72,7 +72,6 @@ import {
   FileJson,
   FileSpreadsheet,
   FileCode2,
-  CreditCard
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
@@ -80,8 +79,6 @@ import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworks
 import { ChangePasswordDialog } from '@/components/configuracoes/ChangePasswordDialog';
 import { ImageUploadWithCrop } from '@/components/configuracoes/ImageUploadWithCrop';
 import { ImportBackupDialog } from '@/components/configuracoes/ImportBackupDialog';
-import { SubscriptionTab } from '@/components/configuracoes/SubscriptionTab';
-import { ProBenefitsTab } from '@/components/configuracoes/ProBenefitsTab';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
