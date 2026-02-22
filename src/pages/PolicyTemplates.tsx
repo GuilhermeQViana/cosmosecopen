@@ -12,6 +12,7 @@ import { usePolicyTemplates, PolicyTemplate } from '@/hooks/usePolicyTemplates';
 import { downloadTemplateAsDocx } from '@/lib/docx-utils';
 import ImportTemplateDocxDialog from '@/components/politicas/ImportTemplateDocxDialog';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 const categoryColors: Record<string, string> = {
   'Segurança': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
