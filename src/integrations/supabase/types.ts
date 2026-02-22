@@ -1014,11 +1014,6 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          subscription_ends_at: string | null
-          subscription_status: string | null
-          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
@@ -1027,11 +1022,6 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          subscription_ends_at?: string | null
-          subscription_status?: string | null
-          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -1040,11 +1030,6 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          subscription_ends_at?: string | null
-          subscription_status?: string | null
-          trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -3257,9 +3242,6 @@ export type Database = {
           id: string | null
           logo_url: string | null
           name: string | null
-          subscription_ends_at: string | null
-          subscription_status: string | null
-          trial_ends_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -3268,9 +3250,6 @@ export type Database = {
           id?: string | null
           logo_url?: string | null
           name?: string | null
-          subscription_ends_at?: string | null
-          subscription_status?: string | null
-          trial_ends_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -3279,9 +3258,6 @@ export type Database = {
           id?: string | null
           logo_url?: string | null
           name?: string | null
-          subscription_ends_at?: string | null
-          subscription_status?: string | null
-          trial_ends_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -3310,11 +3286,6 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          subscription_ends_at: string | null
-          subscription_status: string | null
-          trial_ends_at: string | null
           updated_at: string
         }
         SetofOptions: {

@@ -1,6 +1,6 @@
 import {
   Cpu, Database, Globe, Sparkles, Server, Code2,
-  Paintbrush, Mail, CreditCard, Shield, Layers
+  Paintbrush, Mail, Shield, Layers
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 

@@ -154,7 +154,7 @@ export default function PoliticaPrivacidade() {
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
                 <li><strong>Dados de conta:</strong> enquanto a conta estiver ativa + 5 anos</li>
                 <li><strong>Logs de auditoria:</strong> 5 anos (requisito regulatório)</li>
-                <li><strong>Dados de pagamento:</strong> conforme exigido por lei tributária</li>
+                
                 <li><strong>Backups:</strong> 90 dias após exclusão</li>
               </ul>
             </section>

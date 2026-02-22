@@ -1036,16 +1036,11 @@ BEGIN
   RETURN true;
 END; $$;
 
--- Verificar acesso da organização
+-- Verificar acesso da organização (sempre true — plataforma gratuita)
 CREATE OR REPLACE FUNCTION public.check_organization_access(_org_id uuid)
 RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
-DECLARE org_record RECORD;
 BEGIN
-  SELECT trial_ends_at, subscription_status, subscription_ends_at INTO org_record FROM public.organizations WHERE id = _org_id;
-  IF NOT FOUND THEN RETURN false; END IF;
-  IF org_record.subscription_status = 'trialing' AND org_record.trial_ends_at > now() THEN RETURN true; END IF;
-  IF org_record.subscription_status = 'active' THEN RETURN true; END IF;
-  RETURN false;
+  RETURN EXISTS (SELECT 1 FROM public.organizations WHERE id = _org_id);
 END; $$;
 
 -- Log de acesso
