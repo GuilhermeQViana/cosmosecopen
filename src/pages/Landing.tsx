@@ -4,6 +4,7 @@ import { PlatformSection } from '@/components/landing/PlatformSection';
 import { TrustSection } from '@/components/landing/TrustSection';
 import { AudienceSection } from '@/components/landing/AudienceSection';
 import { ROICalculatorSection } from '@/components/landing/ROICalculatorSection';
+import { OptionalConfigSection } from '@/components/landing/OptionalConfigSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { Footer } from '@/components/landing/Footer';
@@ -29,11 +30,14 @@ export default function Landing() {
         <ScrollReveal animation="fade-up" duration={700} delay={100}>
           <ROICalculatorSection />
         </ScrollReveal>
-        <ScrollReveal animation="scale-in" duration={700}>
-          <CTASection />
+        <ScrollReveal animation="fade-up" duration={700}>
+          <OptionalConfigSection />
         </ScrollReveal>
         <ScrollReveal animation="fade-up" duration={700}>
           <FAQSection />
+        </ScrollReveal>
+        <ScrollReveal animation="scale-in" duration={700}>
+          <CTASection />
         </ScrollReveal>
       </main>
       <Footer />

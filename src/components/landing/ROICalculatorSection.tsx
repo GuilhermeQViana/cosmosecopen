@@ -1,101 +1,64 @@
-import { useState, useMemo } from 'react';
-import { 
-  Calculator, 
-  Clock, 
-  Users, 
-  TrendingUp,
-  DollarSign,
-  ArrowRight,
-  Sparkles,
-  CheckCircle2,
-  FileText
+import {
+  Cpu, Database, Globe, Sparkles, Server, Code2,
+  Paintbrush, Mail, CreditCard, Shield, Layers
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
+
+const prerequisites = [
+  { label: 'Node.js 18+', icon: Server },
+  { label: 'npm ou bun', icon: Code2 },
+  { label: 'Conta Supabase (gratuita)', icon: Database },
+];
+
+const stacks = [
+  {
+    title: 'Frontend',
+    color: 'text-blue-400',
+    borderColor: 'border-blue-500/20',
+    bgColor: 'bg-blue-500/10',
+    items: ['React 18', 'TypeScript', 'Tailwind CSS', 'Vite', 'shadcn/ui', 'Recharts'],
+  },
+  {
+    title: 'Backend',
+    color: 'text-cyan-400',
+    borderColor: 'border-cyan-500/20',
+    bgColor: 'bg-cyan-500/10',
+    items: ['PostgreSQL (Supabase)', 'Auth & RLS', 'Edge Functions (Deno)', 'Storage'],
+  },
+  {
+    title: 'Integrações Opcionais',
+    color: 'text-amber-400',
+    borderColor: 'border-amber-500/20',
+    bgColor: 'bg-amber-500/10',
+    items: ['IA Generativa (OpenAI-compatível)', 'Resend (e-mails)', 'Stripe (pagamentos)', 'Docker'],
+  },
+];
+
+const edgeFunctions = [
+  { name: 'generate-action-plan', desc: 'Gera planos de ação com IA' },
+  { name: 'generate-policy', desc: 'Gera políticas de segurança' },
+  { name: 'generate-report', desc: '6 tipos de relatórios automatizados' },
+  { name: 'vendor-risk-analysis', desc: 'Análise de risco de fornecedores' },
+  { name: 'assist-due-diligence', desc: 'Assistente de Due Diligence' },
+  { name: 'export-policy-pdf', desc: 'Exportação de políticas em PDF' },
+  { name: 'send-deadline-notifications', desc: 'Notificações de prazo por e-mail' },
+  { name: 'import-data', desc: 'Importação de dados (CSV/Excel)' },
+];
+
+const envVars = [
+  { name: 'AI_API_KEY', desc: 'Chave da API de IA (OpenAI, etc.)', required: false },
+  { name: 'AI_BASE_URL', desc: 'URL base da API de IA', required: false },
+  { name: 'RESEND_API_KEY', desc: 'Chave do Resend para e-mails', required: false },
+  { name: 'STRIPE_SECRET_KEY', desc: 'Chave secreta do Stripe', required: false },
+  { name: 'STRIPE_WEBHOOK_SECRET', desc: 'Secret do webhook Stripe', required: false },
+  { name: 'STRIPE_PRICE_ID', desc: 'ID do preço no Stripe', required: false },
+  { name: 'ALLOWED_ORIGINS', desc: 'Origens CORS permitidas', required: false },
+];
 
 export function ROICalculatorSection() {
-  // Input states
-  const [teamSize, setTeamSize] = useState(3);
-  const [hoursPerWeek, setHoursPerWeek] = useState(20);
-  const [frameworks, setFrameworks] = useState(2);
-  const [policies, setPolicies] = useState(5);
-  const [vendors, setVendors] = useState(15);
-  const [hourlyRate, setHourlyRate] = useState(150);
-
-  // Calculate ROI
-  const calculations = useMemo(() => {
-    // Current costs (annual)
-    const weeksPerYear = 48;
-    const currentAnnualHours = hoursPerWeek * weeksPerYear * teamSize;
-    const currentAnnualCost = currentAnnualHours * hourlyRate;
-
-    // Efficiency gains with CosmoSec
-    const automationSavingsPercent = 0.45; // 45% time savings from automation
-    const multiFrameworkSavingsPercent = Math.min(0.15 * (frameworks - 1), 0.30); // 15% per additional framework, max 30%
-    const policySavingsPercent = policies > 0 ? Math.min(0.05 + policies * 0.01, 0.15) : 0; // 5% base + 1% per policy, max 15%
-    const vendorSavingsPercent = vendors > 10 ? 0.10 : 0.05; // 10% if more than 10 vendors
-
-    const totalSavingsPercent = automationSavingsPercent + multiFrameworkSavingsPercent + policySavingsPercent + vendorSavingsPercent;
-    
-    // Savings
-    const hoursSaved = Math.round(currentAnnualHours * totalSavingsPercent);
-    const costSaved = Math.round(currentAnnualCost * totalSavingsPercent);
-
-    // CosmoSec estimated cost based on operation size (R$ 30k - 60k/year)
-    let cosmoSecCost = 30000; // Base: small operation
-    if (teamSize >= 8 || frameworks >= 4) {
-      cosmoSecCost = 60000; // Large operation
-    } else if (teamSize >= 4 || frameworks >= 3) {
-      cosmoSecCost = 45000; // Medium operation
-    }
-
-    // Time to breakeven: (CosmoSec Cost / Annual Savings) * 12 months
-    const monthsToBreakeven = costSaved > 0 
-      ? Math.max(1, Math.round((cosmoSecCost / costSaved) * 12)) 
-      : 12;
-
-    // Net ROI: Savings - Investment
-    const netROI = costSaved - cosmoSecCost;
-
-    // Productivity improvement
-    const productivityGain = Math.round(totalSavingsPercent * 100);
-
-    return {
-      currentAnnualHours,
-      currentAnnualCost,
-      hoursSaved,
-      costSaved,
-      cosmoSecCost,
-      monthsToBreakeven,
-      netROI,
-      productivityGain,
-      totalSavingsPercent
-    };
-  }, [teamSize, hoursPerWeek, frameworks, policies, vendors, hourlyRate]);
-
-  const scrollToContact = () => {
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('pt-BR').format(value);
-  };
-
   return (
-    <section id="roi-calculator" className="py-24 relative overflow-hidden bg-muted/30">
-      {/* Background effects */}
+    <section id="tech-stack" className="py-24 relative overflow-hidden bg-muted/30">
+      {/* Background */}
       <div 
         className="absolute bottom-0 right-1/4 w-[600px] h-[600px] opacity-10 dark:opacity-15 blur-3xl pointer-events-none"
         style={{
@@ -104,240 +67,91 @@ export function ROICalculatorSection() {
       />
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Section Header */}
+        {/* Header */}
         <div className="text-center mb-12">
-          <Badge variant="outline" className="mb-4 border-primary/30 dark:border-primary/50 text-primary">
-            <Calculator className="w-3 h-3 mr-1" />
-            Calculadora de ROI
-          </Badge>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6">
+            <Layers className="w-4 h-4" />
+            <span className="text-sm font-medium">Stack Tecnológica</span>
+          </div>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-space">
-            Calcule sua <span className="text-gradient-cosmic">economia</span>
+            Requisitos e <span className="text-gradient-cosmic">tecnologias</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Descubra quanto tempo e dinheiro sua equipe pode economizar automatizando a gestão de conformidade.
+            Construído com tecnologias modernas e amplamente adotadas. Fácil de entender, contribuir e personalizar.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* Input Card */}
-          <Card className="bg-card/80 dark:bg-card/60 backdrop-blur-sm border-primary/10">
-            <CardContent className="p-6 space-y-6">
-              <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                Sua situação atual
-              </h3>
+        {/* Prerequisites */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {prerequisites.map((pre) => (
+            <Badge
+              key={pre.label}
+              variant="outline"
+              className="px-4 py-2.5 text-sm font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              <pre.icon className="w-4 h-4 mr-2" />
+              {pre.label}
+            </Badge>
+          ))}
+        </div>
 
-              {/* Team Size */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Tamanho da equipe de GRC
-                  </Label>
-                  <span className="text-sm font-medium text-foreground bg-primary/10 px-2 py-1 rounded">
-                    {teamSize} {teamSize === 1 ? 'pessoa' : 'pessoas'}
-                  </span>
-                </div>
-                <Slider
-                  value={[teamSize]}
-                  onValueChange={(value) => setTeamSize(value[0])}
-                  min={1}
-                  max={15}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Hours per week */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Horas/semana em compliance (por pessoa)
-                  </Label>
-                  <span className="text-sm font-medium text-foreground bg-primary/10 px-2 py-1 rounded">
-                    {hoursPerWeek}h
-                  </span>
-                </div>
-                <Slider
-                  value={[hoursPerWeek]}
-                  onValueChange={(value) => setHoursPerWeek(value[0])}
-                  min={5}
-                  max={40}
-                  step={5}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Frameworks */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                    📋 Frameworks gerenciados
-                  </Label>
-                  <span className="text-sm font-medium text-foreground bg-primary/10 px-2 py-1 rounded">
-                    {frameworks}
-                  </span>
-                </div>
-                <Slider
-                  value={[frameworks]}
-                  onValueChange={(value) => setFrameworks(value[0])}
-                  min={1}
-                  max={5}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Policies */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Políticas gerenciadas
-                  </Label>
-                  <span className="text-sm font-medium text-foreground bg-primary/10 px-2 py-1 rounded">
-                    {policies}
-                  </span>
-                </div>
-                <Slider
-                  value={[policies]}
-                  onValueChange={(value) => setPolicies(value[0])}
-                  min={0}
-                  max={30}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Vendors */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                    🏢 Fornecedores avaliados
-                  </Label>
-                  <span className="text-sm font-medium text-foreground bg-primary/10 px-2 py-1 rounded">
-                    {vendors}
-                  </span>
-                </div>
-                <Slider
-                  value={[vendors]}
-                  onValueChange={(value) => setVendors(value[0])}
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Hourly Rate */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Custo/hora médio da equipe
-                  </Label>
-                  <span className="text-sm font-medium text-foreground bg-primary/10 px-2 py-1 rounded">
-                    {formatCurrency(hourlyRate)}
-                  </span>
-                </div>
-                <Slider
-                  value={[hourlyRate]}
-                  onValueChange={(value) => setHourlyRate(value[0])}
-                  min={50}
-                  max={500}
-                  step={25}
-                  className="w-full"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Results Card */}
-          <Card className="bg-gradient-to-br from-primary/5 via-card/80 to-secondary/5 dark:from-primary/10 dark:via-card/60 dark:to-secondary/10 backdrop-blur-sm border-primary/20">
-            <CardContent className="p-6 space-y-6">
-              <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-secondary" />
-                Seu potencial de economia
-              </h3>
-
-              {/* Main metrics */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-background/60 dark:bg-background/40 rounded-xl p-4 text-center border border-primary/10">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Horas economizadas/ano</p>
-                  <p className="text-3xl font-bold text-primary font-space">
-                    {formatNumber(calculations.hoursSaved)}h
-                  </p>
-                </div>
-                <div className="bg-background/60 dark:bg-background/40 rounded-xl p-4 text-center border border-secondary/10">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Economia anual</p>
-                  <p className="text-3xl font-bold text-secondary font-space">
-                    {formatCurrency(calculations.costSaved)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Secondary metrics */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-primary/5">
-                  <span className="text-sm text-muted-foreground">Investimento estimado CosmoSec</span>
-                  <span className="text-sm font-semibold text-foreground">{formatCurrency(calculations.cosmoSecCost)}/ano</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-secondary/10">
-                  <span className="text-sm text-muted-foreground">ROI líquido (economia - investimento)</span>
-                  <span className={`text-sm font-semibold ${calculations.netROI > 0 ? 'text-secondary' : 'text-destructive'}`}>
-                    {calculations.netROI > 0 ? '+' : ''}{formatCurrency(calculations.netROI)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-primary/5">
-                  <span className="text-sm text-muted-foreground">Ganho de produtividade</span>
-                  <span className="text-sm font-semibold text-foreground">+{calculations.productivityGain}%</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-primary/5">
-                  <span className="text-sm text-muted-foreground">Tempo para retorno (payback)</span>
-                  <span className="text-sm font-semibold text-foreground">~{calculations.monthsToBreakeven} {calculations.monthsToBreakeven === 1 ? 'mês' : 'meses'}</span>
-                </div>
-              </div>
-
-              {/* Benefits list */}
-              <div className="pt-4 border-t border-primary/10">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">Como você economiza:</p>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Automação de 45% das tarefas repetitivas</span>
+        {/* Stack Grid */}
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
+          {stacks.map((stack) => (
+            <div
+              key={stack.title}
+              className={`bg-card/60 dark:bg-card/40 backdrop-blur-sm border ${stack.borderColor} rounded-2xl p-6 transition-all duration-300 hover:shadow-lg`}
+            >
+              <h3 className={`text-lg font-bold ${stack.color} mb-4 font-space`}>{stack.title}</h3>
+              <ul className="space-y-2">
+                {stack.items.map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className={`w-1.5 h-1.5 rounded-full ${stack.bgColor}`} />
+                    {item}
                   </li>
-                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Mapeamento automático entre {frameworks} frameworks</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Criação e gestão de {policies} políticas com IA</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Due Diligence e avaliação de {vendors} fornecedores</span>
-                  </li>
-                </ul>
-              </div>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
 
-              {/* CTA */}
-              <Button 
-                variant="cosmic" 
-                size="lg" 
-                onClick={scrollToContact} 
-                className="w-full group"
-              >
-                Quero uma proposta personalizada
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
+        {/* Edge Functions & Env Vars */}
+        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* Edge Functions */}
+          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-primary/20 rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-foreground mb-4 font-space flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-primary" />
+              Edge Functions Incluídas
+            </h3>
+            <div className="space-y-3">
+              {edgeFunctions.map((fn) => (
+                <div key={fn.name} className="flex items-start gap-3">
+                  <code className="text-xs bg-muted/80 px-2 py-1 rounded font-mono text-primary whitespace-nowrap flex-shrink-0">
+                    {fn.name}
+                  </code>
+                  <span className="text-sm text-muted-foreground">{fn.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
-              <p className="text-xs text-center text-muted-foreground">
-                * Estimativas baseadas em dados de clientes similares. Resultados podem variar.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Environment Variables */}
+          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-secondary/20 rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-foreground mb-4 font-space flex items-center gap-2">
+              <Shield className="w-5 h-5 text-secondary" />
+              Variáveis de Ambiente Opcionais
+            </h3>
+            <div className="space-y-3">
+              {envVars.map((v) => (
+                <div key={v.name} className="flex items-start gap-3">
+                  <code className="text-xs bg-muted/80 px-2 py-1 rounded font-mono text-secondary whitespace-nowrap flex-shrink-0">
+                    {v.name}
+                  </code>
+                  <span className="text-sm text-muted-foreground">{v.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
