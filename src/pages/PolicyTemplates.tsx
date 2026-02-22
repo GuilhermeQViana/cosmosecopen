@@ -166,7 +166,7 @@ export default function PolicyTemplates() {
           <ScrollArea className="flex-1 min-h-0">
             <div
               className="prose prose-invert max-w-none p-4"
-              dangerouslySetInnerHTML={{ __html: previewTemplate?.content || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewTemplate?.content || '') }}
             />
           </ScrollArea>
           <div className="flex justify-end gap-2 pt-4 border-t border-border">

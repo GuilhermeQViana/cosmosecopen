@@ -83,7 +83,7 @@ export function PolicyVersionHistory({ policyId, onRestoreVersion }: Props) {
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             <div className="prose prose-invert max-w-none p-4"
-              dangerouslySetInnerHTML={{ __html: previewVersion?.content || '' }} />
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewVersion?.content || '') }} />
           </ScrollArea>
           {onRestoreVersion && previewVersion && (
             <div className="flex justify-end pt-2">
