@@ -3,6 +3,7 @@ import { authenticate, getCorsHeaders, isAuthError, errorResponse } from "../_sh
 import { buildEmailHtml, emailButton, emailInfoBox, emailMutedText } from "../_shared/email-template.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "CosmoSec <noreply@seu-dominio.com>";
 
 interface InviteEmailRequest {
   email: string;
