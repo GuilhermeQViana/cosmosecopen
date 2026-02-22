@@ -4,28 +4,26 @@ import {
   handleCors, 
   isAuthError, 
   errorResponse, 
-  jsonResponse 
+  jsonResponse,
+  getAIConfig
 } from "../_shared/auth.ts";
 
 serve(async (req) => {
-  // Handle CORS
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
   try {
-    // Authenticate user
     const auth = await authenticate(req);
     if (isAuthError(auth)) return auth;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return errorResponse("LOVABLE_API_KEY is not configured", 500);
+    const aiConfig = getAIConfig();
+    if (!aiConfig) {
+      return errorResponse("IA não configurada. Defina AI_API_KEY e AI_BASE_URL nas variáveis de ambiente.", 503);
     }
 
     const { controlCode, controlName, controlDescription, currentMaturity, targetMaturity, weight } = await req.json();
 
     console.log(`[Implementation Guide] Generating for ${controlCode}: ${controlName}`);
-    console.log(`[Implementation Guide] Current: ${currentMaturity}, Target: ${targetMaturity}, Weight: ${weight}`);
 
     const prompt = `Você é um especialista em segurança da informação e compliance. Gere um guia de implementação prático e detalhado para o seguinte controle de segurança:
 
@@ -52,10 +50,10 @@ Gere um guia estruturado com:
 4. Recursos recomendados (documentos, ferramentas, frameworks)
 5. Dicas práticas (2-3 dicas)`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(aiConfig.baseUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${aiConfig.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -63,7 +61,7 @@ Gere um guia estruturado com:
         messages: [
           {
             role: "system",
-            content: "Você é um especialista em GRC (Governança, Risco e Compliance) que ajuda organizações a implementar controles de segurança. Responda sempre em português brasileiro.",
+            content: "Você é um especialista em GRC que ajuda organizações a implementar controles de segurança. Responda sempre em português brasileiro.",
           },
           { role: "user", content: prompt },
         ],
@@ -76,10 +74,7 @@ Gere um guia estruturado com:
               parameters: {
                 type: "object",
                 properties: {
-                  summary: {
-                    type: "string",
-                    description: "Resumo executivo do que precisa ser feito (2-3 frases)",
-                  },
+                  summary: { type: "string", description: "Resumo executivo do que precisa ser feito (2-3 frases)" },
                   steps: {
                     type: "array",
                     items: {
@@ -93,10 +88,7 @@ Gere um guia estruturado com:
                       required: ["order", "title", "description", "effort"],
                     },
                   },
-                  checklist: {
-                    type: "array",
-                    items: { type: "string" },
-                  },
+                  checklist: { type: "array", items: { type: "string" } },
                   resources: {
                     type: "array",
                     items: {
@@ -109,10 +101,7 @@ Gere um guia estruturado com:
                       required: ["title", "type", "description"],
                     },
                   },
-                  tips: {
-                    type: "array",
-                    items: { type: "string" },
-                  },
+                  tips: { type: "array", items: { type: "string" } },
                 },
                 required: ["summary", "steps", "checklist", "resources", "tips"],
               },
@@ -126,29 +115,16 @@ Gere um guia estruturado com:
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[Implementation Guide] AI error:", response.status, errorText);
-      
-      if (response.status === 429) {
-        return errorResponse("Limite de requisições excedido. Tente novamente em alguns segundos.", 429);
-      }
-      if (response.status === 402) {
-        return errorResponse("Créditos de IA insuficientes. Adicione créditos ao workspace.", 402);
-      }
-      
+      if (response.status === 429) return errorResponse("Limite de requisições excedido.", 429);
+      if (response.status === 402) return errorResponse("Créditos de IA insuficientes.", 402);
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("[Implementation Guide] Response received");
-
-    // Extract the tool call result
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall?.function?.arguments) {
-      throw new Error("Invalid AI response format");
-    }
+    if (!toolCall?.function?.arguments) throw new Error("Invalid AI response format");
 
     const guide = JSON.parse(toolCall.function.arguments);
-    console.log("[Implementation Guide] Guide generated successfully");
-
     return jsonResponse({ guide });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Erro ao gerar guia";
