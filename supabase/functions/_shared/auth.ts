@@ -29,7 +29,7 @@ function getAllowedOrigin(req?: Request): string {
     return origin;
   }
   // Em desenvolvimento, permitir origens locais
-  if (origin.includes("localhost") || origin.includes("lovableproject") || origin.includes("lovable.app")) {
+  if (origin.includes("localhost")) {
     return origin;
   }
   return allowedOrigins[0] || "*";
@@ -178,9 +178,9 @@ export function createLogger(prefix: string) {
  * Helper para obter URL base da IA (configurável).
  */
 export function getAIConfig(): { baseUrl: string; apiKey: string } | null {
-  const apiKey = Deno.env.get("AI_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
-  const baseUrl = Deno.env.get("AI_BASE_URL") || "https://ai.gateway.lovable.dev/v1/chat/completions";
+  const apiKey = Deno.env.get("AI_API_KEY");
+  const baseUrl = Deno.env.get("AI_BASE_URL");
   
-  if (!apiKey) return null;
+  if (!apiKey || !baseUrl) return null;
   return { baseUrl, apiKey };
 }

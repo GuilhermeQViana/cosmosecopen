@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Calendar, MessageSquare, Building2, Send, MessageCircle } from 'lucide-react';
+import { CONTACT_EMAIL, WHATSAPP_URL, WHATSAPP_DISPLAY } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -156,10 +157,10 @@ export function ContactSection() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Email</h3>
                     <a 
-                      href="mailto:contato@cosmosec.com.br" 
+                      href={`mailto:${CONTACT_EMAIL}`}
                       className="text-sm text-primary hover:text-secondary transition-colors"
                     >
-                      contato@cosmosec.com.br
+                      {CONTACT_EMAIL}
                     </a>
                   </div>
                 </div>
@@ -175,12 +176,12 @@ export function ContactSection() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">WhatsApp</h3>
                     <a 
-                      href="https://wa.me/5521999253788" 
+                      href={WHATSAPP_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:text-secondary transition-colors"
                     >
-                      (21) 99925-3788
+                      {WHATSAPP_DISPLAY}
                     </a>
                   </div>
                 </div>

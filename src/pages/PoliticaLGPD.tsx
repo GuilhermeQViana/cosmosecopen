@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, FileText, UserCheck, Database, Bell } from 'lucide-react';
+import { DPO_EMAIL, WHATSAPP_DISPLAY } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarField } from '@/components/ui/star-field';
@@ -119,7 +120,7 @@ export default function PoliticaLGPD() {
                 <div>
                   <h4 className="font-medium text-foreground">Envie uma solicitação</h4>
                   <p className="text-sm text-muted-foreground">
-                    Entre em contato pelo email <a href="mailto:dpo@cosmosec.com.br" className="text-primary hover:underline">dpo@cosmosec.com.br</a> informando 
+                    Entre em contato pelo email <a href={`mailto:${DPO_EMAIL}`} className="text-primary hover:underline">{DPO_EMAIL}</a> informando 
                     qual direito deseja exercer.
                   </p>
                 </div>
@@ -265,12 +266,12 @@ export default function PoliticaLGPD() {
                 </p>
                 <p className="text-sm">
                   <strong>Email:</strong>{' '}
-                  <a href="mailto:dpo@cosmosec.com.br" className="text-primary hover:underline">
-                    dpo@cosmosec.com.br
+                  <a href={`mailto:${DPO_EMAIL}`} className="text-primary hover:underline">
+                    {DPO_EMAIL}
                   </a>
                 </p>
                 <p className="text-sm">
-                  <strong>Telefone:</strong> (21) 99925-3788
+                  <strong>Telefone:</strong> {WHATSAPP_DISPLAY}
                 </p>
               </div>
             </div>

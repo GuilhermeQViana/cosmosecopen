@@ -5,6 +5,8 @@ import { corsHeaders, getCorsHeaders } from "../_shared/auth.ts";
 import { buildEmailHtml, emailGreeting, emailText, emailInfoBox, emailButton, emailMutedText } from "../_shared/email-template.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "CosmoSec <noreply@seu-dominio.com>";
+const APP_URL = Deno.env.get("APP_URL") || "https://seu-dominio.com";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -107,11 +109,11 @@ serve(async (req) => {
               'rgba(251, 191, 36, 0.3)'
             )}
             ${emailMutedText('Assine agora e continue protegendo sua organização com o CosmoSec.')}
-            ${emailButton('Assinar Agora →', 'https://cosmosec.com.br/configuracoes', 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', '#000000')}
+            ${emailButton('Assinar Agora →', `${APP_URL}/configuracoes`, 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', '#000000')}
           `;
 
           await resend.emails.send({
-            from: "CosmoSec <noreply@cosmosec.com.br>",
+            from: EMAIL_FROM,
             to: [user.email],
             subject: "⏰ Seu trial expira em 3 dias - CosmoSec",
             html: buildEmailHtml({

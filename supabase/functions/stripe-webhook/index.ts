@@ -2,14 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { getCorsHeaders } from "../_shared/auth.ts";
 import { buildEmailHtml, emailGreeting, emailText, emailInfoBox, emailButton, emailMutedText } from "../_shared/email-template.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://cosmosec.com.br",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
-};
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "CosmoSec <noreply@seu-dominio.com>";
+const APP_URL = Deno.env.get("APP_URL") || "https://seu-dominio.com";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -17,6 +15,8 @@ const logStep = (step: string, details?: any) => {
 };
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -143,11 +143,11 @@ serve(async (req) => {
                       <li>🤖 Utilizar IA para gerar planos de remediação</li>
                     </ul>`
                   )}
-                  ${emailButton('Acessar Dashboard →', 'https://cosmosec.com.br/dashboard')}
+                  ${emailButton('Acessar Dashboard →', `${APP_URL}/dashboard`)}
                 `;
 
                 await resend.emails.send({
-                  from: "CosmoSec <noreply@cosmosec.com.br>",
+                  from: EMAIL_FROM,
                   to: [user.email],
                   subject: "🎉 Bem-vindo ao CosmoSec! Sua assinatura está ativa",
                   html: buildEmailHtml({
@@ -254,11 +254,11 @@ serve(async (req) => {
                     'rgba(34, 197, 94, 0.3)'
                   )}
                   ${emailMutedText('Sua assinatura foi renovada automaticamente. Você pode gerenciar sua assinatura a qualquer momento nas configurações da sua conta.')}
-                  ${emailButton('Gerenciar Assinatura →', 'https://cosmosec.com.br/configuracoes', 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)')}
+                  ${emailButton('Gerenciar Assinatura →', `${APP_URL}/configuracoes`, 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)')}
                 `;
 
                 await resend.emails.send({
-                  from: "CosmoSec <noreply@cosmosec.com.br>",
+                  from: EMAIL_FROM,
                   to: [user.email],
                   subject: "✅ Pagamento confirmado - CosmoSec",
                   html: buildEmailHtml({
@@ -347,14 +347,14 @@ serve(async (req) => {
                     'rgba(239, 68, 68, 0.3)'
                   )}
                   ${emailMutedText('Sentiremos sua falta! Se mudou de ideia ou se houve algum problema, estamos aqui para ajudar.')}
-                  ${emailButton('Reativar Assinatura →', 'https://cosmosec.com.br/configuracoes')}
+                  ${emailButton('Reativar Assinatura →', `${APP_URL}/configuracoes`)}
                   <p style="color: #64748b; font-size: 13px; line-height: 1.6; margin: 20px 0 0; text-align: center;">
                     Tem dúvidas? Entre em contato conosco respondendo este email.
                   </p>
                 `;
 
                 await resend.emails.send({
-                  from: "CosmoSec <noreply@cosmosec.com.br>",
+                  from: EMAIL_FROM,
                   to: [user.email],
                   subject: "😢 Sua assinatura foi cancelada - CosmoSec",
                   html: buildEmailHtml({

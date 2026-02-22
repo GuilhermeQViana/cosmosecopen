@@ -1,4 +1,5 @@
 // Demo Slide Renderers for CosmoSec client presentations
+import { APP_DOMAIN } from '@/lib/constants';
 // Each function renders a specific content slide on a 1920x1080 canvas
 
 const W = 1920;
@@ -74,7 +75,7 @@ function drawFooterLogo(ctx: CanvasRenderingContext2D, logo: HTMLImageElement) {
   ctx.drawImage(logo, W - 100, H - 80, 40, 40);
   ctx.font = '16px "Space Grotesk", sans-serif';
   ctx.fillStyle = COLORS.lightGray; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-  ctx.fillText('cosmosec.com.br', W - 120, H - 58);
+  ctx.fillText(APP_DOMAIN, W - 120, H - 58);
 }
 
 function drawBulletList(ctx: CanvasRenderingContext2D, items: string[], x: number, startY: number, opts: { spacing?: number; fontSize?: number; bulletColor?: string; maxWidth?: number } = {}) {

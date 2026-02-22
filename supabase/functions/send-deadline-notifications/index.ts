@@ -3,6 +3,8 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { corsHeaders, getCorsHeaders } from "../_shared/auth.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "CosmoSec <noreply@seu-dominio.com>";
+const APP_URL = Deno.env.get("APP_URL") || "https://seu-dominio.com";
 
 const PRIORITY_LABELS: Record<string, string> = {
   critica: "Crítica",
@@ -271,7 +273,7 @@ const handler = async (req: Request): Promise<Response> => {
               </table>
               
               <div style="text-align: center; margin-top: 30px;">
-                <a href="https://cosmosec.com.br/plano-acao" 
+                <a href="${APP_URL}/plano-acao" 
                    style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Ver Planos de Ação
                 </a>
@@ -297,7 +299,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         try {
           const emailResponse = await resend.emails.send({
-            from: "CosmoSec <noreply@cosmosec.com.br>",
+            from: EMAIL_FROM,
             to: [userEmail],
             subject: `Planos de Ação: ${subjectParts.join(" | ")}`,
             html: emailHtml,

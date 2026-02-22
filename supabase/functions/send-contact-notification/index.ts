@@ -3,6 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { corsHeaders, getCorsHeaders } from "../_shared/auth.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "CosmoSec <noreply@seu-dominio.com>";
+const CONTACT_EMAIL = Deno.env.get("CONTACT_EMAIL") || "contato@seu-dominio.com";
 
 interface ContactRequest {
   name: string;
@@ -169,8 +171,8 @@ const handler = async (req: Request): Promise<Response> => {
     const subjectType = contactData.interest_type === 'parceiro' ? 'de Parceria' : 'de Demo';
 
     const emailResponse = await resend.emails.send({
-      from: "CosmoSec <contato@cosmosec.com.br>",
-      to: ["contato@cosmosec.com.br"],
+      from: EMAIL_FROM,
+      to: [CONTACT_EMAIL],
       reply_to: contactData.email,
       subject: `${subjectEmoji} Nova Solicitação ${subjectType}: ${contactData.company}`,
       html: `

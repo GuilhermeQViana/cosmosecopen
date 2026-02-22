@@ -66,11 +66,16 @@ serve(async (req) => {
     }
 
     // Create checkout session for the subscription
+    const stripePriceId = Deno.env.get("STRIPE_PRICE_ID");
+    if (!stripePriceId) {
+      return errorResponse("STRIPE_PRICE_ID is not configured", 500);
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
-          price: "price_1SlK8NCqxmkFTPhAWPuMspeK", // R$ 449,90/mês
+          price: stripePriceId,
           quantity: 1,
         },
       ],
