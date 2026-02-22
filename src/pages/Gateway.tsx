@@ -13,7 +13,7 @@ import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordStrengthIndicator, getPasswordStrength } from '@/components/ui/PasswordStrengthIndicator';
 import { Separator } from '@/components/ui/separator';
-import { lovable } from '@/integrations/lovable/index';
+import { supabase } from '@/integrations/supabase/client';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
