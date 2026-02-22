@@ -1,4 +1,4 @@
-import { Brain, Mail, CreditCard, Globe, Paintbrush } from 'lucide-react';
+import { Brain, Mail, Globe, Paintbrush } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const configs = [
@@ -20,17 +20,6 @@ const configs = [
     vars: [
       { name: 'RESEND_API_KEY', example: 're_...' },
       { name: 'EMAIL_FROM', example: 'App <noreply@seudominio.com>' },
-    ],
-  },
-  {
-    icon: CreditCard,
-    title: 'Pagamentos (Stripe)',
-    description: 'Habilite assinaturas e checkout com Stripe para monetizar sua instância se desejar.',
-    gradient: 'from-blue-500 to-cyan-400',
-    vars: [
-      { name: 'STRIPE_SECRET_KEY', example: 'sk_live_...' },
-      { name: 'STRIPE_WEBHOOK_SECRET', example: 'whsec_...' },
-      { name: 'STRIPE_PRICE_ID', example: 'price_...' },
     ],
   },
   {

@@ -1,7 +1,7 @@
 import { useLocation, NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
-import { useSubscription } from '@/hooks/useSubscription';
+
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
@@ -70,10 +70,8 @@ export function PolicySidebar() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { organization, organizations, setActiveOrganization } = useOrganization();
-  const { subscriptionStatus } = useSubscription();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const isProSubscriber = subscriptionStatus === 'active';
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -95,12 +93,6 @@ export function PolicySidebar() {
             <div className="flex flex-col min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sidebar-foreground truncate font-space bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 bg-clip-text text-transparent">Políticas</span>
-                {isProSubscriber && (
-                  <Badge className="h-5 px-1.5 text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/30">
-                    <Crown className="w-3 h-3 mr-0.5" />
-                    Pro
-                  </Badge>
-                )}
               </div>
               {organizations.length > 1 ? (
                 <DropdownMenu>
