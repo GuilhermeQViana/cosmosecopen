@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Terminal, Database, FileCode, Settings, Play, Container, Copy, Check, UserCog, Rocket } from 'lucide-react';
+import { Terminal, Database, FileCode, Settings, Play, Container, Copy, Check, UserCog, Rocket, Server, Cloud } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { GITHUB_URL } from '@/lib/constants';
 
@@ -39,7 +39,7 @@ const steps = [
   {
     icon: Database,
     title: '2. Crie um Projeto Supabase',
-    description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL, a Anon Key e o Project ID do painel (Settings → API).',
+    description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL, a Anon Key e o Project ID (Settings → API).',
     code: null,
     link: { url: 'https://supabase.com', label: 'Criar projeto no Supabase →' },
     gradient: 'from-secondary to-secondary/70',
@@ -137,26 +137,66 @@ export function AudienceSection() {
           ))}
         </div>
 
-        {/* Docker Alternative */}
-        <div className="max-w-3xl mx-auto mt-8">
-          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-secondary/30 rounded-2xl p-6 md:p-8">
+        {/* Docker Section */}
+        <div className="max-w-3xl mx-auto mt-12">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 mb-4">
+              <Container className="w-4 h-4" />
+              <span className="text-sm font-medium">Deploy com Docker</span>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground font-space">
+              Alternativa: <span className="text-gradient-cosmic">Docker</span>
+            </h3>
+          </div>
+
+          {/* Option 1: Full Self-Hosted */}
+          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-secondary/30 rounded-2xl p-6 md:p-8 mb-6">
             <div className="flex items-start gap-4 md:gap-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                <Container className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Server className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg md:text-xl font-bold text-foreground font-space">
-                    Alternativa: Docker
-                  </h3>
-                  <Badge variant="outline" className="border-secondary/40 text-secondary text-xs">
-                    Opcional
+                  <h4 className="text-lg md:text-xl font-bold text-foreground font-space">
+                    Opção 1: Self-Hosted Completo
+                  </h4>
+                  <Badge variant="outline" className="border-emerald-500/40 text-emerald-500 text-xs">
+                    Recomendado
                   </Badge>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Se preferir, use Docker para servir o frontend. O Supabase continua sendo externo (passos 2–4 acima são obrigatórios).
+                  Sobe <strong>toda a infraestrutura</strong> com um único comando: banco de dados, autenticação, API REST, painel de administração e frontend. Não precisa de conta externa.
                 </p>
-                <CodeBlock code="docker compose up --build\n\n# Frontend disponível em http://localhost:3000" />
+                <CodeBlock code={`# 1. Clone o repositório\ngit clone ${GITHUB_URL}.git && cd cosmosec\n\n# 2. Configure as variáveis\ncp .env.docker .env.local\n\n# 3. Suba tudo\ndocker compose up --build\n\n# Acesse:\n#   Frontend → http://localhost\n#   Studio   → http://localhost:3001\n#   API      → http://localhost:8000`} />
+                <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">Após subir:</strong> Acesse o Studio em{' '}
+                    <code className="text-secondary">localhost:3001</code> para gerenciar o banco, ou cadastre-se diretamente na aplicação e execute o SQL de Super Admin.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Option 2: Frontend + Supabase Cloud */}
+          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-primary/20 rounded-2xl p-6 md:p-8">
+            <div className="flex items-start gap-4 md:gap-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Cloud className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h4 className="text-lg md:text-xl font-bold text-foreground font-space">
+                    Opção 2: Frontend + Supabase Cloud
+                  </h4>
+                  <Badge variant="outline" className="border-cyan-500/40 text-cyan-500 text-xs">
+                    Produção
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Sobe apenas o frontend via Docker. Requer um projeto Supabase Cloud configurado (passos 2–4 acima).
+                </p>
+                <CodeBlock code={`# Configure o .env com suas credenciais Supabase Cloud\ncp .env.example .env\n\n# Suba apenas o frontend\ndocker compose -f docker-compose.prod.yml up --build\n\n# Frontend disponível em http://localhost:3000`} />
               </div>
             </div>
           </div>
@@ -179,7 +219,7 @@ export function AudienceSection() {
                   </Badge>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Para funcionalidades como IA generativa, envio de e-mails e exportação de relatórios, faça o deploy das Edge Functions com o Supabase CLI.
+                  Para funcionalidades como IA generativa, envio de e-mails e exportação de relatórios, faça o deploy das Edge Functions com o Supabase CLI. Funcionalidades básicas (CRUD, auth, dashboard) funcionam sem elas.
                 </p>
                 <CodeBlock code={`# Instale o Supabase CLI\nnpm install -g supabase\n\n# Linke ao seu projeto\nsupabase link --project-ref SEU_PROJECT_ID\n\n# Deploy de todas as funções\nsupabase functions deploy\n\n# Configure os secrets necessários\nsupabase secrets set AI_API_KEY=sua-chave\nsupabase secrets set RESEND_API_KEY=sua-chave`} />
               </div>
