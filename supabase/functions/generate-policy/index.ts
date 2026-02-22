@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { authenticate, handleCors, isAuthError, errorResponse, jsonResponse } from "../_shared/auth.ts";
+import { authenticate, handleCors, isAuthError, errorResponse, jsonResponse, getAIConfig } from "../_shared/auth.ts";
 
 serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -10,6 +10,11 @@ serve(async (req) => {
     if (isAuthError(auth)) return auth;
 
     const { templateContent, templateTitle, sector, rigor, customInstructions, language, companySize, frameworks, audience, tone, length } = await req.json();
+
+    const aiConfig = getAIConfig();
+    if (!aiConfig) {
+      return errorResponse("IA não configurada. Defina AI_API_KEY e AI_BASE_URL nas variáveis de ambiente.", 503);
+    }
 
     const languageMap: Record<string, string> = {
       'pt-BR': 'Português (Brasil)',
@@ -86,11 +91,11 @@ Responda APENAS com o HTML da política, sem explicações adicionais.`;
 
     const maxTokens = length === 'detalhado' ? 6000 : 4000;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch(aiConfig.baseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+        'Authorization': `Bearer ${aiConfig.apiKey}`,
       },
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',

@@ -4,7 +4,8 @@ import {
   handleCors, 
   isAuthError, 
   errorResponse, 
-  jsonResponse 
+  jsonResponse,
+  getAIConfig
 } from "../_shared/auth.ts";
 
 interface GenerateActionPlanRequest {
@@ -29,6 +30,23 @@ serve(async (req) => {
     console.log('Generating action plan for:', { controlCode, controlName, currentMaturity, targetMaturity });
 
     const gap = targetMaturity - currentMaturity;
+
+    const aiConfig = getAIConfig();
+    if (!aiConfig) {
+      // Fallback sem IA
+      return jsonResponse({
+        title: `Implementar ${controlCode}: ${controlName}`,
+        description: `Elevar o nível de maturidade do controle ${controlCode} de ${currentMaturity} para ${targetMaturity}.`,
+        priority: gap >= 3 ? 'critica' : gap >= 2 ? 'alta' : 'media',
+        subtasks: [
+          'Realizar diagnóstico detalhado do controle atual',
+          'Definir procedimentos e políticas necessárias',
+          'Implementar controles técnicos requeridos',
+          'Treinar equipe responsável',
+          'Documentar evidências de implementação',
+        ],
+      });
+    }
 
     const prompt = `Você é um especialista em segurança da informação e GRC (Governança, Risco e Conformidade).
 
@@ -63,9 +81,12 @@ Gere um plano de ação estruturado para alcançar o nível de maturidade alvo.`
       },
     ];
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch(aiConfig.baseUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${aiConfig.apiKey}`,
+      },
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
         messages: [{ role: 'user', content: prompt }],

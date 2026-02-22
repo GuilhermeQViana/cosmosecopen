@@ -1,11 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { 
-  authenticate, 
-  handleCors, 
-  isAuthError, 
-  errorResponse, 
-  jsonResponse 
-} from "../_shared/auth.ts";
+import { authenticate, handleCors, isAuthError, errorResponse, jsonResponse, getAIConfig } from "../_shared/auth.ts";
 
 interface ControlInput {
   controlId: string;
@@ -50,11 +44,11 @@ async function sleep(ms: number): Promise<void> {
 async function generatePlanForControl(
   control: ControlInput,
   framework: string,
-  apiKey: string
+  aiConfig: { baseUrl: string; apiKey: string }
 ): Promise<{ success: boolean; plan?: GeneratedPlan['plan']; error?: string }> {
   const gap = control.targetMaturity - control.currentMaturity;
 
-  const prompt = `Você é um especialista em segurança da informação e GRC (Governança, Risco e Conformidade).
+  const prompt = `Você é um especialista em segurança da informação e GRC.
 
 Dado o seguinte controle de segurança:
 - Framework: ${framework}
@@ -65,13 +59,7 @@ Dado o seguinte controle de segurança:
 - Nível de Maturidade Alvo: ${control.targetMaturity} (escala 0-5)
 - Gap: ${gap} níveis
 
-Gere um plano de ação estruturado para alcançar o nível de maturidade alvo. O plano deve incluir:
-1. Um título claro e objetivo para a ação principal
-2. Uma descrição detalhada do que precisa ser feito
-3. Uma prioridade sugerida (critica, alta, media, baixa) baseada no gap
-4. 3 a 5 subtarefas específicas e mensuráveis
-
-Responda APENAS em formato JSON válido, sem texto adicional:
+Gere um plano de ação estruturado. Responda APENAS em formato JSON válido:
 {
   "title": "string",
   "description": "string", 
@@ -81,164 +69,82 @@ Responda APENAS em formato JSON válido, sem texto adicional:
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      console.log(`Attempt ${attempt}/${MAX_RETRIES} for control ${control.controlCode}`);
-
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const response = await fetch(aiConfig.baseUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiConfig.apiKey}` },
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash',
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
+          messages: [{ role: 'user', content: prompt }],
         }),
       });
 
-      if (response.status === 429) {
-        console.log(`Rate limit hit for ${control.controlCode}, waiting before retry...`);
-        await sleep(RETRY_DELAY_MS * 2);
-        continue;
-      }
-
-      if (response.status === 402) {
-        console.error('Payment required - no credits available');
-        return { success: false, error: 'Créditos insuficientes para geração de planos com IA' };
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`AI error (${response.status}):`, errorText);
-        if (attempt < MAX_RETRIES) {
-          await sleep(RETRY_DELAY_MS);
-          continue;
-        }
-        return { success: false, error: `Erro da API: ${response.status}` };
-      }
+      if (response.status === 429) { await sleep(RETRY_DELAY_MS * 2); continue; }
+      if (response.status === 402) return { success: false, error: 'Créditos insuficientes para geração de planos com IA' };
+      if (!response.ok) { if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; } return { success: false, error: `Erro da API: ${response.status}` }; }
 
       const aiResponse = await response.json();
       const content = aiResponse.choices?.[0]?.message?.content || '';
-
-      // Parse JSON from response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        console.error(`No JSON found in response for ${control.controlCode}:`, content);
-        if (attempt < MAX_RETRIES) {
-          await sleep(RETRY_DELAY_MS);
-          continue;
-        }
-        return { success: false, error: 'Resposta da IA não contém JSON válido' };
-      }
+      if (!jsonMatch) { if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; } return { success: false, error: 'Resposta da IA não contém JSON válido' }; }
 
       const plan = JSON.parse(jsonMatch[0]);
-      
-      // Validate required fields
       if (!plan.title || !plan.description || !plan.priority || !Array.isArray(plan.subtasks)) {
-        console.error(`Invalid plan structure for ${control.controlCode}:`, plan);
-        if (attempt < MAX_RETRIES) {
-          await sleep(RETRY_DELAY_MS);
-          continue;
-        }
+        if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; }
         return { success: false, error: 'Estrutura do plano inválida' };
       }
 
-      console.log(`Successfully generated plan for ${control.controlCode}`);
       return { success: true, plan };
-
     } catch (error) {
-      console.error(`Error on attempt ${attempt} for ${control.controlCode}:`, error);
-      if (attempt < MAX_RETRIES) {
-        await sleep(RETRY_DELAY_MS);
-        continue;
-      }
+      if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; }
       return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
     }
   }
-
   return { success: false, error: 'Falha após todas as tentativas' };
 }
 
-async function processInBatches(
-  controls: ControlInput[],
-  framework: string,
-  apiKey: string
-): Promise<{ success: GeneratedPlan[]; failed: FailedControl[] }> {
-  const success: GeneratedPlan[] = [];
-  const failed: FailedControl[] = [];
-
-  // Process in batches of PARALLEL_LIMIT
-  for (let i = 0; i < controls.length; i += PARALLEL_LIMIT) {
-    const batch = controls.slice(i, i + PARALLEL_LIMIT);
-    
-    const results = await Promise.all(
-      batch.map(async (control) => {
-        const result = await generatePlanForControl(control, framework, apiKey);
-        return { control, result };
-      })
-    );
-
-    for (const { control, result } of results) {
-      if (result.success && result.plan) {
-        success.push({
-          controlId: control.controlId,
-          assessmentId: control.assessmentId,
-          plan: result.plan,
-        });
-      } else {
-        failed.push({
-          controlId: control.controlId,
-          controlCode: control.controlCode,
-          error: result.error || 'Erro desconhecido',
-        });
-      }
-    }
-
-    // Small delay between batches to avoid rate limiting
-    if (i + PARALLEL_LIMIT < controls.length) {
-      await sleep(500);
-    }
-  }
-
-  return { success, failed };
-}
-
 serve(async (req) => {
-  // Handle CORS
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
   try {
-    // Authenticate user
     const auth = await authenticate(req);
     if (isAuthError(auth)) return auth;
 
     const { controls, framework } = await req.json() as GenerateBulkRequest;
+    if (!controls || !Array.isArray(controls) || controls.length === 0) return errorResponse('Nenhum controle fornecido', 400);
 
-    if (!controls || !Array.isArray(controls) || controls.length === 0) {
-      return errorResponse('Nenhum controle fornecido', 400);
-    }
-
-    const apiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!apiKey) {
-      console.error('LOVABLE_API_KEY not configured');
-      return errorResponse('Configuração de API incompleta', 500);
-    }
+    const aiConfig = getAIConfig();
+    if (!aiConfig) return errorResponse('IA não configurada. Defina AI_API_KEY e AI_BASE_URL nas variáveis de ambiente.', 503);
 
     console.log(`Starting bulk generation for ${controls.length} controls (framework: ${framework})`);
 
-    const result = await processInBatches(controls, framework, apiKey);
+    const success: GeneratedPlan[] = [];
+    const failed: FailedControl[] = [];
 
-    console.log(`Bulk generation complete: ${result.success.length} success, ${result.failed.length} failed`);
+    for (let i = 0; i < controls.length; i += PARALLEL_LIMIT) {
+      const batch = controls.slice(i, i + PARALLEL_LIMIT);
+      const results = await Promise.all(
+        batch.map(async (control) => {
+          const result = await generatePlanForControl(control, framework, aiConfig);
+          return { control, result };
+        })
+      );
 
-    return jsonResponse(result);
+      for (const { control, result } of results) {
+        if (result.success && result.plan) {
+          success.push({ controlId: control.controlId, assessmentId: control.assessmentId, plan: result.plan });
+        } else {
+          failed.push({ controlId: control.controlId, controlCode: control.controlCode, error: result.error || 'Erro desconhecido' });
+        }
+      }
+
+      if (i + PARALLEL_LIMIT < controls.length) await sleep(500);
+    }
+
+    console.log(`Bulk generation complete: ${success.length} success, ${failed.length} failed`);
+    return jsonResponse({ success, failed });
   } catch (error) {
     console.error('Error in generate-bulk-action-plans:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return errorResponse(errorMessage, 500);
+    return errorResponse(error instanceof Error ? error.message : 'Unknown error', 500);
   }
 });

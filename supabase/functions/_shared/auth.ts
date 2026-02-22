@@ -6,28 +6,38 @@ export interface AuthResult {
   supabase: SupabaseClient;
 }
 
-// Domínios permitidos em produção
-const ALLOWED_ORIGINS = [
-  "https://cosmosec.com.br",
-  "https://www.cosmosec.com.br",
-  "https://cosmosec.lovable.app",
-];
+// Domínios permitidos - configurável via variável de ambiente
+function getAllowedOrigins(): string[] {
+  const envOrigins = Deno.env.get("ALLOWED_ORIGINS");
+  if (envOrigins) {
+    return envOrigins.split(",").map(o => o.trim()).filter(Boolean);
+  }
+  // Fallback: permitir qualquer origem em desenvolvimento
+  return [];
+}
 
 function getAllowedOrigin(req?: Request): string {
   const origin = req?.headers?.get("origin") || "";
-  if (ALLOWED_ORIGINS.includes(origin)) {
+  const allowedOrigins = getAllowedOrigins();
+  
+  // Se não há origens configuradas, permitir qualquer origem (modo dev/open source)
+  if (allowedOrigins.length === 0) {
+    return origin || "*";
+  }
+  
+  if (allowedOrigins.includes(origin)) {
     return origin;
   }
-  // Em desenvolvimento, permitir qualquer origem
+  // Em desenvolvimento, permitir origens locais
   if (origin.includes("localhost") || origin.includes("lovableproject") || origin.includes("lovable.app")) {
     return origin;
   }
-  return ALLOWED_ORIGINS[0];
+  return allowedOrigins[0] || "*";
 }
 
 // Headers CORS padrão para todas as edge functions
 export const corsHeaders = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGINS[0],
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
@@ -48,45 +58,46 @@ export function handleCors(req: Request): Response | null {
 }
 
 // Resposta de erro padronizada
-export function errorResponse(message: string, status: number = 500): Response {
+export function errorResponse(message: string, status: number = 500, req?: Request): Response {
+  const headers = req ? getCorsHeaders(req) : corsHeaders;
   return new Response(
     JSON.stringify({ error: message }),
     { 
       status, 
-      headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      headers: { ...headers, "Content-Type": "application/json" } 
     }
   );
 }
 
 // Resposta de sucesso padronizada
-export function jsonResponse(data: unknown, status: number = 200): Response {
+export function jsonResponse(data: unknown, status: number = 200, req?: Request): Response {
+  const headers = req ? getCorsHeaders(req) : corsHeaders;
   return new Response(
     JSON.stringify(data),
     { 
       status, 
-      headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      headers: { ...headers, "Content-Type": "application/json" } 
     }
   );
 }
 
 // Resposta HTML padronizada
-export function htmlResponse(html: string, status: number = 200): Response {
+export function htmlResponse(html: string, status: number = 200, req?: Request): Response {
+  const headers = req ? getCorsHeaders(req) : corsHeaders;
   return new Response(html, {
     status,
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" },
+    headers: { ...headers, "Content-Type": "text/html; charset=utf-8" },
   });
 }
 
 /**
  * Middleware principal de autenticação.
- * Valida o token JWT e retorna o usuário autenticado + cliente Supabase com service role.
- * Retorna Response de erro se a autenticação falhar.
  */
 export async function authenticate(req: Request): Promise<AuthResult | Response> {
   const authHeader = req.headers.get("Authorization");
   
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return errorResponse("Missing or invalid authorization header", 401);
+    return errorResponse("Missing or invalid authorization header", 401, req);
   }
 
   const supabase = createClient(
@@ -99,7 +110,7 @@ export async function authenticate(req: Request): Promise<AuthResult | Response>
   const { data: userData, error: userError } = await supabase.auth.getUser(token);
 
   if (userError || !userData.user) {
-    return errorResponse(userError?.message || "Invalid or expired token", 401);
+    return errorResponse(userError?.message || "Invalid or expired token", 401, req);
   }
 
   return { user: userData.user, supabase };
@@ -107,13 +118,12 @@ export async function authenticate(req: Request): Promise<AuthResult | Response>
 
 /**
  * Autenticação com cliente do usuário (para RLS).
- * O cliente Supabase criado respeita as políticas RLS do banco.
  */
 export async function authenticateWithUserClient(req: Request): Promise<AuthResult | Response> {
   const authHeader = req.headers.get("Authorization");
   
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return errorResponse("Missing or invalid authorization header", 401);
+    return errorResponse("Missing or invalid authorization header", 401, req);
   }
 
   const supabase = createClient(
@@ -125,7 +135,7 @@ export async function authenticateWithUserClient(req: Request): Promise<AuthResu
   const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) {
-    return errorResponse(error?.message || "Invalid or expired token", 401);
+    return errorResponse(error?.message || "Invalid or expired token", 401, req);
   }
 
   return { user, supabase };
@@ -162,4 +172,15 @@ export function createLogger(prefix: string) {
     const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
     console.log(`[${prefix}] ${step}${detailsStr}`);
   };
+}
+
+/**
+ * Helper para obter URL base da IA (configurável).
+ */
+export function getAIConfig(): { baseUrl: string; apiKey: string } | null {
+  const apiKey = Deno.env.get("AI_API_KEY") || Deno.env.get("LOVABLE_API_KEY");
+  const baseUrl = Deno.env.get("AI_BASE_URL") || "https://ai.gateway.lovable.dev/v1/chat/completions";
+  
+  if (!apiKey) return null;
+  return { baseUrl, apiKey };
 }
