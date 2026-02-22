@@ -1,72 +1,41 @@
 
 
-# Plano: Corrigir Problemas de Layout da Landing Page
+# Corrigir seção "Como começar" invisível na Landing Page
 
-## Problemas Identificados
+## Problema
 
-### 1. Blocos de codigo cortados no mobile
-Os blocos `<pre>` na secao "Como comecar" e "Docker" tem `overflow-x-auto`, mas o texto ainda aparece cortado visualmente no mobile. O tamanho da fonte (`text-sm` = 14px) e grande demais para telas pequenas, e o container flex comprime o espaco disponivel.
+A seção "Como começar" (`AudienceSection`) está no código e renderiza no DOM, mas pode ficar **invisível** para o usuário porque está envolvida em um componente `ScrollReveal` que usa `IntersectionObserver` para animar a entrada.
 
-**Onde aparece:**
-- Passo 1: `git clone https://github.c...` (cortado)
-- Passo 3: `-- Cole o conteudo de supa...` (cortado)
-- Passo 4: `VITE_SUPABASE_PUBLISHABL...` (cortado)
-- Docker Opcao 1: Multiplas linhas cortadas
-- Docker Opcao 2: `docker compose -f docker-c...` (cortado)
-- Edge Functions: `supabase link --project-re...` (cortado)
+O `ScrollReveal` inicia todos os elementos com `opacity-0` e só muda para `opacity-100` quando o `IntersectionObserver` detecta que o elemento entrou no viewport. Em alguns contextos (iframes, scroll rápido, ou se o observer não dispara), a seção permanece completamente transparente.
 
-### 2. Layout titulo + badge no Docker (mobile)
-Os titulos "Opcao 1: Self-Hosted Completo" com o badge "Recomendado" usam `flex items-center gap-3`, o que faz o badge ficar desalinhado e quebrando de forma estranha em telas pequenas.
+## Causa Raiz
 
-### 3. Arquivo App.css com codigo morto
-O `App.css` contem estilos antigos (`#root { max-width: 1280px; padding: 2rem; }`) que nao sao importados em lugar nenhum. E codigo morto que pode confundir.
+No arquivo `src/components/ui/scroll-reveal.tsx`, o estado inicial é `opacity-0 translate-y-8`. Se o `IntersectionObserver` falhar ou se o usuário não scrollar de forma que o threshold de 15% seja atingido, o conteúdo fica permanentemente invisível.
 
----
+## Correção
 
-## Correcoes Planejadas
+Adicionar um **fallback com timeout** no componente `ScrollReveal`: se após 2 segundos o `IntersectionObserver` não disparou, forçar `isVisible = true`. Isso garante que o conteúdo sempre aparece, mesmo em cenários onde o observer falha.
 
-### 1. `src/components/landing/AudienceSection.tsx` - CodeBlock
-- Reduzir fonte do `<pre>` para `text-xs` no mobile (`text-xs sm:text-sm`)
-- Adicionar `whitespace-pre-wrap break-all sm:whitespace-pre sm:break-normal` para que o codigo quebre em telas pequenas mas mantenha formatacao no desktop
-- Isso garante que todo o conteudo fique visivel sem necessidade de scroll horizontal no mobile
+## Detalhes Técnicos
 
-### 2. `src/components/landing/AudienceSection.tsx` - Titulo + Badge
-- Trocar o layout dos titulos do Docker de `flex items-center gap-3` para `flex flex-wrap items-center gap-2` para que o badge fique abaixo do titulo em telas pequenas
-- Aplicar a mesma correcao para os tres blocos: Self-Hosted, Frontend + Cloud, e Edge Functions
+### Arquivo: `src/components/ui/scroll-reveal.tsx`
 
-### 3. `src/App.css` - Limpar codigo morto
-- Remover todo o conteudo do arquivo (ou o arquivo inteiro) ja que nao e importado em nenhum lugar
+Adicionar um `useEffect` com um timer de segurança:
 
----
-
-## Detalhes Tecnicos
-
-### CodeBlock (antes):
 ```
-pre className="... text-sm ... overflow-x-auto"
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setIsVisible(true);
+  }, 2000);
+  return () => clearTimeout(timer);
+}, []);
 ```
 
-### CodeBlock (depois):
-```
-pre className="... text-xs sm:text-sm ... overflow-x-auto whitespace-pre-wrap break-all sm:whitespace-pre sm:break-normal"
-```
+Isso funciona como fallback: se a animação já disparou via IntersectionObserver, o timeout não muda nada (já é `true`). Se não disparou, força a visibilidade após 2 segundos.
 
-### Titulo + Badge (antes):
-```
-div className="flex items-center gap-3 mb-2"
-```
+### Arquivos Impactados
 
-### Titulo + Badge (depois):
-```
-div className="flex flex-wrap items-center gap-2 mb-2"
-```
-
----
-
-## Arquivos Impactados
-
-| Arquivo | Acao |
+| Arquivo | Ação |
 |---------|------|
-| `src/components/landing/AudienceSection.tsx` | Corrigir CodeBlock e layout titulo+badge |
-| `src/App.css` | Limpar codigo morto |
+| `src/components/ui/scroll-reveal.tsx` | Adicionar fallback timeout para garantir visibilidade |
 
