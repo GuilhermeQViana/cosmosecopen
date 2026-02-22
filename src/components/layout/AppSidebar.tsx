@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { useFrameworkContext, FrameworkCode } from '@/contexts/FrameworkContext';
 import { useMenuBadges } from '@/hooks/useMenuBadges';
-import { useSubscription } from '@/hooks/useSubscription';
+
 import { cn } from '@/lib/utils';
 import { getFrameworkIcon } from '@/lib/framework-icons';
 import {
