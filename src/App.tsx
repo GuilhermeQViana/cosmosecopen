@@ -34,7 +34,7 @@ const Relatorios = lazy(() => import("@/pages/Relatorios"));
 const Equipe = lazy(() => import("@/pages/Equipe"));
 const Auditoria = lazy(() => import("@/pages/Auditoria"));
 const Configuracoes = lazy(() => import("@/pages/Configuracoes"));
-const CheckoutSuccess = lazy(() => import("@/pages/CheckoutSuccess"));
+
 const Fornecedores = lazy(() => import("@/pages/Fornecedores"));
 const FornecedoresDashboard = lazy(() => import("@/pages/FornecedoresDashboard"));
 const VendorRequisitos = lazy(() => import("@/pages/VendorRequisitos"));
