@@ -96,7 +96,7 @@ export default function PoliticaPrivacidade() {
               <p className="text-muted-foreground">Utilizamos seus dados para:</p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
                 <li>Fornecer e manter o Serviço</li>
-                <li>Processar pagamentos e gerenciar assinaturas</li>
+                
                 <li>Enviar comunicações sobre o serviço</li>
                 <li>Melhorar a experiência do usuário</li>
                 <li>Garantir a segurança da plataforma</li>
