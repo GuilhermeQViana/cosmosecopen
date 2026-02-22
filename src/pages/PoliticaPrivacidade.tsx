@@ -89,11 +89,6 @@ export default function PoliticaPrivacidade() {
                 <li>Planos de ação</li>
               </ul>
 
-              <h3 className="text-lg font-medium text-foreground mt-4">3.4 Dados de Pagamento</h3>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                <li>Informações de cobrança processadas pelo Stripe</li>
-                <li>Histórico de transações</li>
-              </ul>
             </section>
 
             <section>
