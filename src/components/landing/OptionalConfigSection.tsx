@@ -1,4 +1,4 @@
-import { Brain, Mail, CreditCard, Globe, Paintbrush } from 'lucide-react';
+import { Brain, Mail, Globe, Paintbrush } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const configs = [
