@@ -30,7 +30,7 @@ const stacks = [
     color: 'text-amber-400',
     borderColor: 'border-amber-500/20',
     bgColor: 'bg-amber-500/10',
-    items: ['IA Generativa (OpenAI-compatível)', 'Resend (e-mails)', 'Stripe (pagamentos)', 'Docker'],
+    items: ['IA Generativa (OpenAI-compatível)', 'Resend (e-mails)', 'Docker'],
   },
 ];
 
