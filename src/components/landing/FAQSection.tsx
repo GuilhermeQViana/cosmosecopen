@@ -8,44 +8,44 @@ import { HelpCircle } from 'lucide-react';
 
 const faqs = [
   {
-    question: 'O que é a CosmoSec?',
-    answer: 'A CosmoSec é uma plataforma completa de Governança, Risco e Conformidade (GRC) que integra gestão de frameworks, políticas de segurança, avaliação de riscos de terceiros (VRM) e relatórios automatizados em uma única solução. Permite diagnosticar controles, gerenciar riscos, armazenar evidências, criar e aprovar políticas, e gerar planos de ação com IA.',
+    question: 'A ferramenta é realmente gratuita?',
+    answer: 'Sim! O CosmoSec é 100% open source sob licença MIT. Você pode baixar, usar, modificar e distribuir livremente — inclusive para uso comercial. Não há custos de licenciamento.',
   },
   {
-    question: 'Quais frameworks são suportados?',
-    answer: 'Atualmente oferecemos NIST Cybersecurity Framework 2.0, ISO 27001:2022 e BCB/CMN 4.893. Além disso, você pode criar frameworks personalizados do zero ou importar controles via arquivo CSV.',
+    question: 'Preciso de uma conta Supabase paga?',
+    answer: 'Não. O plano gratuito do Supabase é suficiente para a maioria dos cenários. Ele inclui banco de dados PostgreSQL, autenticação, storage e Edge Functions. Você só precisará de um plano pago se sua organização crescer significativamente em volume de dados ou usuários.',
   },
   {
-    question: 'O que é o módulo VRM?',
-    answer: 'O módulo de Vendor Risk Management (VRM) oferece o ciclo completo de gestão de terceiros: Due Diligence, 45+ requisitos de avaliação em 4 domínios, SLA Tracking, gestão de contratos, portal de fornecedores, registro de incidentes, pipeline visual e wizard de offboarding.',
+    question: 'Posso usar em produção?',
+    answer: 'Sim. A plataforma foi projetada para uso em produção com segurança de nível empresarial: Row Level Security (RLS), autenticação robusta, trilha de auditoria e criptografia. Recomendamos usar um plano Supabase Pro para ambientes de produção com dados sensíveis.',
   },
   {
-    question: 'Como funciona o módulo de Gestão de Políticas?',
-    answer: 'O módulo inclui editor rich-text com geração por IA, fluxos de aprovação multi-nível, campanhas de aceite com rastreamento de aderência, templates reutilizáveis, versionamento completo com histórico e exportação para PDF. Todo o ciclo de vida da política é gerenciado em um único lugar.',
+    question: 'Como atualizo para novas versões?',
+    answer: 'Como é um repositório Git, basta fazer um git pull para obter as atualizações. Se houver migrações de banco de dados, elas estarão documentadas no CHANGELOG. Para quem usa Docker, basta reconstruir a imagem.',
   },
   {
-    question: 'Quais relatórios posso gerar?',
-    answer: 'A plataforma oferece 6 tipos de relatórios automatizados: Conformidade, Riscos, Evidências, Planos de Ação, Executivo e Gap Analysis. Todos podem ser exportados em PDF/HTML e, para consultorias, incluem branding personalizado.',
+    question: 'Posso customizar os frameworks?',
+    answer: 'Sim! Além dos 3 frameworks incluídos (NIST CSF 2.0, ISO 27001:2022 e BCB/CMN 4.893), você pode criar frameworks completamente personalizados do zero ou importar controles via arquivo CSV.',
   },
   {
-    question: 'Como funciona a contratação?',
-    answer: 'Para contratar, basta entrar em contato conosco através do formulário na página ou por email. Nossa equipe comercial irá agendar uma demonstração personalizada e apresentar a proposta ideal para sua organização.',
+    question: 'Quais frameworks já vêm incluídos?',
+    answer: 'A plataforma inclui NIST Cybersecurity Framework 2.0, ISO 27001:2022 e BCB/CMN 4.893 pré-configurados com todos os controles, categorias e pesos. Todos podem ser customizados após a instalação.',
   },
   {
-    question: 'Os dados estão seguros?',
-    answer: 'Absolutamente. Utilizamos criptografia de ponta a ponta, políticas de segurança em nível de linha (RLS), autenticação segura e trilha de auditoria completa. Todos os dados são armazenados em infraestrutura cloud certificada com backups automáticos.',
+    question: 'Como funciona a IA?',
+    answer: 'A IA é opcional e funciona com qualquer API compatível com o padrão OpenAI (OpenAI, Azure OpenAI, Ollama, LM Studio, etc.). Basta configurar AI_API_KEY e AI_BASE_URL nas variáveis de ambiente. Sem IA, todas as funcionalidades manuais continuam disponíveis.',
   },
   {
-    question: 'Quanto tempo leva a implantação?',
-    answer: 'O tempo de implantação varia conforme a complexidade da organização. Em geral, a configuração inicial leva de 1 a 2 semanas, incluindo treinamento da equipe e importação de dados existentes. Nossa equipe de Customer Success acompanha todo o processo.',
+    question: 'Como posso contribuir?',
+    answer: 'Contribuições são muito bem-vindas! Leia o arquivo CONTRIBUTING.md no repositório para entender as convenções de código e commit (Conventional Commits). Você pode contribuir reportando bugs, sugerindo features, enviando PRs ou melhorando a documentação.',
   },
   {
-    question: 'Qual a diferença entre contratar a consultoria e apenas a plataforma?',
-    answer: 'Na consultoria completa, nossos especialistas conduzem todo o processo de conformidade usando a plataforma CosmoSec — do diagnóstico à implementação e acompanhamento contínuo. Na opção SaaS, sua equipe interna de GRC utiliza a plataforma de forma independente, com onboarding assistido e suporte técnico dedicado.',
+    question: 'Qual a licença?',
+    answer: 'MIT License — a licença mais permissiva. Você pode usar, copiar, modificar, publicar, distribuir, sublicenciar e até vender cópias do software. A única exigência é manter o aviso de copyright.',
   },
   {
-    question: 'Posso começar com a plataforma e depois contratar a consultoria?',
-    answer: 'Sim. Muitos clientes começam utilizando a plataforma com sua equipe interna e, à medida que a demanda cresce ou surge a necessidade de expertise especializada, contratam nosso serviço de consultoria. A transição é natural, pois já estarão familiarizados com a ferramenta.',
+    question: 'Posso usar para minha empresa ou consultoria?',
+    answer: 'Absolutamente! A licença MIT permite uso comercial sem restrições. Consultorias podem usar a plataforma para atender múltiplos clientes, e empresas podem implantar internamente para sua equipe de GRC.',
   },
 ];
 
@@ -66,11 +66,11 @@ export function FAQSection() {
             <span className="text-gradient-cosmic">dúvidas</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Encontre respostas rápidas sobre a plataforma e nossos módulos.
+            Tudo que você precisa saber para começar a usar o CosmoSec.
           </p>
         </div>
 
-        {/* FAQ Accordion - Single Column */}
+        {/* FAQ Accordion */}
         <div className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
@@ -96,10 +96,10 @@ export function FAQSection() {
             Não encontrou o que procurava?
           </p>
           <a 
-            href="#contact" 
+            href="#contribute" 
             className="text-primary hover:text-secondary font-medium transition-colors"
           >
-            Fale com nossa equipe →
+            Fale com a comunidade →
           </a>
         </div>
       </div>

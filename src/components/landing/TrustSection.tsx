@@ -120,11 +120,11 @@ export function TrustSection() {
             <Quote className="w-10 h-10 text-secondary/30 absolute top-6 left-6" />
             
             <blockquote className="text-lg md:text-xl text-foreground text-center leading-relaxed font-medium pt-4">
-              "Automatize a governança. Acelere a conformidade. Proteja seu negócio."
+              "Governança de segurança acessível para todas as organizações — sem custos, sem barreiras."
             </blockquote>
             
             <p className="text-center text-muted-foreground mt-4 text-sm">
-              Plataforma completa de GRC e gestão de riscos de terceiros
+              Plataforma open source de GRC, VRM e Gestão de Políticas
             </p>
           </div>
         </div>

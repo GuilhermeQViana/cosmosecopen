@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Lock, BarChart3, Eye, FileCheck, Network } from 'lucide-react';
+import { ArrowRight, Github, BookOpen, Lock, BarChart3, Eye, FileCheck, Network, Scale } from 'lucide-react';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
+import { Badge } from '@/components/ui/badge';
+import { GITHUB_URL } from '@/lib/constants';
 
 function HeroIllustration() {
   return (
@@ -54,7 +55,7 @@ function HeroIllustration() {
         <p className="text-[10px] font-medium text-secondary">NIST CSF</p>
       </div>
       <div className="absolute bottom-[8%] right-[15%] px-3 py-1.5 rounded-lg bg-card/70 dark:bg-card/50 backdrop-blur-md border border-primary/20 dark:border-primary/30 shadow-lg animate-float-slow" style={{ animationDelay: '3s' }}>
-        <p className="text-[10px] font-medium text-muted-foreground">98% Score</p>
+        <p className="text-[10px] font-medium text-muted-foreground">Open Source</p>
       </div>
       <div className="absolute top-[18%] left-[5%] px-3 py-2 rounded-lg bg-card/70 dark:bg-card/50 backdrop-blur-md border border-primary/20 dark:border-primary/30 shadow-lg animate-float-slow" style={{ animationDelay: '4.5s' }}>
         <p className="text-[10px] font-medium text-red-400">BCB/CMN</p>
@@ -104,24 +105,34 @@ export function HeroSection() {
           {/* Left column - Text */}
           <div className="text-center lg:text-left">
             <div className="animate-fade-in" style={{ animationDuration: '0.8s' }}>
+              <div className="flex flex-wrap gap-2 justify-center lg:justify-start mb-6">
+                <Badge variant="outline" className="border-secondary/40 text-secondary bg-secondary/10 px-3 py-1">
+                  <Scale className="w-3 h-3 mr-1.5" />
+                  MIT License
+                </Badge>
+                <Badge variant="outline" className="border-primary/40 text-primary bg-primary/10 px-3 py-1">
+                  <Github className="w-3 h-3 mr-1.5" />
+                  Open Source
+                </Badge>
+              </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl font-bold text-foreground leading-tight mb-6 font-space tracking-tight">
-                Não Gerencie Compliance.{' '}
-                <span className="text-gradient-cosmic">Domine.</span>
+                GRC Open Source.{' '}
+                <span className="text-gradient-cosmic">Completo e Gratuito.</span>
               </h1>
             </div>
 
             <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.2s', animationFillMode: 'backwards' }}>
               <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                A plataforma GRC + VRM + Gestão de Políticas para empresas, consultorias e auditores que precisam dominar conformidade de ponta a ponta.
+                Plataforma completa de Governança, Risco e Conformidade com VRM e Gestão de Políticas. Instale, personalize e use — sem custos, sem limites.
               </p>
             </div>
 
             <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.4s', animationFillMode: 'backwards' }}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-10">
                 <Button size="lg" variant="cosmic" asChild className="text-base px-8 py-6 text-lg group">
-                  <a href="#contact">
-                    <Sparkles className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-                    Agendar Demonstração
+                  <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                    <Github className="w-5 h-5 mr-2" />
+                    Baixar no GitHub
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </a>
                 </Button>
@@ -131,14 +142,17 @@ export function HeroSection() {
                   asChild 
                   className="text-base px-8 py-6 text-lg border-primary/30 hover:border-secondary/50 hover:bg-secondary/10 dark:border-primary/40 dark:hover:border-secondary/60"
                 >
-                  <Link to="/tour">Conhecer a Plataforma</Link>
+                  <a href="#getting-started">
+                    <BookOpen className="w-5 h-5 mr-2" />
+                    Como Instalar
+                  </a>
                 </Button>
               </div>
             </div>
 
             <div className="animate-fade-in" style={{ animationDuration: '0.8s', animationDelay: '0.6s', animationFillMode: 'backwards' }}>
               <p className="text-sm text-muted-foreground">
-                NIST CSF 2.0 • ISO 27001:2022 • Frameworks Custom • Consultoria Especializada
+                NIST CSF 2.0 • ISO 27001:2022 • Frameworks Custom • 100% Self-Hosted
               </p>
             </div>
           </div>

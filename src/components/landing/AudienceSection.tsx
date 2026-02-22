@@ -1,45 +1,75 @@
-import { Handshake, MonitorSmartphone, CheckCircle2, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { Terminal, Database, FileCode, Settings, Play, Container, Copy, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { GITHUB_URL } from '@/lib/constants';
 
-const audiences = [
+function CodeBlock({ code, language = 'bash' }: { code: string; language?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative group">
+      <pre className="bg-background/80 dark:bg-background/60 border border-border rounded-lg p-4 text-sm font-mono text-foreground overflow-x-auto">
+        <code>{code}</code>
+      </pre>
+      <button
+        onClick={handleCopy}
+        className="absolute top-2 right-2 p-1.5 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
+        title="Copiar"
+      >
+        {copied ? <Check className="w-3.5 h-3.5 text-secondary" /> : <Copy className="w-3.5 h-3.5" />}
+      </button>
+    </div>
+  );
+}
+
+const steps = [
   {
-    icon: Handshake,
-    title: 'Consultoria Completa',
-    subtitle: 'Nossos especialistas conduzem sua jornada de conformidade usando a plataforma CosmoSec',
-    badge: 'Consultoria + Plataforma',
-    cta: 'Falar com Especialista',
+    icon: Terminal,
+    title: '1. Clone o Repositório',
+    description: 'Faça o download do código-fonte completo.',
+    code: `git clone ${GITHUB_URL}.git\ncd cosmosec`,
     gradient: 'from-primary to-primary/70',
-    benefits: [
-      'Diagnóstico de maturidade conduzido por especialistas',
-      'Implementação de frameworks (NIST, ISO 27001, BCB/CMN)',
-      'Criação e revisão de políticas de segurança',
-      'Due Diligence e gestão de fornecedores como serviço',
-      'Relatórios executivos periódicos e acompanhamento contínuo',
-      'Acesso completo à plataforma CosmoSec incluído',
-    ],
   },
   {
-    icon: MonitorSmartphone,
-    title: 'Plataforma SaaS',
-    subtitle: 'Para empresas com equipe interna de GRC que precisam de uma ferramenta poderosa',
-    badge: 'Apenas a Plataforma',
-    cta: 'Conhecer a Plataforma',
+    icon: Database,
+    title: '2. Crie um Projeto Supabase',
+    description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL e a Anon Key do painel.',
+    code: null,
+    link: { url: 'https://supabase.com', label: 'Criar projeto no Supabase →' },
     gradient: 'from-secondary to-secondary/70',
-    benefits: [
-      'Acesso completo a todos os módulos (GRC, VRM, Políticas, IA)',
-      'Onboarding assistido pela nossa equipe',
-      'Suporte técnico dedicado',
-      'Diagnóstico de controles com frameworks reconhecidos e customizáveis',
-      'Gestão de riscos, evidências e planos de ação',
-      'Relatórios automatizados e exportação PDF',
-    ],
+  },
+  {
+    icon: FileCode,
+    title: '3. Execute o Schema SQL',
+    description: 'No SQL Editor do Supabase, execute o conteúdo do arquivo de schema para criar todas as tabelas.',
+    code: '-- Cole o conteúdo de supabase/schema.sql\n-- no SQL Editor do seu projeto Supabase',
+    gradient: 'from-primary to-primary/70',
+  },
+  {
+    icon: Settings,
+    title: '4. Configure as Variáveis de Ambiente',
+    description: 'Copie o .env.example e preencha com os dados do seu projeto Supabase.',
+    code: 'cp .env.example .env\n\n# Edite o .env com:\n# VITE_SUPABASE_URL=https://seu-projeto.supabase.co\n# VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...',
+    gradient: 'from-secondary to-secondary/70',
+  },
+  {
+    icon: Play,
+    title: '5. Rode o Projeto',
+    description: 'Instale as dependências e inicie o servidor de desenvolvimento.',
+    code: 'npm install\nnpm run dev',
+    gradient: 'from-primary to-primary/70',
   },
 ];
 
 export function AudienceSection() {
   return (
-    <section id="audience" className="py-24 relative">
+    <section id="getting-started" className="py-24 relative">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
 
@@ -55,74 +85,74 @@ export function AudienceSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6">
-            <Handshake className="w-4 h-4" />
-            <span className="text-sm font-medium">Nossos Serviços</span>
+            <Terminal className="w-4 h-4" />
+            <span className="text-sm font-medium">Guia de Instalação</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight font-space">
-            Duas formas de{' '}
-            <span className="text-gradient-cosmic">alcançar conformidade</span>
+            Como{' '}
+            <span className="text-gradient-cosmic">começar</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Escolha entre nossa consultoria especializada com tecnologia própria ou utilize a plataforma de forma independente com sua equipe.
+            Em 5 passos simples você terá a plataforma rodando no seu ambiente.
           </p>
         </div>
 
-        {/* Audience Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {audiences.map((audience) => (
+        {/* Steps */}
+        <div className="max-w-3xl mx-auto space-y-6">
+          {steps.map((step) => (
             <div
-              key={audience.title}
-              className="group relative bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-primary/20 dark:border-primary/30 rounded-2xl p-8 transition-all duration-500 hover:border-secondary/50 hover:shadow-[0_0_40px_hsl(var(--secondary)/0.15)]"
+              key={step.title}
+              className="group relative bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-primary/20 dark:border-primary/30 rounded-2xl p-6 md:p-8 transition-all duration-500 hover:border-secondary/50 hover:shadow-[0_0_40px_hsl(var(--secondary)/0.1)]"
             >
-              {/* Glow */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
-                style={{
-                  background: 'radial-gradient(circle at 50% 0%, hsl(var(--secondary) / 0.1), transparent 60%)',
-                }}
-              />
-
-              {/* Icon + Badge */}
-              <div className="flex items-center justify-between mb-6 relative">
-                <div className={`w-14 h-14 bg-gradient-to-br ${audience.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                  <audience.icon className="w-7 h-7 text-white" />
+              <div className="flex items-start gap-4 md:gap-6">
+                <div className={`w-12 h-12 bg-gradient-to-br ${step.gradient} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                  <step.icon className="w-6 h-6 text-white" />
                 </div>
-                <Badge variant="outline" className="border-secondary/40 text-secondary text-xs">
-                  {audience.badge}
-                </Badge>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg md:text-xl font-bold text-foreground mb-2 font-space">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">{step.description}</p>
+                  {step.code && <CodeBlock code={step.code} />}
+                  {step.link && (
+                    <a
+                      href={step.link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm text-primary hover:text-secondary font-medium transition-colors mt-2"
+                    >
+                      {step.link.label}
+                    </a>
+                  )}
+                </div>
               </div>
-
-              {/* Title */}
-              <h3 className="text-2xl font-bold text-foreground mb-2 font-space relative">
-                {audience.title}
-              </h3>
-              <p className="text-muted-foreground mb-6 relative">
-                {audience.subtitle}
-              </p>
-
-              {/* Benefits */}
-              <ul className="space-y-3 mb-8 relative">
-                {audience.benefits.map((benefit) => (
-                  <li key={benefit} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
-                    <span>{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <Button
-                variant="outline"
-                className="w-full border-secondary/30 hover:border-secondary/50 hover:bg-secondary/10 group/btn relative"
-                asChild
-              >
-                <a href="#contact">
-                  {audience.cta}
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                </a>
-              </Button>
             </div>
           ))}
+        </div>
+
+        {/* Docker Alternative */}
+        <div className="max-w-3xl mx-auto mt-8">
+          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-secondary/30 rounded-2xl p-6 md:p-8">
+            <div className="flex items-start gap-4 md:gap-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Container className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-foreground font-space">
+                    Alternativa: Docker
+                  </h3>
+                  <Badge variant="outline" className="border-secondary/40 text-secondary text-xs">
+                    Opcional
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Se preferir, rode tudo com Docker Compose em um único comando.
+                </p>
+                <CodeBlock code="docker compose up --build" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

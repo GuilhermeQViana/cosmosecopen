@@ -181,11 +181,11 @@ export function PlatformSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 font-space tracking-tight">
-            Uma Plataforma.{' '}
-            <span className="text-gradient-cosmic">Segurança Completa.</span>
+            Tudo que você precisa.{' '}
+            <span className="text-gradient-cosmic">Em uma única ferramenta.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Consolide governança, fornecedores e políticas em uma única solução com IA — usada pela nossa consultoria e disponível para sua equipe.
+            Quatro módulos integrados para cobrir todo o ciclo de governança, riscos, conformidade e gestão de terceiros.
           </p>
         </div>
 

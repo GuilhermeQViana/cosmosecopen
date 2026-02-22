@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { cn } from '@/lib/utils';
+import { GITHUB_URL } from '@/lib/constants';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -23,9 +24,9 @@ export function Navbar() {
 
   const navLinks = [
     { href: '#platform', label: 'Plataforma' },
-    { href: '#audience', label: 'Serviços' },
-    { href: '/tour', label: 'Recursos', isRoute: true },
-    { href: '#contact', label: 'Contato' },
+    { href: '#getting-started', label: 'Como Começar' },
+    { href: '#tech-stack', label: 'Stack' },
+    { href: '#faq', label: 'FAQ' },
   ];
 
   return (
@@ -54,23 +55,13 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
-              link.isRoute ? (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
-                >
-                  {link.label}
-                </a>
-              )
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+              >
+                {link.label}
+              </a>
             ))}
           </div>
 
@@ -78,10 +69,13 @@ export function Navbar() {
           <div className="hidden lg:flex items-center gap-3">
             <ThemeToggle />
             <Button variant="outline" size="sm" asChild className="border-primary/30 hover:border-secondary/50">
-              <Link to="/tour">Ver Tour</Link>
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                <Github className="w-4 h-4 mr-1.5" />
+                GitHub
+              </a>
             </Button>
             <Button size="sm" variant="cosmic" asChild>
-              <a href="#contact">Falar com Especialista</a>
+              <a href="#getting-started">Começar Agora</a>
             </Button>
           </div>
 
@@ -99,35 +93,27 @@ export function Navbar() {
           <div className="lg:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                link.isRoute ? (
-                  <Link
-                    key={link.href}
-                    to={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                )
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </a>
               ))}
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <span className="text-sm text-muted-foreground">Alternar tema</span>
                 <ThemeToggle />
               </div>
               <Button variant="outline" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                <Link to="/tour">Ver Tour</Link>
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                  <Github className="w-4 h-4 mr-1.5" />
+                  GitHub
+                </a>
               </Button>
               <Button variant="cosmic" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                <a href="#contact">Falar com Especialista</a>
+                <a href="#getting-started">Começar Agora</a>
               </Button>
             </div>
           </div>
