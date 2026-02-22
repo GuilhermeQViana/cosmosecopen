@@ -14,7 +14,7 @@ function CodeBlock({ code, language = 'bash' }: { code: string; language?: strin
 
   return (
     <div className="relative group">
-      <pre className="bg-background/80 dark:bg-background/60 border border-border rounded-lg p-4 text-sm font-mono text-foreground overflow-x-auto">
+      <pre className="bg-background/80 dark:bg-background/60 border border-border rounded-lg p-4 text-xs sm:text-sm font-mono text-foreground overflow-x-auto whitespace-pre-wrap break-all sm:whitespace-pre sm:break-normal">
         <code>{code}</code>
       </pre>
       <button
