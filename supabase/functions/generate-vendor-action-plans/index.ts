@@ -1,11 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import {
-  authenticate,
-  handleCors,
-  isAuthError,
-  errorResponse,
-  jsonResponse,
-} from "../_shared/auth.ts";
+import { authenticate, handleCors, isAuthError, errorResponse, jsonResponse, getAIConfig } from "../_shared/auth.ts";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1500;
@@ -28,7 +22,7 @@ async function generatePlanForRequirement(
   req: RequirementInput,
   vendorName: string,
   vendorCriticality: string,
-  apiKey: string
+  aiConfig: { baseUrl: string; apiKey: string }
 ): Promise<{ success: boolean; plan?: any; error?: string }> {
   const prompt = `Você é um especialista em GRC e gestão de fornecedores.
 
@@ -44,60 +38,43 @@ Gere um plano de ação para elevar o nível de conformidade. Inclua título, de
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch(aiConfig.baseUrl, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${aiConfig.apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [{ role: "user", content: prompt }],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "create_action_plan",
-                description: "Cria plano de ação para requisito não conforme",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    title: { type: "string" },
-                    description: { type: "string" },
-                    priority: { type: "string", enum: ["critica", "alta", "media", "baixa"] },
-                    subtasks: { type: "array", items: { type: "string" } },
-                  },
-                  required: ["title", "description", "priority", "subtasks"],
-                  additionalProperties: false,
+          tools: [{
+            type: "function",
+            function: {
+              name: "create_action_plan",
+              description: "Cria plano de ação para requisito não conforme",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  priority: { type: "string", enum: ["critica", "alta", "media", "baixa"] },
+                  subtasks: { type: "array", items: { type: "string" } },
                 },
+                required: ["title", "description", "priority", "subtasks"],
+                additionalProperties: false,
               },
             },
-          ],
+          }],
           tool_choice: { type: "function", function: { name: "create_action_plan" } },
         }),
       });
 
-      if (response.status === 429) {
-        await sleep(RETRY_DELAY_MS * 2);
-        continue;
-      }
-      if (response.status === 402) {
-        return { success: false, error: "Créditos insuficientes para geração de planos com IA" };
-      }
-      if (!response.ok) {
-        if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; }
-        return { success: false, error: `Erro da API: ${response.status}` };
-      }
+      if (response.status === 429) { await sleep(RETRY_DELAY_MS * 2); continue; }
+      if (response.status === 402) return { success: false, error: "Créditos insuficientes para geração de planos com IA" };
+      if (!response.ok) { if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; } return { success: false, error: `Erro da API: ${response.status}` }; }
 
       const aiResponse = await response.json();
       const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
-      if (!toolCall?.function?.arguments) {
-        if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; }
-        return { success: false, error: "Resposta inválida da IA" };
-      }
+      if (!toolCall?.function?.arguments) { if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; } return { success: false, error: "Resposta inválida da IA" }; }
 
-      const plan = JSON.parse(toolCall.function.arguments);
-      return { success: true, plan };
+      return { success: true, plan: JSON.parse(toolCall.function.arguments) };
     } catch (error) {
       if (attempt < MAX_RETRIES) { await sleep(RETRY_DELAY_MS); continue; }
       return { success: false, error: error instanceof Error ? error.message : "Erro desconhecido" };
@@ -118,13 +95,11 @@ serve(async (req) => {
     const { assessmentId, vendorId } = await req.json();
     if (!assessmentId || !vendorId) return errorResponse("assessmentId e vendorId são obrigatórios", 400);
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) return errorResponse("Configuração de API incompleta", 500);
+    const aiConfig = getAIConfig();
+    if (!aiConfig) return errorResponse("IA não configurada. Defina AI_API_KEY e AI_BASE_URL nas variáveis de ambiente.", 503);
 
-    // Fetch vendor
     const { data: vendor } = await supabase.from("vendors").select("name, criticality, category").eq("id", vendorId).single();
 
-    // Fetch responses with compliance < 3
     const { data: responses } = await supabase
       .from("vendor_assessment_responses")
       .select("*, requirement:vendor_requirements(*, domain:vendor_assessment_domains(*))")
@@ -152,7 +127,7 @@ serve(async (req) => {
       const batch = requirements.slice(i, i + PARALLEL_LIMIT);
       const results = await Promise.all(
         batch.map(async (r) => {
-          const result = await generatePlanForRequirement(r, vendor?.name || "", vendor?.criticality || "media", apiKey);
+          const result = await generatePlanForRequirement(r, vendor?.name || "", vendor?.criticality || "media", aiConfig);
           return { requirement: r, result };
         })
       );
