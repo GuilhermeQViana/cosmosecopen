@@ -435,18 +435,10 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="flex w-full overflow-x-auto lg:w-[1080px] lg:grid lg:grid-cols-9">
+        <TabsList className="flex w-full overflow-x-auto lg:w-[840px] lg:grid lg:grid-cols-7">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Perfil</span>
-          </TabsTrigger>
-          <TabsTrigger value="pro" className="flex items-center gap-2">
-            <Crown className="h-4 w-4 text-amber-500" />
-            <span className="hidden sm:inline">Pro</span>
-          </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Assinatura</span>
           </TabsTrigger>
           <TabsTrigger value="organization" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
