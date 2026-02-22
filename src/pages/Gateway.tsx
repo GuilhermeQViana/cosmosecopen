@@ -13,7 +13,7 @@ import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordStrengthIndicator, getPasswordStrength } from '@/components/ui/PasswordStrengthIndicator';
 import { Separator } from '@/components/ui/separator';
-import { lovable } from '@/integrations/lovable/index';
+import { supabase } from '@/integrations/supabase/client';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -85,8 +85,11 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + '/selecionar-modulo',
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/selecionar-modulo',
+        },
       });
       
       if (error) {
