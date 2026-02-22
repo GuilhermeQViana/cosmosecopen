@@ -1,102 +1,136 @@
 
 
-# Plano: Corrigir Guia de Instalacao e Remover Restos de Stripe
+# Plano: Docker Compose Completo com Supabase Local
 
-## Problemas Identificados
+## Problema Atual
 
-### 1. Stripe ainda presente em 3 locais
+O `docker-compose.yml` atual sobe **apenas o frontend** (Nginx servindo os arquivos estaticos). O usuario ainda precisa:
+- Criar uma conta no Supabase Cloud
+- Configurar URL + chaves manualmente
+- Fazer deploy de Edge Functions separadamente
 
-| Arquivo | Problema |
-|---------|----------|
-| `src/components/landing/ROICalculatorSection.tsx` | Lista "Stripe (pagamentos)" nas integracoes opcionais e 3 variaveis STRIPE_* nas env vars |
-| `src/pages/PoliticaPrivacidade.tsx` | Menciona Stripe como processador de pagamentos (linhas 94 e 128) |
-| `README.md` | Lista 5 edge functions Stripe deletadas, menciona "Pagamentos: Stripe (opcional)", e lista STRIPE_* nas variaveis |
-
-### 2. Schema SQL tem colunas Stripe
-
-O arquivo `supabase/schema.sql` ainda contem:
-- `stripe_customer_id TEXT` na tabela organizations
-- `stripe_subscription_id TEXT` na tabela organizations
-- `subscription_status TEXT DEFAULT 'trialing'`
-- `trial_ends_at TIMESTAMPTZ`
-- `subscription_ends_at TIMESTAMPTZ`
-- View `organizations_safe` que expoe esses campos
-- Funcao `check_organization_access` que verifica trial/subscription
-
-### 3. Guia de Instalacao incompleto
-
-O `AudienceSection.tsx` tem problemas:
-- **Falta `VITE_SUPABASE_PROJECT_ID`** no passo 4 (variavel obrigatoria)
-- **Falta o passo "Criar Super Admin"** -- sem isso o usuario nao consegue usar a ferramenta completamente
-- **Falta mencionar `http://localhost:5173`** no passo 5
-- **Docker enganoso** -- diz "rode tudo" mas so builda o frontend, ainda precisa do Supabase externo
-- **Falta o deploy das Edge Functions** -- o usuario precisa saber que precisa fazer `supabase functions deploy` ou configurar via Supabase Dashboard
-
-### 4. Inconsistencia no README
-
-- URL do repositorio usa `seu-usuario/cosmosec` em vez de `cosmosec-labs/cosmosec` (constante `GITHUB_URL`)
+Isso nao e "rodar tudo com Docker". Para uma ferramenta open source, o ideal e oferecer **duas opcoes claras**:
+1. **Frontend + Supabase Cloud** (atual, simplificado)
+2. **Tudo local via Docker** (completo, self-hosted)
 
 ---
 
-## Correcoes Planejadas
+## O Que Sera Feito
 
-### 1. `src/components/landing/ROICalculatorSection.tsx`
-- Remover "Stripe (pagamentos)" da lista de integracoes opcionais
-- Remover as 3 variaveis `STRIPE_*` da tabela de env vars
+### 1. Novo `docker-compose.yml` (completo, com Supabase local)
 
-### 2. `src/pages/PoliticaPrivacidade.tsx`
-- Remover mencoes ao Stripe como processador de pagamentos
-- Remover secao "Dados de Pagamento"
+Usar a stack oficial do Supabase self-hosted com os servicos essenciais:
+- **PostgreSQL** (banco de dados com schema pre-carregado)
+- **Supabase Auth (GoTrue)** (autenticacao)
+- **Supabase REST (PostgREST)** (API REST automatica)
+- **Supabase Studio** (painel admin opcional)
+- **Supabase Meta** (introspeccao do banco)
+- **Frontend (Nginx)** (a aplicacao CosmoSec)
 
-### 3. `src/components/landing/AudienceSection.tsx`
-- Adicionar `VITE_SUPABASE_PROJECT_ID` ao passo 4
-- Adicionar passo 6: "Crie seu Super Admin" com o comando SQL
-- Adicionar `http://localhost:5173` ao passo 5
-- Corrigir texto do Docker para deixar claro que precisa de Supabase externo
-- Adicionar nota sobre deploy de Edge Functions (necessario para funcionalidades de IA, email, etc.)
+### 2. Novo arquivo `docker-compose.prod.yml`
 
-### 4. `README.md`
-- Corrigir URL do repositorio para `cosmosec-labs/cosmosec`
-- Remover as 5 edge functions Stripe da tabela
-- Remover "Pagamentos: Stripe (opcional)" da arquitetura
-- Remover `STRIPE_SECRET_KEY` e `STRIPE_WEBHOOK_SECRET` das variaveis opcionais
-- Adicionar passo sobre deploy de Edge Functions
+Renomear o compose atual (so frontend) para `docker-compose.prod.yml`, para quem quer usar com Supabase Cloud em producao.
 
-### 5. `supabase/schema.sql`
-- Remover colunas `stripe_customer_id` e `stripe_subscription_id` da tabela organizations
-- Remover `trial_ends_at`, `subscription_status`, `subscription_ends_at`
-- Simplificar a view `organizations_safe` (sem campos de subscription)
-- Simplificar ou remover a funcao `check_organization_access` (sempre retorna true)
+### 3. Arquivo `.env.docker` (template para Docker local)
 
-### 6. Migracao de banco de dados
-- Criar migracao SQL para remover as colunas Stripe da tabela organizations existente
-- Atualizar a view `organizations_safe`
-- Atualizar a funcao `check_organization_access` para sempre retornar true
+Contera as variaveis pre-configuradas para o ambiente Docker local:
+- `VITE_SUPABASE_URL=http://localhost:8000`
+- `VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key-local>`
+- Chaves JWT para o GoTrue
+- Senhas do PostgreSQL
+
+### 4. Script `docker/init.sql`
+
+Script de inicializacao que carrega o `supabase/schema.sql` automaticamente no PostgreSQL ao subir o container pela primeira vez.
+
+### 5. Atualizar `AudienceSection.tsx` (guia de instalacao)
+
+Substituir a secao "Alternativa: Docker" por uma secao mais completa com duas opcoes:
+- **Docker Completo (Self-Hosted)**: `docker compose up --build` sobe tudo
+- **Docker Frontend + Supabase Cloud**: para quem quer usar o Supabase gerenciado
+
+### 6. Atualizar `README.md`
+
+Reescrever a secao Docker para documentar:
+- Setup completo com `docker compose up`
+- Acesso ao Studio em `http://localhost:3001`
+- Criacao do super admin via Studio ou SQL
+- Configuracao opcional de Edge Functions
+
+### 7. Atualizar `.dockerignore`
+
+Garantir que arquivos desnecessarios nao entrem no build.
 
 ---
 
-## Ordem de Execucao
+## Arquitetura Docker
 
-1. Migracao SQL (remover colunas Stripe do banco)
-2. Atualizar `supabase/schema.sql` (schema consolidado)
-3. Corrigir `ROICalculatorSection.tsx` (remover Stripe)
-4. Corrigir `PoliticaPrivacidade.tsx` (remover Stripe)
-5. Corrigir `AudienceSection.tsx` (guia completo com super admin, project ID, Edge Functions)
-6. Atualizar `README.md` (corrigir URL, remover Stripe, adicionar Edge Functions deploy)
+```text
+docker compose up --build
+      |
+      +-- kong (API Gateway) :8000
+      |     Roteia /auth -> GoTrue, /rest -> PostgREST
+      |
+      +-- db (PostgreSQL 15) :5432
+      |     Schema carregado automaticamente
+      |
+      +-- auth (GoTrue) :9999
+      |     Autenticacao, signup, login
+      |
+      +-- rest (PostgREST) :3000
+      |     API REST automatica sobre o banco
+      |
+      +-- studio (Supabase Studio) :3001
+      |     Painel de administracao (opcional)
+      |
+      +-- app (Nginx + Frontend) :80
+            CosmoSec UI
+```
+
+---
+
+## Arquivos Impactados
+
+| Arquivo | Acao |
+|---------|------|
+| `docker-compose.yml` | Reescrever com stack Supabase completa |
+| `docker-compose.prod.yml` | Novo (antigo docker-compose, so frontend) |
+| `.env.docker` | Novo (template para Docker local) |
+| `docker/kong.yml` | Novo (configuracao do API Gateway) |
+| `docker/volumes/api/kong.yml` | Config de rotas Kong |
+| `.dockerignore` | Atualizar |
+| `src/components/landing/AudienceSection.tsx` | Atualizar secao Docker |
+| `README.md` | Reescrever secao Docker |
+| `Dockerfile` | Ajustar para aceitar build args das env vars |
 
 ---
 
 ## Detalhes Tecnicos
 
-### Novo passo no guia: Deploy de Edge Functions
+### Dockerfile (ajuste)
 
-O usuario precisa saber que para funcionalidades como IA, email e exportacao, precisa fazer deploy das Edge Functions. Isso sera apresentado como um passo opcional apos rodar o projeto, com instrucoes sobre:
-- Instalar o Supabase CLI
-- Linkar ao projeto (`supabase link`)
-- Fazer deploy (`supabase functions deploy`)
-- Configurar secrets (`supabase secrets set AI_API_KEY=...`)
+O Dockerfile precisa receber as variaveis `VITE_*` como build args, pois o Vite as embute no bundle em tempo de build:
 
-### Novo passo no guia: Super Admin
+```text
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_PUBLISHABLE_KEY
+ARG VITE_SUPABASE_PROJECT_ID
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY
+ENV VITE_SUPABASE_PROJECT_ID=$VITE_SUPABASE_PROJECT_ID
+```
 
-Apos cadastrar-se, o usuario precisa executar um SQL para se tornar super admin. Sem isso, varias funcionalidades ficam restritas. O comando sera mostrado com bloco copiavel.
+### Chaves JWT locais
+
+Para o ambiente Docker local, sera gerado um par de chaves JWT (anon e service_role) usando um secret fixo documentado. O usuario pode trocar em producao. Isso segue o padrao do Supabase self-hosted.
+
+### Edge Functions
+
+As Edge Functions do Supabase **nao serao incluidas** no Docker Compose local porque requerem o Deno runtime e o Supabase Edge Runtime, que adicionam complexidade significativa. O guia deixara claro que:
+- Funcionalidades basicas (CRUD, auth, dashboard) funcionam sem Edge Functions
+- Para IA, emails e exportacoes, o usuario pode fazer deploy via `supabase functions serve` localmente ou usar Supabase Cloud
+
+### Nota sobre producao
+
+O `docker-compose.yml` local e para **desenvolvimento e testes**. Para producao, sera recomendado usar Supabase Cloud ou o guia oficial de self-hosting do Supabase com configuracoes de seguranca adequadas.
 
