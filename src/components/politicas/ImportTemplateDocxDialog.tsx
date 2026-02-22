@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Upload, FileText, Loader2 } from 'lucide-react';
 import { convertDocxToHtml } from '@/lib/docx-utils';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface ImportTemplateDocxDialogProps {
   open: boolean;
@@ -136,7 +137,7 @@ export default function ImportTemplateDocxDialog({ open, onOpenChange, onSave }:
           <div className="space-y-1.5">
             <Label>Preview do conteúdo</Label>
             <ScrollArea className="h-48 border rounded-lg">
-              <div className="prose prose-invert max-w-none p-3 text-sm" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+              <div className="prose prose-invert max-w-none p-3 text-sm" dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewHtml) }} />
             </ScrollArea>
           </div>
         )}

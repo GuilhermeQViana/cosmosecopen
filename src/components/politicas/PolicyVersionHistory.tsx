@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { History, Clock, Eye, Loader2 } from 'lucide-react';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { usePolicyVersions, type PolicyVersion } from '@/hooks/usePolicyVersions';
@@ -82,7 +83,7 @@ export function PolicyVersionHistory({ policyId, onRestoreVersion }: Props) {
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             <div className="prose prose-invert max-w-none p-4"
-              dangerouslySetInnerHTML={{ __html: previewVersion?.content || '' }} />
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewVersion?.content || '') }} />
           </ScrollArea>
           {onRestoreVersion && previewVersion && (
             <div className="flex justify-end pt-2">

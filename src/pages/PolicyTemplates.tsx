@@ -12,6 +12,7 @@ import { usePolicyTemplates, PolicyTemplate } from '@/hooks/usePolicyTemplates';
 import { downloadTemplateAsDocx } from '@/lib/docx-utils';
 import ImportTemplateDocxDialog from '@/components/politicas/ImportTemplateDocxDialog';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 const categoryColors: Record<string, string> = {
   'Segurança': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
@@ -165,7 +166,7 @@ export default function PolicyTemplates() {
           <ScrollArea className="flex-1 min-h-0">
             <div
               className="prose prose-invert max-w-none p-4"
-              dangerouslySetInnerHTML={{ __html: previewTemplate?.content || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewTemplate?.content || '') }}
             />
           </ScrollArea>
           <div className="flex justify-end gap-2 pt-4 border-t border-border">
