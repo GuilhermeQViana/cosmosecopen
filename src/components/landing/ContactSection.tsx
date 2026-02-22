@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Calendar, MessageSquare, Building2, Send, MessageCircle } from 'lucide-react';
+import { CONTACT_EMAIL, WHATSAPP_URL, WHATSAPP_DISPLAY } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
