@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Upload, FileText, Loader2 } from 'lucide-react';
 import { convertDocxToHtml } from '@/lib/docx-utils';
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface ImportTemplateDocxDialogProps {
   open: boolean;
