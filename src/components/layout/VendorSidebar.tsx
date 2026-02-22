@@ -71,10 +71,8 @@ export function VendorSidebar() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { organization, organizations, setActiveOrganization } = useOrganization();
-  const { subscriptionStatus } = useSubscription();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const isProSubscriber = subscriptionStatus === 'active';
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
