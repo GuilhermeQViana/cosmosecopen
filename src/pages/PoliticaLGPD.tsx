@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, FileText, UserCheck, Database, Bell } from 'lucide-react';
+import { DPO_EMAIL, WHATSAPP_DISPLAY } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarField } from '@/components/ui/star-field';
