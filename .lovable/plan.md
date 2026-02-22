@@ -1,112 +1,102 @@
 
-# Plano: Remover Todo o Sistema de Pagamentos (Stripe)
 
-A ferramenta sera 100% gratuita. Este plano remove toda a infraestrutura de pagamentos, assinaturas, trials e verificacoes de acesso pago.
+# Plano: Corrigir Guia de Instalacao e Remover Restos de Stripe
+
+## Problemas Identificados
+
+### 1. Stripe ainda presente em 3 locais
+
+| Arquivo | Problema |
+|---------|----------|
+| `src/components/landing/ROICalculatorSection.tsx` | Lista "Stripe (pagamentos)" nas integracoes opcionais e 3 variaveis STRIPE_* nas env vars |
+| `src/pages/PoliticaPrivacidade.tsx` | Menciona Stripe como processador de pagamentos (linhas 94 e 128) |
+| `README.md` | Lista 5 edge functions Stripe deletadas, menciona "Pagamentos: Stripe (opcional)", e lista STRIPE_* nas variaveis |
+
+### 2. Schema SQL tem colunas Stripe
+
+O arquivo `supabase/schema.sql` ainda contem:
+- `stripe_customer_id TEXT` na tabela organizations
+- `stripe_subscription_id TEXT` na tabela organizations
+- `subscription_status TEXT DEFAULT 'trialing'`
+- `trial_ends_at TIMESTAMPTZ`
+- `subscription_ends_at TIMESTAMPTZ`
+- View `organizations_safe` que expoe esses campos
+- Funcao `check_organization_access` que verifica trial/subscription
+
+### 3. Guia de Instalacao incompleto
+
+O `AudienceSection.tsx` tem problemas:
+- **Falta `VITE_SUPABASE_PROJECT_ID`** no passo 4 (variavel obrigatoria)
+- **Falta o passo "Criar Super Admin"** -- sem isso o usuario nao consegue usar a ferramenta completamente
+- **Falta mencionar `http://localhost:5173`** no passo 5
+- **Docker enganoso** -- diz "rode tudo" mas so builda o frontend, ainda precisa do Supabase externo
+- **Falta o deploy das Edge Functions** -- o usuario precisa saber que precisa fazer `supabase functions deploy` ou configurar via Supabase Dashboard
+
+### 4. Inconsistencia no README
+
+- URL do repositorio usa `seu-usuario/cosmosec` em vez de `cosmosec-labs/cosmosec` (constante `GITHUB_URL`)
 
 ---
 
-## Resumo das Remocoes
+## Correcoes Planejadas
 
-### Edge Functions a Deletar (4 funcoes)
-| Funcao | Motivo |
-|--------|--------|
-| `supabase/functions/create-checkout/` | Cria sessao de checkout Stripe |
-| `supabase/functions/customer-portal/` | Portal de gerenciamento Stripe |
-| `supabase/functions/stripe-webhook/` | Webhook de eventos Stripe |
-| `supabase/functions/list-invoices/` | Lista faturas do Stripe |
+### 1. `src/components/landing/ROICalculatorSection.tsx`
+- Remover "Stripe (pagamentos)" da lista de integracoes opcionais
+- Remover as 3 variaveis `STRIPE_*` da tabela de env vars
 
-### Edge Function a Modificar (1)
-| Funcao | Mudanca |
-|--------|---------|
-| `supabase/functions/check-subscription/` | Simplificar para sempre retornar `has_access: true` (outras partes do sistema dependem dela) |
+### 2. `src/pages/PoliticaPrivacidade.tsx`
+- Remover mencoes ao Stripe como processador de pagamentos
+- Remover secao "Dados de Pagamento"
 
-### Edge Function a Deletar (1)
-| Funcao | Motivo |
-|--------|--------|
-| `supabase/functions/send-trial-reminder/` | Lembrete de trial -- nao faz sentido sem pagamento |
+### 3. `src/components/landing/AudienceSection.tsx`
+- Adicionar `VITE_SUPABASE_PROJECT_ID` ao passo 4
+- Adicionar passo 6: "Crie seu Super Admin" com o comando SQL
+- Adicionar `http://localhost:5173` ao passo 5
+- Corrigir texto do Docker para deixar claro que precisa de Supabase externo
+- Adicionar nota sobre deploy de Edge Functions (necessario para funcionalidades de IA, email, etc.)
 
-### Componentes a Deletar (3 arquivos)
-| Arquivo | Motivo |
-|--------|--------|
-| `src/components/subscription/SubscriptionRequired.tsx` | Tela de bloqueio por assinatura expirada |
-| `src/components/subscription/PaymentFailedBanner.tsx` | Banner de falha de pagamento |
-| `src/components/subscription/TrialBanner.tsx` | Banner de trial/renovacao |
+### 4. `README.md`
+- Corrigir URL do repositorio para `cosmosec-labs/cosmosec`
+- Remover as 5 edge functions Stripe da tabela
+- Remover "Pagamentos: Stripe (opcional)" da arquitetura
+- Remover `STRIPE_SECRET_KEY` e `STRIPE_WEBHOOK_SECRET` das variaveis opcionais
+- Adicionar passo sobre deploy de Edge Functions
 
-### Paginas/Tabs a Deletar (3 arquivos)
-| Arquivo | Motivo |
-|--------|--------|
-| `src/pages/CheckoutSuccess.tsx` | Pagina pos-checkout |
-| `src/components/configuracoes/SubscriptionTab.tsx` | Tab de assinatura nas configuracoes |
-| `src/components/configuracoes/ProBenefitsTab.tsx` | Tab de beneficios Pro |
+### 5. `supabase/schema.sql`
+- Remover colunas `stripe_customer_id` e `stripe_subscription_id` da tabela organizations
+- Remover `trial_ends_at`, `subscription_status`, `subscription_ends_at`
+- Simplificar a view `organizations_safe` (sem campos de subscription)
+- Simplificar ou remover a funcao `check_organization_access` (sempre retorna true)
 
-### Landing Page (1 arquivo)
-| Arquivo | Motivo |
-|--------|--------|
-| `src/components/landing/PricingSection.tsx` | Secao de precos (nao esta sendo usada na Landing atual, mas o arquivo existe) |
-
-### Hook a Simplificar (1 arquivo)
-| Arquivo | Mudanca |
-|--------|---------|
-| `src/hooks/useSubscription.ts` | Simplificar para sempre retornar `hasAccess: true`, remover toda logica de Stripe/checkout |
-
-### Layouts a Limpar (3 arquivos)
-| Arquivo | Mudanca |
-|--------|---------|
-| `src/components/layout/AppLayout.tsx` | Remover imports e uso de `TrialBanner`, `PaymentFailedBanner`, `SubscriptionRequired`, e verificacao `hasAccess` |
-| `src/components/layout/VendorLayout.tsx` | Mesmo acima |
-| `src/components/layout/PolicyLayout.tsx` | Mesmo acima |
-
-### Sidebars a Limpar (3 arquivos)
-| Arquivo | Mudanca |
-|--------|---------|
-| `src/components/layout/AppSidebar.tsx` | Remover import `useSubscription`, remover badge "Pro" |
-| `src/components/layout/VendorSidebar.tsx` | Mesmo acima |
-| `src/components/layout/PolicySidebar.tsx` | Mesmo acima |
-
-### Configuracoes a Limpar (1 arquivo)
-| Arquivo | Mudanca |
-|--------|---------|
-| `src/pages/Configuracoes.tsx` | Remover tabs "Pro" e "Assinatura", remover imports de `SubscriptionTab`, `ProBenefitsTab`, `CreditCard` |
-
-### Rotas a Limpar (1 arquivo)
-| Arquivo | Mudanca |
-|--------|---------|
-| `src/App.tsx` | Remover rota `/checkout-success` e import de `CheckoutSuccess` |
-
-### Landing Page Config (1 arquivo)
-| Arquivo | Mudanca |
-|--------|---------|
-| `src/components/landing/OptionalConfigSection.tsx` | Remover card de "Pagamentos (Stripe)" |
-
-### Configs (1 arquivo)
-| Arquivo | Mudanca |
-|--------|---------|
-| `.env.example` | Remover variaveis STRIPE_* |
+### 6. Migracao de banco de dados
+- Criar migracao SQL para remover as colunas Stripe da tabela organizations existente
+- Atualizar a view `organizations_safe`
+- Atualizar a funcao `check_organization_access` para sempre retornar true
 
 ---
 
 ## Ordem de Execucao
 
-1. Deletar edge functions: `create-checkout`, `customer-portal`, `stripe-webhook`, `list-invoices`, `send-trial-reminder`
-2. Simplificar `check-subscription` (retornar sempre `has_access: true`)
-3. Deletar componentes: `SubscriptionRequired`, `PaymentFailedBanner`, `TrialBanner`, `PricingSection`
-4. Deletar paginas/tabs: `CheckoutSuccess`, `SubscriptionTab`, `ProBenefitsTab`
-5. Simplificar `useSubscription.ts`
-6. Limpar layouts (AppLayout, VendorLayout, PolicyLayout)
-7. Limpar sidebars (AppSidebar, VendorSidebar, PolicySidebar)
-8. Limpar `Configuracoes.tsx` (remover tabs Pro e Assinatura)
-9. Limpar `App.tsx` (remover rota checkout-success)
-10. Limpar `OptionalConfigSection.tsx` (remover card Stripe)
-11. Limpar `.env.example` (remover variaveis Stripe)
+1. Migracao SQL (remover colunas Stripe do banco)
+2. Atualizar `supabase/schema.sql` (schema consolidado)
+3. Corrigir `ROICalculatorSection.tsx` (remover Stripe)
+4. Corrigir `PoliticaPrivacidade.tsx` (remover Stripe)
+5. Corrigir `AudienceSection.tsx` (guia completo com super admin, project ID, Edge Functions)
+6. Atualizar `README.md` (corrigir URL, remover Stripe, adicionar Edge Functions deploy)
 
 ---
 
-## Impacto Total
+## Detalhes Tecnicos
 
-| Acao | Quantidade |
-|------|-----------|
-| Edge functions deletadas | 5 |
-| Edge functions simplificadas | 1 |
-| Componentes/paginas deletados | 7 |
-| Arquivos modificados | 12 |
-| **Total de arquivos impactados** | **25** |
+### Novo passo no guia: Deploy de Edge Functions
+
+O usuario precisa saber que para funcionalidades como IA, email e exportacao, precisa fazer deploy das Edge Functions. Isso sera apresentado como um passo opcional apos rodar o projeto, com instrucoes sobre:
+- Instalar o Supabase CLI
+- Linkar ao projeto (`supabase link`)
+- Fazer deploy (`supabase functions deploy`)
+- Configurar secrets (`supabase secrets set AI_API_KEY=...`)
+
+### Novo passo no guia: Super Admin
+
+Apos cadastrar-se, o usuario precisa executar um SQL para se tornar super admin. Sem isso, varias funcionalidades ficam restritas. O comando sera mostrado com bloco copiavel.
+
