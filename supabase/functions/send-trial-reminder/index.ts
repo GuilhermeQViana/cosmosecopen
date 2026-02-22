@@ -113,7 +113,7 @@ serve(async (req) => {
           `;
 
           await resend.emails.send({
-            from: "CosmoSec <noreply@cosmosec.com.br>",
+            from: EMAIL_FROM,
             to: [user.email],
             subject: "⏰ Seu trial expira em 3 dias - CosmoSec",
             html: buildEmailHtml({

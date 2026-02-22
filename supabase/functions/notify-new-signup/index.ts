@@ -126,7 +126,7 @@ Deno.serve(async (req: Request) => {
     for (const adminEmail of superAdminEmails) {
       try {
         await resend.emails.send({
-          from: "CosmoSec <noreply@cosmosec.com.br>",
+          from: EMAIL_FROM,
           to: [adminEmail],
           subject: `👤 Novo cadastro: ${email}`,
           html: htmlContent,

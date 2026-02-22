@@ -87,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "CosmoSec <noreply@cosmosec.com.br>",
+      from: EMAIL_FROM,
       to: [email],
       subject: `Convite para ${organizationName} - CosmoSec`,
       html: buildEmailHtml({

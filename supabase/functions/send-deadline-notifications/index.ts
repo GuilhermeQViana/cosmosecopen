@@ -299,7 +299,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         try {
           const emailResponse = await resend.emails.send({
-            from: "CosmoSec <noreply@cosmosec.com.br>",
+            from: EMAIL_FROM,
             to: [userEmail],
             subject: `Planos de Ação: ${subjectParts.join(" | ")}`,
             html: emailHtml,
