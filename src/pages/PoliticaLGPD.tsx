@@ -266,8 +266,8 @@ export default function PoliticaLGPD() {
                 </p>
                 <p className="text-sm">
                   <strong>Email:</strong>{' '}
-                  <a href="mailto:dpo@cosmosec.com.br" className="text-primary hover:underline">
-                    dpo@cosmosec.com.br
+                  <a href={`mailto:${DPO_EMAIL}`} className="text-primary hover:underline">
+                    {DPO_EMAIL}
                   </a>
                 </p>
                 <p className="text-sm">
