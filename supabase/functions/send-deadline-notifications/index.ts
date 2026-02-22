@@ -273,7 +273,7 @@ const handler = async (req: Request): Promise<Response> => {
               </table>
               
               <div style="text-align: center; margin-top: 30px;">
-                <a href="https://cosmosec.com.br/plano-acao" 
+                <a href="${APP_URL}/plano-acao" 
                    style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Ver Planos de Ação
                 </a>
