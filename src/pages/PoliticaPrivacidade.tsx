@@ -120,7 +120,7 @@ export default function PoliticaPrivacidade() {
               <h2 className="text-xl font-semibold text-foreground">6. Compartilhamento de Dados</h2>
               <p className="text-muted-foreground">Compartilhamos dados apenas com:</p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                <li><strong>Stripe:</strong> processamento de pagamentos</li>
+                
                 <li><strong>Resend:</strong> envio de emails transacionais</li>
                 <li><strong>Supabase/AWS:</strong> infraestrutura e armazenamento</li>
                 <li><strong>Autoridades:</strong> quando exigido por lei</li>
