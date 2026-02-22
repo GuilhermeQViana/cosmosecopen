@@ -5,6 +5,8 @@ import { corsHeaders, getCorsHeaders } from "../_shared/auth.ts";
 import { buildEmailHtml, emailGreeting, emailText, emailInfoBox, emailButton, emailMutedText } from "../_shared/email-template.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "CosmoSec <noreply@seu-dominio.com>";
+const APP_URL = Deno.env.get("APP_URL") || "https://seu-dominio.com";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
