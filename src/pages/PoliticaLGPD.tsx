@@ -120,7 +120,7 @@ export default function PoliticaLGPD() {
                 <div>
                   <h4 className="font-medium text-foreground">Envie uma solicitação</h4>
                   <p className="text-sm text-muted-foreground">
-                    Entre em contato pelo email <a href="mailto:dpo@cosmosec.com.br" className="text-primary hover:underline">dpo@cosmosec.com.br</a> informando 
+                    Entre em contato pelo email <a href={`mailto:${DPO_EMAIL}`} className="text-primary hover:underline">{DPO_EMAIL}</a> informando 
                     qual direito deseja exercer.
                   </p>
                 </div>
