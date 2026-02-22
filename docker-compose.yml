@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:80"
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  # Opcional: Supabase local para desenvolvimento
+  # supabase-db:
+  #   image: supabase/postgres:15.6.1.143
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: postgres
+  #   volumes:
+  #     - supabase-data:/var/lib/postgresql/data
+  #     - ./supabase/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+# volumes:
+#   supabase-data:
