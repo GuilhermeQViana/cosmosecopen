@@ -1,7 +1,7 @@
 import { useLocation, NavLink as RouterNavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
-import { useSubscription } from '@/hooks/useSubscription';
+
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
