@@ -23,17 +23,6 @@ const configs = [
     ],
   },
   {
-    icon: CreditCard,
-    title: 'Pagamentos (Stripe)',
-    description: 'Habilite assinaturas e checkout com Stripe para monetizar sua instância se desejar.',
-    gradient: 'from-blue-500 to-cyan-400',
-    vars: [
-      { name: 'STRIPE_SECRET_KEY', example: 'sk_live_...' },
-      { name: 'STRIPE_WEBHOOK_SECRET', example: 'whsec_...' },
-      { name: 'STRIPE_PRICE_ID', example: 'price_...' },
-    ],
-  },
-  {
     icon: Globe,
     title: 'CORS Personalizado',
     description: 'Defina as origens permitidas para as Edge Functions do seu deploy em produção.',

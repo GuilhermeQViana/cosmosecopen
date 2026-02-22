@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
@@ -17,10 +16,6 @@ import { PageTransition } from './PageTransition';
 import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { AUTH_ROUTE } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { TrialBanner } from '@/components/subscription/TrialBanner';
-import { PaymentFailedBanner } from '@/components/subscription/PaymentFailedBanner';
-import { SubscriptionRequired } from '@/components/subscription/SubscriptionRequired';
-import { useSubscription } from '@/hooks/useSubscription';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -47,22 +42,15 @@ export function AppLayout() {
   const { user, loading: authLoading } = useAuth();
   const { organization, organizations, loading: orgLoading } = useOrganization();
   const { currentFramework, isLoading: frameworkLoading } = useFrameworkContext();
-  const { hasAccess, isLoading: subscriptionLoading } = useSubscription();
   const location = useLocation();
   const breadcrumbItems = useBreadcrumb();
 
-  // Allowed routes even when subscription expired
-  const allowedWithoutSubscription = ['/configuracoes', '/selecionar-organizacao', '/selecionar-framework', '/checkout-success'];
-
-  // Only show full-screen loading on initial auth check, not on every navigation
-  // Organization/framework/subscription loading should not block the entire UI
   const isInitialLoading = authLoading;
   
   if (isInitialLoading) {
     return <CosmicPageLoader message="Iniciando CosmoSec..." />;
   }
   
-  // Show loading only if org context is still doing initial load (not cached)
   if (orgLoading && !organization && organizations.length === 0) {
     return <CosmicPageLoader message="Carregando organização..." />;
   }
@@ -73,24 +61,16 @@ export function AppLayout() {
     return <Navigate to={`${AUTH_ROUTE}${redirectParam}`} replace />;
   }
 
-  // Usuário não tem nenhuma organização -> onboarding
   if (organizations.length === 0 && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Usuário tem organizações mas não selecionou nenhuma ativa
   if (!organization && organizations.length > 0 && location.pathname !== '/selecionar-organizacao') {
     return <Navigate to="/selecionar-organizacao" replace />;
   }
 
-  // Usuário não selecionou framework -> redirecionar para seleção
   if (!currentFramework && location.pathname !== '/selecionar-framework') {
     return <Navigate to="/selecionar-framework" replace />;
-  }
-
-  // Verificar acesso à assinatura
-  if (!hasAccess && !allowedWithoutSubscription.includes(location.pathname)) {
-    return <SubscriptionRequired />;
   }
 
   return (
@@ -102,8 +82,6 @@ export function AppLayout() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col">
-          <TrialBanner />
-          <PaymentFailedBanner />
           <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4 mx-2" />

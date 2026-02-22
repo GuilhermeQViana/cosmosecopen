@@ -8,10 +8,6 @@ import { Loader2, FileText } from 'lucide-react';
 import { NotificationCenter } from './NotificationCenter';
 import { StarField } from '@/components/ui/star-field';
 import { AUTH_ROUTE } from '@/lib/constants';
-import { TrialBanner } from '@/components/subscription/TrialBanner';
-import { PaymentFailedBanner } from '@/components/subscription/PaymentFailedBanner';
-import { SubscriptionRequired } from '@/components/subscription/SubscriptionRequired';
-import { useSubscription } from '@/hooks/useSubscription';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -38,12 +34,9 @@ const getRouteTitle = (pathname: string) => {
 export function PolicyLayout() {
   const { user, loading: authLoading } = useAuth();
   const { organization, organizations, loading: orgLoading } = useOrganization();
-  const { hasAccess, isLoading: subscriptionLoading } = useSubscription();
   const location = useLocation();
 
-  const allowedWithoutSubscription = ['/policies/configuracoes', '/selecionar-organizacao', '/selecionar-modulo'];
-
-  if (authLoading || orgLoading || subscriptionLoading) {
+  if (authLoading || orgLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -57,7 +50,6 @@ export function PolicyLayout() {
   if (!user) return <Navigate to={AUTH_ROUTE} replace />;
   if (organizations.length === 0 && location.pathname !== '/onboarding') return <Navigate to="/onboarding" replace />;
   if (!organization && organizations.length > 0 && location.pathname !== '/selecionar-organizacao') return <Navigate to="/selecionar-organizacao" replace />;
-  if (!hasAccess && !allowedWithoutSubscription.includes(location.pathname)) return <SubscriptionRequired />;
 
   const currentTitle = getRouteTitle(location.pathname);
   const breadcrumbItems = [
@@ -74,8 +66,6 @@ export function PolicyLayout() {
       <div className="min-h-screen flex w-full">
         <PolicySidebar />
         <SidebarInset className="flex-1 flex flex-col">
-          <TrialBanner />
-          <PaymentFailedBanner />
           <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4 mx-2" />

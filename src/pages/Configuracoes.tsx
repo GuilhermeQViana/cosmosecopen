@@ -466,16 +466,6 @@ export default function Configuracoes() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Pro Benefits Tab */}
-        <TabsContent value="pro" className="space-y-6">
-          <ProBenefitsTab />
-        </TabsContent>
-
-        {/* Subscription Tab */}
-        <TabsContent value="subscription" className="space-y-6">
-          <SubscriptionTab />
-        </TabsContent>
-
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-6">
           <Card>
