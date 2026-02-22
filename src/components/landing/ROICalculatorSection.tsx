@@ -1,6 +1,6 @@
 import {
   Cpu, Database, Globe, Sparkles, Server, Code2,
-  Paintbrush, Mail, CreditCard, Shield, Layers
+  Paintbrush, Mail, Shield, Layers
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -30,7 +30,7 @@ const stacks = [
     color: 'text-amber-400',
     borderColor: 'border-amber-500/20',
     bgColor: 'bg-amber-500/10',
-    items: ['IA Generativa (OpenAI-compatível)', 'Resend (e-mails)', 'Stripe (pagamentos)', 'Docker'],
+    items: ['IA Generativa (OpenAI-compatível)', 'Resend (e-mails)', 'Docker'],
   },
 ];
 
@@ -49,9 +49,6 @@ const envVars = [
   { name: 'AI_API_KEY', desc: 'Chave da API de IA (OpenAI, etc.)', required: false },
   { name: 'AI_BASE_URL', desc: 'URL base da API de IA', required: false },
   { name: 'RESEND_API_KEY', desc: 'Chave do Resend para e-mails', required: false },
-  { name: 'STRIPE_SECRET_KEY', desc: 'Chave secreta do Stripe', required: false },
-  { name: 'STRIPE_WEBHOOK_SECRET', desc: 'Secret do webhook Stripe', required: false },
-  { name: 'STRIPE_PRICE_ID', desc: 'ID do preço no Stripe', required: false },
   { name: 'ALLOWED_ORIGINS', desc: 'Origens CORS permitidas', required: false },
 ];
 

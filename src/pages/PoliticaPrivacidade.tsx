@@ -89,11 +89,6 @@ export default function PoliticaPrivacidade() {
                 <li>Planos de ação</li>
               </ul>
 
-              <h3 className="text-lg font-medium text-foreground mt-4">3.4 Dados de Pagamento</h3>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                <li>Informações de cobrança processadas pelo Stripe</li>
-                <li>Histórico de transações</li>
-              </ul>
             </section>
 
             <section>
@@ -101,7 +96,7 @@ export default function PoliticaPrivacidade() {
               <p className="text-muted-foreground">Utilizamos seus dados para:</p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
                 <li>Fornecer e manter o Serviço</li>
-                <li>Processar pagamentos e gerenciar assinaturas</li>
+                
                 <li>Enviar comunicações sobre o serviço</li>
                 <li>Melhorar a experiência do usuário</li>
                 <li>Garantir a segurança da plataforma</li>
@@ -125,7 +120,7 @@ export default function PoliticaPrivacidade() {
               <h2 className="text-xl font-semibold text-foreground">6. Compartilhamento de Dados</h2>
               <p className="text-muted-foreground">Compartilhamos dados apenas com:</p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                <li><strong>Stripe:</strong> processamento de pagamentos</li>
+                
                 <li><strong>Resend:</strong> envio de emails transacionais</li>
                 <li><strong>Supabase/AWS:</strong> infraestrutura e armazenamento</li>
                 <li><strong>Autoridades:</strong> quando exigido por lei</li>
@@ -159,7 +154,7 @@ export default function PoliticaPrivacidade() {
               <ul className="list-disc pl-6 text-muted-foreground space-y-1">
                 <li><strong>Dados de conta:</strong> enquanto a conta estiver ativa + 5 anos</li>
                 <li><strong>Logs de auditoria:</strong> 5 anos (requisito regulatório)</li>
-                <li><strong>Dados de pagamento:</strong> conforme exigido por lei tributária</li>
+                
                 <li><strong>Backups:</strong> 90 dias após exclusão</li>
               </ul>
             </section>

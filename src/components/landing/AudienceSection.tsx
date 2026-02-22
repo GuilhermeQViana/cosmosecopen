@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Terminal, Database, FileCode, Settings, Play, Container, Copy, Check } from 'lucide-react';
+import { Terminal, Database, FileCode, Settings, Play, Container, Copy, Check, UserCog, Rocket } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { GITHUB_URL } from '@/lib/constants';
 
@@ -39,7 +39,7 @@ const steps = [
   {
     icon: Database,
     title: '2. Crie um Projeto Supabase',
-    description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL e a Anon Key do painel.',
+    description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL, a Anon Key e o Project ID do painel (Settings → API).',
     code: null,
     link: { url: 'https://supabase.com', label: 'Criar projeto no Supabase →' },
     gradient: 'from-secondary to-secondary/70',
@@ -47,7 +47,7 @@ const steps = [
   {
     icon: FileCode,
     title: '3. Execute o Schema SQL',
-    description: 'No SQL Editor do Supabase, execute o conteúdo do arquivo de schema para criar todas as tabelas.',
+    description: 'No SQL Editor do Supabase, execute o conteúdo do arquivo de schema para criar todas as tabelas, funções e políticas RLS.',
     code: '-- Cole o conteúdo de supabase/schema.sql\n-- no SQL Editor do seu projeto Supabase',
     gradient: 'from-primary to-primary/70',
   },
@@ -55,15 +55,22 @@ const steps = [
     icon: Settings,
     title: '4. Configure as Variáveis de Ambiente',
     description: 'Copie o .env.example e preencha com os dados do seu projeto Supabase.',
-    code: 'cp .env.example .env\n\n# Edite o .env com:\n# VITE_SUPABASE_URL=https://seu-projeto.supabase.co\n# VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...',
+    code: 'cp .env.example .env\n\n# Edite o .env com:\n# VITE_SUPABASE_URL=https://seu-projeto.supabase.co\n# VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...\n# VITE_SUPABASE_PROJECT_ID=seu-project-id',
     gradient: 'from-secondary to-secondary/70',
   },
   {
     icon: Play,
     title: '5. Rode o Projeto',
     description: 'Instale as dependências e inicie o servidor de desenvolvimento.',
-    code: 'npm install\nnpm run dev',
+    code: 'npm install\nnpm run dev\n\n# Acesse http://localhost:5173',
     gradient: 'from-primary to-primary/70',
+  },
+  {
+    icon: UserCog,
+    title: '6. Crie seu Super Admin',
+    description: 'Após cadastrar-se na aplicação, execute o SQL abaixo no SQL Editor do Supabase para obter permissões administrativas completas.',
+    code: "INSERT INTO public.super_admins (user_id)\nSELECT id FROM auth.users\nWHERE email = 'seu-email@exemplo.com';",
+    gradient: 'from-secondary to-secondary/70',
   },
 ];
 
@@ -93,7 +100,7 @@ export function AudienceSection() {
             <span className="text-gradient-cosmic">começar</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Em 5 passos simples você terá a plataforma rodando no seu ambiente.
+            Em 6 passos simples você terá a plataforma rodando no seu ambiente.
           </p>
         </div>
 
@@ -147,9 +154,34 @@ export function AudienceSection() {
                   </Badge>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Se preferir, rode tudo com Docker Compose em um único comando.
+                  Se preferir, use Docker para servir o frontend. O Supabase continua sendo externo (passos 2–4 acima são obrigatórios).
                 </p>
-                <CodeBlock code="docker compose up --build" />
+                <CodeBlock code="docker compose up --build\n\n# Frontend disponível em http://localhost:3000" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Edge Functions Deploy */}
+        <div className="max-w-3xl mx-auto mt-8">
+          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-primary/30 rounded-2xl p-6 md:p-8">
+            <div className="flex items-start gap-4 md:gap-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-400 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Rocket className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg md:text-xl font-bold text-foreground font-space">
+                    Deploy das Edge Functions
+                  </h3>
+                  <Badge variant="outline" className="border-amber-500/40 text-amber-500 text-xs">
+                    Opcional
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Para funcionalidades como IA generativa, envio de e-mails e exportação de relatórios, faça o deploy das Edge Functions com o Supabase CLI.
+                </p>
+                <CodeBlock code={`# Instale o Supabase CLI\nnpm install -g supabase\n\n# Linke ao seu projeto\nsupabase link --project-ref SEU_PROJECT_ID\n\n# Deploy de todas as funções\nsupabase functions deploy\n\n# Configure os secrets necessários\nsupabase secrets set AI_API_KEY=sua-chave\nsupabase secrets set RESEND_API_KEY=sua-chave`} />
               </div>
             </div>
           </div>

@@ -58,7 +58,7 @@ Plataforma completa de **Governança, Riscos e Compliance (GRC)** para organiza�
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/cosmosec.git
+git clone https://github.com/cosmosec-labs/cosmosec.git
 cd cosmosec
 ```
 
@@ -66,7 +66,7 @@ cd cosmosec
 
 1. Crie um novo projeto em [supabase.com](https://supabase.com)
 2. Vá em **SQL Editor** e execute o conteúdo do arquivo `supabase/schema.sql`
-3. Copie a **URL** e a **anon key** do projeto (Settings → API)
+3. Copie a **URL**, a **anon key** e o **Project ID** (Settings → API)
 
 ### 3. Configurar variáveis de ambiente
 
@@ -79,6 +79,7 @@ Edite o `.env` com suas credenciais:
 ```env
 VITE_SUPABASE_URL=https://seu-projeto.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sua-anon-key
+VITE_SUPABASE_PROJECT_ID=seu-project-id
 ```
 
 ### 4. Instalar dependências e rodar
@@ -103,6 +104,8 @@ SELECT id FROM auth.users WHERE email = 'seu-email@exemplo.com';
 
 ## 🐳 Setup com Docker
 
+O Docker serve apenas o **frontend**. Você ainda precisa configurar o Supabase externamente (passos 2–3 acima).
+
 ### 1. Configurar `.env`
 
 ```bash
@@ -116,7 +119,29 @@ cp .env.example .env
 docker-compose up --build
 ```
 
-A aplicação estará disponível em `http://localhost:3000`.
+O frontend estará disponível em `http://localhost:3000`.
+
+---
+
+## ⚡ Deploy das Edge Functions (Opcional)
+
+Para funcionalidades como IA generativa, envio de e-mails e exportação de relatórios, faça o deploy das Edge Functions:
+
+```bash
+# Instale o Supabase CLI
+npm install -g supabase
+
+# Linke ao seu projeto
+supabase link --project-ref SEU_PROJECT_ID
+
+# Deploy de todas as funções
+supabase functions deploy
+
+# Configure os secrets necessários
+supabase secrets set AI_API_KEY=sua-chave-openai
+supabase secrets set AI_BASE_URL=https://api.openai.com/v1/chat/completions
+supabase secrets set RESEND_API_KEY=sua-chave-resend
+```
 
 ---
 
@@ -145,8 +170,6 @@ Configure estas variáveis como **Supabase Secrets** (Dashboard → Settings →
 | `AI_API_KEY` | Chave de API compatível com OpenAI (GPT, Gemini, etc.) |
 | `AI_BASE_URL` | Endpoint da API de IA (ex: `https://api.openai.com/v1/chat/completions`) |
 | `RESEND_API_KEY` | Chave do [Resend](https://resend.com) para envio de e-mails |
-| `STRIPE_SECRET_KEY` | Chave secreta do Stripe (se quiser monetizar) |
-| `STRIPE_WEBHOOK_SECRET` | Secret do webhook do Stripe |
 | `ALLOWED_ORIGINS` | Origens CORS permitidas (comma-separated) |
 
 ---
@@ -167,7 +190,6 @@ Backend (Supabase)
 - **Backend:** Supabase (PostgreSQL 15 + Row Level Security)
 - **IA:** Qualquer API compatível com OpenAI (configurável)
 - **E-mail:** Resend (opcional)
-- **Pagamentos:** Stripe (opcional)
 
 ---
 
@@ -226,11 +248,6 @@ cosmosec/
 | `vendor-qualification-portal` | Portal de qualificação público |
 | `export-qualification-template` | Exporta template de qualificação |
 | `import-qualification-responses` | Importa respostas de qualificação |
-| `create-checkout` | Checkout Stripe (opcional) |
-| `check-subscription` | Verifica assinatura (opcional) |
-| `stripe-webhook` | Webhook Stripe (opcional) |
-| `customer-portal` | Portal do cliente Stripe (opcional) |
-| `list-invoices` | Lista faturas Stripe (opcional) |
 | `export-policy-pdf` | Exporta política em PDF |
 
 ---

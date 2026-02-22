@@ -31,20 +31,14 @@ CREATE TABLE public.organizations (
   name TEXT NOT NULL,
   description TEXT,
   logo_url TEXT,
-  trial_ends_at TIMESTAMPTZ DEFAULT (now() + interval '7 days'),
-  subscription_status TEXT DEFAULT 'trialing',
-  stripe_customer_id TEXT,
-  stripe_subscription_id TEXT,
-  subscription_ends_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- View segura (sem campos Stripe)
+-- View segura
 CREATE VIEW public.organizations_safe
 WITH (security_invoker = on) AS
-  SELECT id, name, description, logo_url, created_at, updated_at,
-         trial_ends_at, subscription_status, subscription_ends_at
+  SELECT id, name, description, logo_url, created_at, updated_at
   FROM public.organizations;
 
 -- Profiles
@@ -1042,16 +1036,11 @@ BEGIN
   RETURN true;
 END; $$;
 
--- Verificar acesso da organização
+-- Verificar acesso da organização (sempre true — plataforma gratuita)
 CREATE OR REPLACE FUNCTION public.check_organization_access(_org_id uuid)
 RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
-DECLARE org_record RECORD;
 BEGIN
-  SELECT trial_ends_at, subscription_status, subscription_ends_at INTO org_record FROM public.organizations WHERE id = _org_id;
-  IF NOT FOUND THEN RETURN false; END IF;
-  IF org_record.subscription_status = 'trialing' AND org_record.trial_ends_at > now() THEN RETURN true; END IF;
-  IF org_record.subscription_status = 'active' THEN RETURN true; END IF;
-  RETURN false;
+  RETURN EXISTS (SELECT 1 FROM public.organizations WHERE id = _org_id);
 END; $$;
 
 -- Log de acesso
