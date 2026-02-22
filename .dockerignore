@@ -2,7 +2,11 @@ node_modules
 dist
 .git
 .env
+.env.local
 *.md
+!README.md
 .dockerignore
-Dockerfile
-docker-compose.yml
+docker-compose*.yml
+.lovable
+.cursor
+.vscode

@@ -48,8 +48,7 @@ Plataforma completa de **Governança, Riscos e Compliance (GRC)** para organiza�
 
 - **Node.js** 18+ (recomendado: 20 LTS)
 - **npm** ou **bun**
-- **Docker** e **Docker Compose** (opcional, para deploy containerizado)
-- **Conta Supabase** gratuita em [supabase.com](https://supabase.com)
+- **Docker** e **Docker Compose** (para deploy containerizado)
 
 ---
 
@@ -104,28 +103,71 @@ SELECT id FROM auth.users WHERE email = 'seu-email@exemplo.com';
 
 ## 🐳 Setup com Docker
 
-O Docker serve apenas o **frontend**. Você ainda precisa configurar o Supabase externamente (passos 2–3 acima).
+### Opção 1: Self-Hosted Completo (Recomendado)
 
-### 1. Configurar `.env`
+Sobe **toda a infraestrutura** com um único comando — banco de dados, autenticação, API REST, painel de administração e frontend. Não precisa de conta externa.
 
 ```bash
+# 1. Clone o repositório
+git clone https://github.com/cosmosec-labs/cosmosec.git
+cd cosmosec
+
+# 2. Configure as variáveis de ambiente
+cp .env.docker .env.local
+
+# 3. Suba toda a stack
+docker compose up --build
+```
+
+#### Serviços disponíveis
+
+| Serviço | URL | Descrição |
+|---------|-----|-----------|
+| **Frontend** | `http://localhost` | Aplicação CosmoSec |
+| **Studio** | `http://localhost:3001` | Painel de administração do banco |
+| **API** | `http://localhost:8000` | API Gateway (Kong) |
+| **PostgreSQL** | `localhost:5432` | Banco de dados (acesso direto) |
+
+#### Após subir a stack
+
+1. Acesse `http://localhost` e cadastre-se
+2. Abra o **Studio** em `http://localhost:3001`
+3. No SQL Editor do Studio, execute:
+
+```sql
+INSERT INTO public.super_admins (user_id)
+SELECT id FROM auth.users WHERE email = 'seu-email@exemplo.com';
+```
+
+#### Personalização
+
+Edite o `.env.local` para customizar:
+- **Senhas**: `POSTGRES_PASSWORD`, `JWT_SECRET`
+- **SMTP**: Configure `SMTP_HOST`, `SMTP_USER`, etc. para envio real de e-mails
+- **Signup**: `DISABLE_SIGNUP=true` para desabilitar novos cadastros
+
+> ⚠️ **Produção**: Troque obrigatoriamente o `JWT_SECRET` e as chaves JWT (`ANON_KEY`, `SERVICE_ROLE_KEY`). Consulte a [documentação do Supabase Self-Hosting](https://supabase.com/docs/guides/self-hosting) para gerar chaves seguras.
+
+### Opção 2: Frontend + Supabase Cloud
+
+Sobe apenas o frontend via Docker, usando Supabase Cloud como backend. Ideal para produção.
+
+```bash
+# 1. Configure o .env com suas credenciais Supabase Cloud
 cp .env.example .env
-# Editar com suas credenciais do Supabase
+# Edite o .env com VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, VITE_SUPABASE_PROJECT_ID
+
+# 2. Suba apenas o frontend
+docker compose -f docker-compose.prod.yml up --build
+
+# Frontend disponível em http://localhost:3000
 ```
-
-### 2. Build e execução
-
-```bash
-docker-compose up --build
-```
-
-O frontend estará disponível em `http://localhost:3000`.
 
 ---
 
 ## ⚡ Deploy das Edge Functions (Opcional)
 
-Para funcionalidades como IA generativa, envio de e-mails e exportação de relatórios, faça o deploy das Edge Functions:
+Para funcionalidades como IA generativa, envio de e-mails e exportação de relatórios, faça o deploy das Edge Functions. **Funcionalidades básicas (CRUD, auth, dashboard) funcionam sem elas.**
 
 ```bash
 # Instale o Supabase CLI
@@ -143,6 +185,8 @@ supabase secrets set AI_BASE_URL=https://api.openai.com/v1/chat/completions
 supabase secrets set RESEND_API_KEY=sua-chave-resend
 ```
 
+> **Self-Hosted**: Para rodar Edge Functions localmente, use `supabase functions serve` (requer Supabase CLI + Deno).
+
 ---
 
 ## 📦 Build para Produção
@@ -152,12 +196,6 @@ npm run build
 ```
 
 A pasta `dist/` contém os arquivos estáticos prontos para deploy. Sirva com qualquer servidor web (Nginx, Apache, Caddy, Vercel, Netlify, etc.).
-
-Para servir localmente:
-
-```bash
-npx serve dist -s -l 3000
-```
 
 ---
 
@@ -176,14 +214,30 @@ Configure estas variáveis como **Supabase Secrets** (Dashboard → Settings →
 
 ## 🏗️ Arquitetura
 
+### Desenvolvimento / Supabase Cloud
+
 ```
 Frontend (React + Vite)
     ↕ Supabase JS Client
-Backend (Supabase)
+Backend (Supabase Cloud)
     ├── PostgreSQL (banco de dados + RLS)
     ├── Auth (autenticação + OAuth)
     ├── Edge Functions (lógica de negócio)
     └── Storage (arquivos e evidências)
+```
+
+### Self-Hosted (Docker)
+
+```
+docker compose up
+    │
+    ├── kong (:8000)          → API Gateway
+    ├── db (:5432)            → PostgreSQL 15
+    ├── auth (:9999)          → GoTrue (autenticação)
+    ├── rest (:3000 interno)  → PostgREST (API REST)
+    ├── meta (:8080 interno)  → Postgres Meta
+    ├── studio (:3001)        → Supabase Studio
+    └── app (:80)             → CosmoSec (Nginx)
 ```
 
 - **Frontend:** React 18, TypeScript, Tailwind CSS, Vite, shadcn/ui, Recharts
@@ -216,9 +270,14 @@ cosmosec/
 │   ├── functions/            # Edge Functions (Deno)
 │   ├── migrations/           # Migrações SQL incrementais
 │   └── schema.sql            # Schema consolidado
-├── .env.example              # Template de variáveis
+├── docker/                   # Configurações Docker
+│   ├── init.sql              # Inicialização do banco
+│   └── kong.yml              # Config do API Gateway
+├── .env.example              # Template (Supabase Cloud)
+├── .env.docker               # Template (Self-Hosted)
 ├── Dockerfile                # Build containerizado
-├── docker-compose.yml        # Orquestração Docker
+├── docker-compose.yml        # Stack completa (Self-Hosted)
+├── docker-compose.prod.yml   # Frontend only (Produção)
 └── nginx.conf                # Configuração Nginx
 ```
 
