@@ -3,6 +3,8 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { corsHeaders, getCorsHeaders } from "../_shared/auth.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") || "CosmoSec <noreply@seu-dominio.com>";
+const APP_URL = Deno.env.get("APP_URL") || "https://seu-dominio.com";
 
 const PRIORITY_LABELS: Record<string, string> = {
   critica: "Crítica",
