@@ -118,10 +118,8 @@ export function AppSidebar() {
   const { organization, organizations, setActiveOrganization } = useOrganization();
   const { currentFramework, frameworks, setFramework } = useFrameworkContext();
   const { badges } = useMenuBadges();
-  const { subscriptionStatus } = useSubscription();
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
-  const isProSubscriber = subscriptionStatus === 'active';
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
