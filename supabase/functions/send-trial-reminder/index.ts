@@ -109,7 +109,7 @@ serve(async (req) => {
               'rgba(251, 191, 36, 0.3)'
             )}
             ${emailMutedText('Assine agora e continue protegendo sua organização com o CosmoSec.')}
-            ${emailButton('Assinar Agora →', 'https://cosmosec.com.br/configuracoes', 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', '#000000')}
+            ${emailButton('Assinar Agora →', `${APP_URL}/configuracoes`, 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', '#000000')}
           `;
 
           await resend.emails.send({
