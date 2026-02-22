@@ -271,7 +271,7 @@ export default function PoliticaLGPD() {
                   </a>
                 </p>
                 <p className="text-sm">
-                  <strong>Telefone:</strong> (21) 99925-3788
+                  <strong>Telefone:</strong> {WHATSAPP_DISPLAY}
                 </p>
               </div>
             </div>

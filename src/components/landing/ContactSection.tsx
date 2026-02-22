@@ -176,12 +176,12 @@ export function ContactSection() {
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">WhatsApp</h3>
                     <a 
-                      href="https://wa.me/5521999253788" 
+                      href={WHATSAPP_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:text-secondary transition-colors"
                     >
-                      (21) 99925-3788
+                      {WHATSAPP_DISPLAY}
                     </a>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 // Demo Slide Renderers for CosmoSec client presentations
+import { APP_DOMAIN } from '@/lib/constants';
 // Each function renders a specific content slide on a 1920x1080 canvas
 
 const W = 1920;
