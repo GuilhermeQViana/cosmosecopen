@@ -29,7 +29,7 @@ function getAllowedOrigin(req?: Request): string {
     return origin;
   }
   // Em desenvolvimento, permitir origens locais
-  if (origin.includes("localhost") || origin.includes("lovableproject") || origin.includes("lovable.app")) {
+  if (origin.includes("localhost")) {
     return origin;
   }
   return allowedOrigins[0] || "*";
