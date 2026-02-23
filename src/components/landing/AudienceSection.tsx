@@ -55,7 +55,7 @@ const steps = [
     icon: Settings,
     title: '4. Configure as Variáveis de Ambiente',
     description: 'Copie o .env.example e preencha com os dados do seu projeto Supabase.',
-    code: 'cp .env.example .env\n\n# Edite o .env com:\n# VITE_SUPABASE_URL=https://seu-projeto.supabase.co\n# VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...\n# VITE_SUPABASE_PROJECT_ID=seu-project-id',
+    code: 'cp .env.example .env\n\n# Edite o .env com:\nVITE_SUPABASE_URL=https://hxxmuygywtazwcvavvtn.supabase.co\nVITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4eG11eWd5d3RhendjdmF2dnRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NzE2MzIsImV4cCI6MjA4NzM0NzYzMn0.MxRExOCQP79oRwpiP-TehPE9uh1SQpma3aAjm93cKg0\nVITE_SUPABASE_PROJECT_ID=hxxmuygywtazwcvavvtn',
     gradient: 'from-secondary to-secondary/70',
   },
   {
