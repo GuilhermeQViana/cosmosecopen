@@ -1,26 +1,32 @@
 
 
-# Adicionar botao de download da imagem Docker no guia de instalacao
+# Plano: Atualizar usuario Docker Hub para `guilherme0045`
 
 ## Resumo
 
-Adicionar um botao visivel de download/acesso na secao "Opcao 2: Imagem Docker Pronta" do guia de instalacao, linkando para a pagina da imagem no Docker Hub (`https://hub.docker.com/r/guilhermeqviana/cosmosecopen`).
+Substituir todas as referencias ao usuario Docker Hub antigo (`guilhermeqviana`) pelo usuario correto (`guilherme0045`) em todos os arquivos do projeto.
 
-## Alteracao
+## Alteracoes
 
-### Arquivo: `src/components/landing/AudienceSection.tsx`
+### 1. `docker-compose.prebuilt.yml`
+- Trocar `guilhermeqviana/cosmosecopen` por `guilherme0045/cosmosecopen`
 
-Na secao da Opcao 2 (Imagem Docker Pronta), adicionar um botao estilizado com icone de download que abre o Docker Hub em nova aba. O botao ficara entre a descricao e o bloco de codigo, com destaque visual para facilitar a acao do usuario.
+### 2. `README.md`
+- Atualizar todos os comandos `docker pull` e `docker run` para usar `guilherme0045/cosmosecopen`
+- Atualizar o link do `curl` para o docker-compose.prebuilt.yml (nota: o repositorio GitHub continua com `GuilhermeQViana` -- isso nao muda, pois e o usuario do GitHub, nao do Docker)
 
-- Importar o icone `Download` do lucide-react
-- Adicionar um botao/link com o texto "Baixar no Docker Hub" apontando para `https://hub.docker.com/r/guilhermeqviana/cosmosecopen`
-- Estilizar com gradiente violet/purple para manter consistencia visual com o card da Opcao 2
+### 3. `src/components/landing/AudienceSection.tsx`
+- Trocar o link do Docker Hub para `https://hub.docker.com/r/guilherme0045/cosmosecopen`
+- Atualizar os comandos no `CodeBlock` para usar `guilherme0045/cosmosecopen`
 
-### Detalhes tecnicos
+### Arquivos NAO alterados
+- `CONTRIBUTING.md` e `src/lib/constants.ts` -- esses referenciam o **GitHub**, nao o Docker Hub, entao permanecem com `GuilhermeQViana`
 
-O botao sera um elemento `<a>` estilizado como botao, posicionado logo apos o paragrafo de descricao e antes do `CodeBlock`. Tera `target="_blank"` e `rel="noopener noreferrer"` para abrir em nova aba com seguranca.
+## Resumo de impacto
 
-| Arquivo | Acao |
-|---------|------|
-| `src/components/landing/AudienceSection.tsx` | Adicionar botao de download linkando ao Docker Hub |
+| Arquivo | O que muda |
+|---------|------------|
+| `docker-compose.prebuilt.yml` | Nome da imagem Docker |
+| `README.md` | Comandos docker pull/run (3 ocorrencias) |
+| `src/components/landing/AudienceSection.tsx` | Link Docker Hub + comandos no CodeBlock |
 
