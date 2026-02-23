@@ -109,6 +109,9 @@ export function Navbar() {
                 <span className="text-sm text-muted-foreground">Alternar tema</span>
                 <ThemeToggle />
               </div>
+              <Button variant="ghost" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to={AUTH_ROUTE}>Entrar</Link>
+              </Button>
               <Button variant="outline" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
                 <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
                   <Github className="w-4 h-4 mr-1.5" />
