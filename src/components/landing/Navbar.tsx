@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { cn } from '@/lib/utils';
-import { GITHUB_URL } from '@/lib/constants';
+import { GITHUB_URL, AUTH_ROUTE } from '@/lib/constants';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
