@@ -8,4 +8,4 @@ export const WHATSAPP_DISPLAY = '(21) 99925-3788';
 export const APP_DOMAIN = 'cosmosec.com.br';
 
 // GitHub — repositório open source
-export const GITHUB_URL = 'https://github.com/cosmosec-labs/cosmosec';
+export const GITHUB_URL = 'https://github.com/GuilhermeQViana/cosmosecopen';

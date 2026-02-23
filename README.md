@@ -57,7 +57,7 @@ Plataforma completa de **Governança, Riscos e Compliance (GRC)** para organiza�
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/cosmosec-labs/cosmosec.git
+git clone https://github.com/GuilhermeQViana/cosmosecopen.git
 cd cosmosec
 ```
 
@@ -109,7 +109,7 @@ Sobe **toda a infraestrutura** com um único comando — banco de dados, autenti
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/cosmosec-labs/cosmosec.git
+git clone https://github.com/GuilhermeQViana/cosmosecopen.git
 cd cosmosec
 
 # 2. Configure as variáveis de ambiente
