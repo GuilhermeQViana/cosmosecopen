@@ -197,7 +197,7 @@ export function AudienceSection() {
                   Baixe a imagem pré-construída do Docker Hub. <strong>Não precisa clonar o repositório nem buildar</strong> — só configure as variáveis e rode.
                 </p>
                 <a
-                  href="https://hub.docker.com/r/guilhermeqviana/cosmosecopen"
+                  href="https://hub.docker.com/r/guilherme0045/cosmosecopen"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 mb-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-medium text-sm shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
@@ -205,7 +205,7 @@ export function AudienceSection() {
                   <Download className="w-4 h-4" />
                   Baixar no Docker Hub
                 </a>
-                <CodeBlock code={`# 1. Baixe a imagem\ndocker pull guilhermeqviana/cosmosecopen:latest\n\n# 2. Rode com suas credenciais Supabase\ndocker run -d -p 80:80 \\\n  -e VITE_SUPABASE_URL=https://seu-projeto.supabase.co \\\n  -e VITE_SUPABASE_PUBLISHABLE_KEY=eyJ... \\\n  -e VITE_SUPABASE_PROJECT_ID=seu-project-id \\\n  guilhermeqviana/cosmosecopen:latest\n\n# Frontend disponível em http://localhost`} />
+                <CodeBlock code={`# 1. Baixe a imagem\ndocker pull guilherme0045/cosmosecopen:latest\n\n# 2. Rode com suas credenciais Supabase\ndocker run -d -p 80:80 \\\n  -e VITE_SUPABASE_URL=https://seu-projeto.supabase.co \\\n  -e VITE_SUPABASE_PUBLISHABLE_KEY=eyJ... \\\n  -e VITE_SUPABASE_PROJECT_ID=seu-project-id \\\n  guilherme0045/cosmosecopen:latest\n\n# Frontend disponível em http://localhost`} />
                 <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
                   <p className="text-sm text-muted-foreground">
                     <strong className="text-foreground">Dica:</strong> Também disponibilizamos um{' '}

@@ -154,14 +154,14 @@ Baixe a imagem pré-construída do Docker Hub — **não precisa clonar o reposi
 
 ```bash
 # 1. Baixe a imagem
-docker pull guilhermeqviana/cosmosecopen:latest
+docker pull guilherme0045/cosmosecopen:latest
 
 # 2. Rode com suas credenciais Supabase
 docker run -d -p 80:80 \
   -e VITE_SUPABASE_URL=https://seu-projeto.supabase.co \
   -e VITE_SUPABASE_PUBLISHABLE_KEY=sua-anon-key \
   -e VITE_SUPABASE_PROJECT_ID=seu-project-id \
-  guilhermeqviana/cosmosecopen:latest
+  guilherme0045/cosmosecopen:latest
 
 # Frontend disponível em http://localhost
 ```
