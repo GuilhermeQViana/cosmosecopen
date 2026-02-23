@@ -1,32 +1,23 @@
 
 
-# Plano: Atualizar usuario Docker Hub para `guilherme0045`
+# Plano: Mostrar variaveis de ambiente completas no passo 4
 
-## Resumo
+## Alteracao
 
-Substituir todas as referencias ao usuario Docker Hub antigo (`guilhermeqviana`) pelo usuario correto (`guilherme0045`) em todos os arquivos do projeto.
+### `src/components/landing/AudienceSection.tsx` (linha 58)
 
-## Alteracoes
+Substituir os valores placeholder pelas credenciais reais do projeto:
 
-### 1. `docker-compose.prebuilt.yml`
-- Trocar `guilhermeqviana/cosmosecopen` por `guilherme0045/cosmosecopen`
+```
+cp .env.example .env
 
-### 2. `README.md`
-- Atualizar todos os comandos `docker pull` e `docker run` para usar `guilherme0045/cosmosecopen`
-- Atualizar o link do `curl` para o docker-compose.prebuilt.yml (nota: o repositorio GitHub continua com `GuilhermeQViana` -- isso nao muda, pois e o usuario do GitHub, nao do Docker)
+# Edite o .env com:
+VITE_SUPABASE_URL=https://hxxmuygywtazwcvavvtn.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4eG11eWd5d3RhendjdmF2dnRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NzE2MzIsImV4cCI6MjA4NzM0NzYzMn0.MxRExOCQP79oRwpiP-TehPE9uh1SQpma3aAjm93cKg0
+VITE_SUPABASE_PROJECT_ID=hxxmuygywtazwcvavvtn
+```
 
-### 3. `src/components/landing/AudienceSection.tsx`
-- Trocar o link do Docker Hub para `https://hub.docker.com/r/guilherme0045/cosmosecopen`
-- Atualizar os comandos no `CodeBlock` para usar `guilherme0045/cosmosecopen`
+Isso permite que qualquer usuario copie e cole diretamente sem precisar procurar as credenciais.
 
-### Arquivos NAO alterados
-- `CONTRIBUTING.md` e `src/lib/constants.ts` -- esses referenciam o **GitHub**, nao o Docker Hub, entao permanecem com `GuilhermeQViana`
-
-## Resumo de impacto
-
-| Arquivo | O que muda |
-|---------|------------|
-| `docker-compose.prebuilt.yml` | Nome da imagem Docker |
-| `README.md` | Comandos docker pull/run (3 ocorrencias) |
-| `src/components/landing/AudienceSection.tsx` | Link Docker Hub + comandos no CodeBlock |
+**Nota:** A chave exibida e a anon key (publica), portanto e seguro exibi-la no frontend.
 
