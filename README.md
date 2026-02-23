@@ -148,7 +148,42 @@ Edite o `.env.local` para customizar:
 
 > ⚠️ **Produção**: Troque obrigatoriamente o `JWT_SECRET` e as chaves JWT (`ANON_KEY`, `SERVICE_ROLE_KEY`). Consulte a [documentação do Supabase Self-Hosting](https://supabase.com/docs/guides/self-hosting) para gerar chaves seguras.
 
-### Opção 2: Frontend + Supabase Cloud
+### Opção 2: Imagem Docker Pronta (Mais Fácil)
+
+Baixe a imagem pré-construída do Docker Hub — **não precisa clonar o repositório nem buildar**. Só configure as variáveis de ambiente e rode.
+
+```bash
+# 1. Baixe a imagem
+docker pull guilhermeqviana/cosmosecopen:latest
+
+# 2. Rode com suas credenciais Supabase
+docker run -d -p 80:80 \
+  -e VITE_SUPABASE_URL=https://seu-projeto.supabase.co \
+  -e VITE_SUPABASE_PUBLISHABLE_KEY=sua-anon-key \
+  -e VITE_SUPABASE_PROJECT_ID=seu-project-id \
+  guilhermeqviana/cosmosecopen:latest
+
+# Frontend disponível em http://localhost
+```
+
+Ou use o Docker Compose simplificado:
+
+```bash
+# Baixe o arquivo de compose
+curl -O https://raw.githubusercontent.com/GuilhermeQViana/cosmosecopen/main/docker-compose.prebuilt.yml
+
+# Crie o .env com suas credenciais
+cat > .env << EOF
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sua-anon-key
+VITE_SUPABASE_PROJECT_ID=seu-project-id
+EOF
+
+# Suba
+docker compose -f docker-compose.prebuilt.yml up -d
+```
+
+### Opção 3: Frontend + Supabase Cloud
 
 Sobe apenas o frontend via Docker, usando Supabase Cloud como backend. Ideal para produção.
 
