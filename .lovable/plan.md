@@ -1,23 +1,24 @@
 
+# Plano: Complementar o passo 2 com instrucoes sobre o que fazer com as informacoes copiadas
 
-# Plano: Mostrar variaveis de ambiente completas no passo 4
+## Problema
+
+O passo 2 diz para copiar a URL, Anon Key e Project ID, mas nao explica onde cola-las. O usuario fica sem saber o proximo passo.
 
 ## Alteracao
 
-### `src/components/landing/AudienceSection.tsx` (linha 58)
+### `src/components/landing/AudienceSection.tsx` (linhas 40-45)
 
-Substituir os valores placeholder pelas credenciais reais do projeto:
+Atualizar a descricao do passo 2 para explicar que as informacoes copiadas serao usadas no passo 4 (arquivo `.env`), e adicionar um sub-texto orientativo:
 
+**Antes:**
 ```
-cp .env.example .env
-
-# Edite o .env com:
-VITE_SUPABASE_URL=https://hxxmuygywtazwcvavvtn.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4eG11eWd5d3RhendjdmF2dnRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NzE2MzIsImV4cCI6MjA4NzM0NzYzMn0.MxRExOCQP79oRwpiP-TehPE9uh1SQpma3aAjm93cKg0
-VITE_SUPABASE_PROJECT_ID=hxxmuygywtazwcvavvtn
+description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL, a Anon Key e o Project ID (Settings → API).'
 ```
 
-Isso permite que qualquer usuario copie e cole diretamente sem precisar procurar as credenciais.
+**Depois:**
+```
+description: 'Acesse supabase.com e crie um projeto gratuito. Em Settings → API, copie a URL, a Anon Key e o Project ID. Voce usara esses valores no passo 4 para preencher o arquivo .env.'
+```
 
-**Nota:** A chave exibida e a anon key (publica), portanto e seguro exibi-la no frontend.
-
+Essa pequena mudanca conecta o passo 2 ao passo 4, deixando claro que as credenciais copiadas vao para as variaveis de ambiente.
