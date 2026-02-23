@@ -154,7 +154,7 @@ Baixe a imagem pré-construída do Docker Hub — **não precisa clonar o reposi
 
 ```bash
 # 1. Baixe a imagem
-docker pull guilhermeqviana/cosmosecopen:latest
+docker pull guilherme0045/cosmosecopen:latest
 
 # 2. Rode com suas credenciais Supabase
 docker run -d -p 80:80 \
