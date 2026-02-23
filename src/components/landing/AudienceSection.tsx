@@ -197,7 +197,7 @@ export function AudienceSection() {
                   Baixe a imagem pré-construída do Docker Hub. <strong>Não precisa clonar o repositório nem buildar</strong> — só configure as variáveis e rode.
                 </p>
                 <a
-                  href="https://hub.docker.com/r/guilhermeqviana/cosmosecopen"
+                  href="https://hub.docker.com/r/guilherme0045/cosmosecopen"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 mb-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-medium text-sm shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
