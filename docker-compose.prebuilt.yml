@@ -7,7 +7,7 @@
 
 services:
   app:
-    image: guilhermeqviana/cosmosecopen:latest
+    image: guilherme0045/cosmosecopen:latest
     ports:
       - "80:80"
     environment:
