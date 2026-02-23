@@ -1,24 +1,37 @@
 
-# Plano: Complementar o passo 2 com instrucoes sobre o que fazer com as informacoes copiadas
 
-## Problema
+# Adicionar botao de Login na Navbar da Landing Page
 
-O passo 2 diz para copiar a URL, Anon Key e Project ID, mas nao explica onde cola-las. O usuario fica sem saber o proximo passo.
+## O que sera feito
 
-## Alteracao
+Adicionar um botao "Entrar" na barra de navegacao (Navbar) da landing page que direciona o usuario para a rota de login (`/entrar`).
 
-### `src/components/landing/AudienceSection.tsx` (linhas 40-45)
+## Alteracoes
 
-Atualizar a descricao do passo 2 para explicar que as informacoes copiadas serao usadas no passo 4 (arquivo `.env`), e adicionar um sub-texto orientativo:
+### `src/components/landing/Navbar.tsx`
 
-**Antes:**
+1. Importar `AUTH_ROUTE` de `@/lib/constants` (ja importado o arquivo, basta adicionar a constante)
+2. Adicionar um botao "Entrar" ao lado dos botoes existentes (GitHub e "Comecar Agora"), tanto na versao desktop quanto mobile
+3. O botao usara o componente `Link` do React Router para navegar ate `/entrar`
+
+**Desktop** (entre o botao GitHub e o "Comecar Agora"):
 ```
-description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL, a Anon Key e o Project ID (Settings → API).'
+<Button variant="ghost" size="sm" asChild>
+  <Link to={AUTH_ROUTE}>Entrar</Link>
+</Button>
 ```
 
-**Depois:**
+**Mobile** (antes dos outros botoes no menu mobile):
 ```
-description: 'Acesse supabase.com e crie um projeto gratuito. Em Settings → API, copie a URL, a Anon Key e o Project ID. Voce usara esses valores no passo 4 para preencher o arquivo .env.'
+<Button variant="ghost" asChild className="w-full">
+  <Link to={AUTH_ROUTE}>Entrar</Link>
+</Button>
 ```
 
-Essa pequena mudanca conecta o passo 2 ao passo 4, deixando claro que as credenciais copiadas vao para as variaveis de ambiente.
+## Detalhes tecnicos
+
+- A constante `AUTH_ROUTE` ja existe em `src/lib/constants.ts` com valor `/entrar`
+- O componente `Link` do React Router ja esta importado no arquivo
+- O botao tera variante `ghost` para diferenciar visualmente do CTA principal "Comecar Agora"
+- Nenhuma dependencia nova sera necessaria
+
