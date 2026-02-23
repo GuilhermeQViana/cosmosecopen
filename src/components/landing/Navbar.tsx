@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { cn } from '@/lib/utils';
-import { GITHUB_URL } from '@/lib/constants';
+import { GITHUB_URL, AUTH_ROUTE } from '@/lib/constants';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -74,6 +74,9 @@ export function Navbar() {
                 GitHub
               </a>
             </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to={AUTH_ROUTE}>Entrar</Link>
+            </Button>
             <Button size="sm" variant="cosmic" asChild>
               <a href="#getting-started">Começar Agora</a>
             </Button>
@@ -106,6 +109,9 @@ export function Navbar() {
                 <span className="text-sm text-muted-foreground">Alternar tema</span>
                 <ThemeToggle />
               </div>
+              <Button variant="ghost" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to={AUTH_ROUTE}>Entrar</Link>
+              </Button>
               <Button variant="outline" asChild className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
                 <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
                   <Github className="w-4 h-4 mr-1.5" />
