@@ -39,7 +39,7 @@ const steps = [
   {
     icon: Database,
     title: '2. Crie um Projeto Supabase',
-    description: 'Acesse supabase.com e crie um projeto gratuito. Copie a URL, a Anon Key e o Project ID (Settings → API).',
+    description: 'Acesse supabase.com e crie um projeto gratuito. Em Settings → API, copie a URL, a Anon Key e o Project ID. Você usará esses valores no passo 4 para preencher o arquivo .env.',
     code: null,
     link: { url: 'https://supabase.com', label: 'Criar projeto no Supabase →' },
     gradient: 'from-secondary to-secondary/70',
