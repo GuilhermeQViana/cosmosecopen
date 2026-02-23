@@ -25,7 +25,7 @@ Usamos [Conventional Commits](https://www.conventionalcommits.org/):
 ## Setup de Desenvolvimento
 
 ```bash
-git clone https://github.com/seu-usuario/cosmosec.git
+git clone https://github.com/GuilhermeQViana/cosmosecopen.git
 cd cosmosec
 cp .env.example .env
 # Preencha as variáveis no .env
