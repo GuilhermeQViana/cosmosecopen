@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Terminal, Database, FileCode, Settings, Play, Container, Copy, Check, UserCog, Rocket, Server, Cloud } from 'lucide-react';
+import { Terminal, Database, FileCode, Settings, Play, Container, Copy, Check, UserCog, Rocket, Server, Cloud, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { GITHUB_URL } from '@/lib/constants';
 
