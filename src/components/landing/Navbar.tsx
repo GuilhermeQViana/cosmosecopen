@@ -74,6 +74,9 @@ export function Navbar() {
                 GitHub
               </a>
             </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to={AUTH_ROUTE}>Entrar</Link>
+            </Button>
             <Button size="sm" variant="cosmic" asChild>
               <a href="#getting-started">Começar Agora</a>
             </Button>
