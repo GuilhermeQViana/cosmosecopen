@@ -1,0 +1,17 @@
+# docker-compose.prebuilt.yml
+# Usa a imagem Docker pré-construída do CosmoSec.
+# O usuário só precisa configurar o .env e rodar:
+#   docker compose -f docker-compose.prebuilt.yml up
+#
+# Requer um projeto Supabase (Cloud ou Self-Hosted) já configurado.
+
+services:
+  app:
+    image: guilhermeqviana/cosmosecopen:latest
+    ports:
+      - "80:80"
+    environment:
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
+      - VITE_SUPABASE_PROJECT_ID=${VITE_SUPABASE_PROJECT_ID}
+    restart: unless-stopped

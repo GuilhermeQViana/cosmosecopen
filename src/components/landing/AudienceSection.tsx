@@ -178,7 +178,36 @@ export function AudienceSection() {
             </div>
           </div>
 
-          {/* Option 2: Frontend + Supabase Cloud */}
+          {/* Option 2: Imagem Docker Pronta */}
+          <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-primary/20 rounded-2xl p-6 md:p-8 mb-6">
+            <div className="flex items-start gap-4 md:gap-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Container className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <h4 className="text-lg md:text-xl font-bold text-foreground font-space">
+                    Opção 2: Imagem Docker Pronta
+                  </h4>
+                  <Badge variant="outline" className="border-violet-500/40 text-violet-500 text-xs">
+                    Mais Fácil
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Baixe a imagem pré-construída do Docker Hub. <strong>Não precisa clonar o repositório nem buildar</strong> — só configure as variáveis e rode.
+                </p>
+                <CodeBlock code={`# 1. Baixe a imagem\ndocker pull guilhermeqviana/cosmosecopen:latest\n\n# 2. Rode com suas credenciais Supabase\ndocker run -d -p 80:80 \\\n  -e VITE_SUPABASE_URL=https://seu-projeto.supabase.co \\\n  -e VITE_SUPABASE_PUBLISHABLE_KEY=eyJ... \\\n  -e VITE_SUPABASE_PROJECT_ID=seu-project-id \\\n  guilhermeqviana/cosmosecopen:latest\n\n# Frontend disponível em http://localhost`} />
+                <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">Dica:</strong> Também disponibilizamos um{' '}
+                    <code className="text-secondary">docker-compose.prebuilt.yml</code> no repositório para facilitar ainda mais.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Option 3: Frontend + Supabase Cloud */}
           <div className="bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-primary/20 rounded-2xl p-6 md:p-8">
             <div className="flex items-start gap-4 md:gap-6">
               <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
@@ -187,7 +216,7 @@ export function AudienceSection() {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <h4 className="text-lg md:text-xl font-bold text-foreground font-space">
-                    Opção 2: Frontend + Supabase Cloud
+                    Opção 3: Frontend + Supabase Cloud
                   </h4>
                   <Badge variant="outline" className="border-cyan-500/40 text-cyan-500 text-xs">
                     Produção
