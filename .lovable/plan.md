@@ -1,37 +1,63 @@
 
+# Corrigir fluxo de acesso aos modulos apos criar organizacao
 
-# Adicionar botao de Login na Navbar da Landing Page
+## Diagnostico
 
-## O que sera feito
+Identifiquei **dois problemas criticos** que impedem o acesso aos modulos:
 
-Adicionar um botao "Entrar" na barra de navegacao (Navbar) da landing page que direciona o usuario para a rota de login (`/entrar`).
+### Problema 1: Perfil do usuario nao existe na tabela `profiles`
 
-## Alteracoes
+O trigger `handle_new_user` (que deveria criar automaticamente o perfil quando um usuario se cadastra) **nao esta registrado no banco de dados**. A funcao existe, mas o trigger que a conecta a tabela `auth.users` nao foi criado.
 
-### `src/components/landing/Navbar.tsx`
+Resultado: ao fazer login, o sistema tenta buscar o perfil com `.single()`, recebe 0 linhas e retorna erro 406. Isso faz com que `organization` fique sempre `null` no contexto, e o usuario fica preso na tela de selecao de organizacao.
 
-1. Importar `AUTH_ROUTE` de `@/lib/constants` (ja importado o arquivo, basta adicionar a constante)
-2. Adicionar um botao "Entrar" ao lado dos botoes existentes (GitHub e "Comecar Agora"), tanto na versao desktop quanto mobile
-3. O botao usara o componente `Link` do React Router para navegar ate `/entrar`
+### Problema 2: Tabela `frameworks` esta vazia
 
-**Desktop** (entre o botao GitHub e o "Comecar Agora"):
+A tabela `frameworks` nao tem nenhum registro. Mesmo que o problema do perfil seja resolvido, ao clicar em "GRC Frameworks" o sistema redireciona para `/selecionar-framework`, que nao mostra nenhuma opcao pois a tabela esta vazia.
+
+## Solucao
+
+### Passo 1: Migracao SQL (3 acoes)
+
+1. **Criar o trigger `on_auth_user_created`** que conecta a funcao `handle_new_user` a tabela `auth.users`:
+
+```sql
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 ```
-<Button variant="ghost" size="sm" asChild>
-  <Link to={AUTH_ROUTE}>Entrar</Link>
-</Button>
+
+2. **Inserir o perfil do usuario atual** que ficou sem perfil:
+
+```sql
+INSERT INTO public.profiles (id, full_name, email)
+SELECT id, raw_user_meta_data->>'full_name', email
+FROM auth.users
+WHERE id = 'b889e8db-48a2-4d2f-b069-feb49015b657'
+ON CONFLICT (id) DO NOTHING;
 ```
 
-**Mobile** (antes dos outros botoes no menu mobile):
+3. **Popular a tabela `frameworks`** com os 3 frameworks padrao do sistema:
+
+```sql
+INSERT INTO public.frameworks (id, code, name, version, description, is_custom)
+VALUES
+  (gen_random_uuid(), 'nist_csf', 'NIST Cybersecurity Framework', '2.0', 'Framework do NIST para gestao de riscos de ciberseguranca', false),
+  (gen_random_uuid(), 'iso_27001', 'ISO/IEC 27001', '2022', 'Norma internacional para sistemas de gestao de seguranca da informacao', false),
+  (gen_random_uuid(), 'bcb_cmn', 'BCB/CMN 4.893', '2021', 'Resolucao do Banco Central sobre politica de seguranca cibernetica', false)
+ON CONFLICT DO NOTHING;
 ```
-<Button variant="ghost" asChild className="w-full">
-  <Link to={AUTH_ROUTE}>Entrar</Link>
-</Button>
-```
 
-## Detalhes tecnicos
+### Passo 2: Nenhuma alteracao de codigo necessaria
 
-- A constante `AUTH_ROUTE` ja existe em `src/lib/constants.ts` com valor `/entrar`
-- O componente `Link` do React Router ja esta importado no arquivo
-- O botao tera variante `ghost` para diferenciar visualmente do CTA principal "Comecar Agora"
-- Nenhuma dependencia nova sera necessaria
+O codigo da aplicacao ja esta correto. Os problemas sao exclusivamente de dados/configuracao no banco.
 
+## Resultado esperado
+
+Apos a migracao:
+1. O usuario tera um perfil valido na tabela `profiles`
+2. O `set_active_organization` conseguira verificar o perfil corretamente
+3. Os 3 frameworks aparecerão na tela de selecao
+4. Novos usuarios criados no futuro terao perfil criado automaticamente pelo trigger
+5. O fluxo completo funcionara: Login -> Selecionar Org -> Selecionar Modulo -> Selecionar Framework -> Dashboard
