@@ -1,89 +1,77 @@
 
-# Implementar Controles Padrao nos Frameworks
+
+# Implementar 2FA Opcional com Google/Microsoft Authenticator
 
 ## Resumo
+Adicionar autenticacao de dois fatores (TOTP) opcional ao sistema. O usuario pode ativar ou desativar o 2FA nas configuracoes de seguranca. Quem nao ativar continua logando normalmente so com email e senha.
 
-Inserir todos os controles padrao nas tres tabelas de frameworks ja existentes no banco de dados. Atualmente os frameworks existem mas a tabela `controls` esta vazia (0 controles em cada).
-
-## Frameworks e Quantidades
-
-| Framework | Codigo | Controles |
-|-----------|--------|-----------|
-| ISO/IEC 27001:2022 | iso_27001 | 93 controles (Anexo A) |
-| NIST CSF 2.0 | nist_csf | 106 subcategorias |
-| BCB/CMN 4.893 | bcb_cmn | ~26 requisitos (artigos) |
-
-Total: aproximadamente **225 controles** a serem inseridos.
-
-## Estrutura dos Dados
-
-Cada controle sera inserido com os seguintes campos:
-- **framework_id**: UUID do framework correspondente
-- **code**: Codigo padrao do controle (ex: A.5.1, GV.OC-01, Art.3-I)
-- **name**: Nome/titulo do controle
-- **description**: Descricao detalhada do requisito
-- **category**: Agrupamento/dominio (ex: "Controles Organizacionais", "GOVERN")
-- **order_index**: Ordem sequencial para exibicao
-- **weight**: Peso do controle (1-3 baseado na criticidade)
-- **criticality**: Nivel de criticidade (alta, media, baixa)
-
-## Detalhamento por Framework
-
-### 1. ISO/IEC 27001:2022 - Anexo A (93 controles)
-
-4 dominios:
-- **A.5 - Controles Organizacionais** (37 controles): A.5.1 a A.5.37
-- **A.6 - Controles de Pessoas** (8 controles): A.6.1 a A.6.8
-- **A.7 - Controles Fisicos** (14 controles): A.7.1 a A.7.14
-- **A.8 - Controles Tecnologicos** (34 controles): A.8.1 a A.8.34
-
-### 2. NIST CSF 2.0 (106 subcategorias)
-
-6 funcoes com 22 categorias:
-- **GOVERN (GV)**: GV.OC, GV.RM, GV.RR, GV.PO, GV.SC
-- **IDENTIFY (ID)**: ID.AM, ID.RA, ID.IM
-- **PROTECT (PR)**: PR.AA, PR.AT, PR.DS, PR.PS, PR.IR
-- **DETECT (DE)**: DE.CM, DE.AE
-- **RESPOND (RS)**: RS.MA, RS.AN, RS.CO, RS.MI
-- **RECOVER (RC)**: RC.RP, RC.CO
-
-### 3. BCB/CMN 4.893/2021 (~26 requisitos)
-
-Organizado por capitulos da resolucao:
-- **Politica de Seguranca Cibernetica** (Arts. 2-7)
-- **Contratacao de Servicos** (Arts. 11-16)
-- **Plano de Acao e Resposta a Incidentes** (Arts. 8-10)
-- **Governanca e Comunicacao** (Arts. 17-20)
-- **Requisitos Gerais** (Arts. 21-26)
-
-## Implementacao Tecnica
-
-### Passo 1: Migracao SQL
-
-Uma unica migracao SQL contendo todos os INSERTs, organizada em blocos:
+## Fluxo do usuario
 
 ```text
-1. INSERT INTO controls (...) VALUES (...) -- ISO 27001 (93 registros)
-2. INSERT INTO controls (...) VALUES (...) -- NIST CSF 2.0 (106 registros)
-3. INSERT INTO controls (...) VALUES (...) -- BCB/CMN 4.893 (26 registros)
+SEM 2FA (padrao):
+  Login com email/senha -> Acesso direto ao sistema (sem mudanca)
+
+ATIVAR 2FA:
+  Configuracoes > Seguranca > "Configurar 2FA"
+  -> Exibe QR Code (compativel com Google/Microsoft Authenticator)
+  -> Usuario escaneia e digita codigo de 6 digitos para confirmar
+  -> 2FA ativado
+
+LOGIN COM 2FA ATIVO:
+  Login com email/senha
+  -> Sistema detecta que usuario tem fator TOTP
+  -> Exibe tela para digitar codigo do app
+  -> Codigo validado -> Acesso ao sistema
+
+DESATIVAR 2FA:
+  Configuracoes > Seguranca > "Desativar 2FA"
+  -> Digita codigo atual para confirmar
+  -> 2FA removido, volta ao login simples
 ```
 
-Cada INSERT usara os UUIDs reais dos frameworks ja existentes no banco:
-- bcb_cmn: `dfce6f00-fc2b-4c01-9aa5-7c6fd98c604c`
-- iso_27001: `0c917949-b95c-4f92-92d1-83e5c79aa3f3`
-- nist_csf: `2fc3c5e0-bd30-4d12-9c0a-c79a53735a92`
+## Arquivos novos
 
-### Passo 2: Nenhuma alteracao de codigo
+### 1. `src/components/auth/MFAVerification.tsx`
+Tela de verificacao exibida apos login quando o usuario tem 2FA ativo:
+- Campo de 6 digitos usando o componente `InputOTP` ja existente
+- Chama `supabase.auth.mfa.challenge()` e `supabase.auth.mfa.verify()`
+- Botao "Verificar" e tratamento de erros
+- Callback `onVerified` para prosseguir com a navegacao
+- Visual consistente com o tema cosmico do Gateway
 
-O codigo da aplicacao ja esta preparado para exibir controles. Apos a insercao dos dados:
-- A tela de selecao de framework mostrara a contagem correta de controles
-- A pagina de diagnostico listara todos os controles agrupados por categoria
-- O sistema de avaliacao de maturidade funcionara para cada controle
+### 2. `src/components/configuracoes/TwoFactorSetupDialog.tsx`
+Dialog para ativar o 2FA:
+- Passo 1: Gera QR Code via `supabase.auth.mfa.enroll({ factorType: 'totp' })` e exibe junto com o segredo em texto para copia manual
+- Passo 2: Campo para digitar codigo de verificacao usando `InputOTP`
+- Passo 3: Chama `challenge()` + `verify()` para confirmar e ativar
+- Mensagem de sucesso ao concluir
 
-## Resultado Esperado
+### 3. `src/components/configuracoes/TwoFactorDisableDialog.tsx`
+Dialog para desativar o 2FA:
+- Solicita codigo atual do app autenticador
+- Verifica o codigo e chama `supabase.auth.mfa.unenroll({ factorId })`
+- Confirmacao de desativacao
 
-Apos a execucao:
-1. Os cards dos frameworks mostrarao as contagens corretas (93, 106, 26)
-2. Ao selecionar um framework e acessar o Diagnostico, todos os controles serao listados com seus codigos, nomes e descricoes
-3. O usuario podera iniciar avaliacoes de maturidade imediatamente
-4. Os mapeamentos entre frameworks (framework_mappings) poderao ser criados posteriormente referenciando esses controles
+## Arquivos modificados
+
+### 4. `src/pages/Gateway.tsx`
+- Apos login bem-sucedido (linha 160-163), verificar `supabase.auth.mfa.getAuthenticatorAssuranceLevel()`
+- Se `currentLevel === 'aal1'` e `nextLevel === 'aal2'`: mostrar `MFAVerification` em vez de navegar
+- Adicionar estado `showMFA` para controlar a exibicao do componente de verificacao
+- Apos verificacao MFA, navegar para `redirectTo` normalmente
+- Se o usuario **nao** tem 2FA (nextLevel === 'aal1'), navegar direto como hoje
+
+### 5. `src/pages/Configuracoes.tsx` (linhas 566-587)
+- Substituir o botao "Configurar" desabilitado pelo botao funcional
+- Ao carregar, consultar `supabase.auth.mfa.listFactors()` para saber se ja tem fator TOTP
+- Se **nao tem**: mostrar botao "Configurar" que abre `TwoFactorSetupDialog`
+- Se **ja tem**: mostrar badge "Ativado" + botao "Desativar" que abre `TwoFactorDisableDialog`
+
+## Detalhes tecnicos
+
+- **API**: `supabase.auth.mfa` (enroll, challenge, verify, unenroll, listFactors, getAuthenticatorAssuranceLevel)
+- **Backend**: Nenhuma alteracao necessaria - o MFA TOTP ja e suportado nativamente pelo Lovable Cloud
+- **Banco de dados**: Nenhuma migracao necessaria - fatores MFA sao gerenciados internamente
+- **Dependencias**: Nenhuma nova - `InputOTP` e `input-otp` ja estao instalados
+- **Compatibilidade**: Funciona com Google Authenticator, Microsoft Authenticator, Authy e qualquer app TOTP
+
