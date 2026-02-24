@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -22,13 +22,14 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onEnabled }: TwoFacto
   const [enrolling, setEnrolling] = useState(false);
   const { toast } = useToast();
 
-  const handleOpen = async (isOpen: boolean) => {
-    if (isOpen) {
-      setStep('qr');
-      setCode('');
-      setEnrolling(true);
-      try {
-        const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+  useEffect(() => {
+    if (!open) return;
+    setStep('qr');
+    setCode('');
+    setEnrolling(true);
+
+    supabase.auth.mfa.enroll({ factorType: 'totp' })
+      .then(({ data, error }) => {
         if (error) {
           toast({ title: 'Erro', description: error.message, variant: 'destructive' });
           onOpenChange(false);
@@ -37,15 +38,13 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onEnabled }: TwoFacto
         setQrCode(data.totp.qr_code);
         setSecret(data.totp.secret);
         setFactorId(data.id);
-      } catch (err: any) {
+      })
+      .catch((err: any) => {
         toast({ title: 'Erro', description: err.message, variant: 'destructive' });
         onOpenChange(false);
-      } finally {
-        setEnrolling(false);
-      }
-    }
-    onOpenChange(isOpen);
-  };
+      })
+      .finally(() => setEnrolling(false));
+  }, [open]);
 
   const handleVerify = async () => {
     if (code.length !== 6) return;
