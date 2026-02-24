@@ -79,6 +79,8 @@ import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworks
 import { ChangePasswordDialog } from '@/components/configuracoes/ChangePasswordDialog';
 import { ImageUploadWithCrop } from '@/components/configuracoes/ImageUploadWithCrop';
 import { ImportBackupDialog } from '@/components/configuracoes/ImportBackupDialog';
+import { TwoFactorSetupDialog } from '@/components/configuracoes/TwoFactorSetupDialog';
+import { TwoFactorDisableDialog } from '@/components/configuracoes/TwoFactorDisableDialog';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
