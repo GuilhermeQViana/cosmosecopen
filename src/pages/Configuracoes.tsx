@@ -79,6 +79,8 @@ import { CustomFrameworksTab } from '@/components/configuracoes/CustomFrameworks
 import { ChangePasswordDialog } from '@/components/configuracoes/ChangePasswordDialog';
 import { ImageUploadWithCrop } from '@/components/configuracoes/ImageUploadWithCrop';
 import { ImportBackupDialog } from '@/components/configuracoes/ImportBackupDialog';
+import { TwoFactorSetupDialog } from '@/components/configuracoes/TwoFactorSetupDialog';
+import { TwoFactorDisableDialog } from '@/components/configuracoes/TwoFactorDisableDialog';
 
 const roleLabels: Record<string, { label: string; icon: any; color: string }> = {
   admin: { label: 'Administrador', icon: Crown, color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -142,6 +144,23 @@ export default function Configuracoes() {
   // Backup state
   const [exportLoading, setExportLoading] = useState(false);
   const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
+
+  // 2FA state
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState('');
+  const [setup2FAOpen, setSetup2FAOpen] = useState(false);
+  const [disable2FAOpen, setDisable2FAOpen] = useState(false);
+
+  const loadMfaStatus = async () => {
+    try {
+      const { data } = await supabase.auth.mfa.listFactors();
+      const verifiedTotp = data?.totp?.find((f: any) => f.status === 'verified');
+      setMfaEnabled(!!verifiedTotp);
+      setMfaFactorId(verifiedTotp?.id || '');
+    } catch { /* ignore */ }
+  };
+
+  useEffect(() => { loadMfaStatus(); }, []);
 
   // Load profile data and preferences
   useEffect(() => {
@@ -570,20 +589,22 @@ export default function Configuracoes() {
                     Adicione uma camada extra de segurança
                   </p>
                 </div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <Button variant="outline" disabled>
-                          Configurar
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Em breve: Autenticação de dois fatores</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <div className="flex items-center gap-2">
+                  {mfaEnabled && (
+                    <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
+                      Ativado
+                    </Badge>
+                  )}
+                  {mfaEnabled ? (
+                    <Button variant="outline" onClick={() => setDisable2FAOpen(true)}>
+                      Desativar
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={() => setSetup2FAOpen(true)}>
+                      Configurar
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -591,6 +612,17 @@ export default function Configuracoes() {
           <ChangePasswordDialog 
             open={passwordDialogOpen} 
             onOpenChange={setPasswordDialogOpen} 
+          />
+          <TwoFactorSetupDialog
+            open={setup2FAOpen}
+            onOpenChange={setSetup2FAOpen}
+            onEnabled={loadMfaStatus}
+          />
+          <TwoFactorDisableDialog
+            open={disable2FAOpen}
+            onOpenChange={setDisable2FAOpen}
+            factorId={mfaFactorId}
+            onDisabled={loadMfaStatus}
           />
         </TabsContent>
 

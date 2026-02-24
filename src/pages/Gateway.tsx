@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { MFAVerification } from '@/components/auth/MFAVerification';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const [showMFA, setShowMFA] = useState(false);
   const redirectTo = searchParams.get('redirect') || '/selecionar-modulo';
 
   // Login form state
@@ -159,6 +161,16 @@ export default function Auth() {
       }
     } else {
       setLoginAttempts(0);
+      // Check if user has MFA enabled
+      try {
+        const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (data && data.currentLevel === 'aal1' && data.nextLevel === 'aal2') {
+          setShowMFA(true);
+          return;
+        }
+      } catch {
+        // If MFA check fails, proceed normally
+      }
       navigate(redirectTo);
     }
   };
@@ -227,6 +239,21 @@ export default function Auth() {
     'Planos de ação com IA',
     'Relatórios executivos',
   ];
+
+  if (showMFA) {
+    return (
+      <MFAVerification
+        onVerified={() => {
+          setShowMFA(false);
+          navigate(redirectTo);
+        }}
+        onCancel={async () => {
+          setShowMFA(false);
+          await supabase.auth.signOut();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 relative">
