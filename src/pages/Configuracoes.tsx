@@ -145,6 +145,23 @@ export default function Configuracoes() {
   const [exportLoading, setExportLoading] = useState(false);
   const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
 
+  // 2FA state
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState('');
+  const [setup2FAOpen, setSetup2FAOpen] = useState(false);
+  const [disable2FAOpen, setDisable2FAOpen] = useState(false);
+
+  const loadMfaStatus = async () => {
+    try {
+      const { data } = await supabase.auth.mfa.listFactors();
+      const verifiedTotp = data?.totp?.find((f: any) => f.status === 'verified');
+      setMfaEnabled(!!verifiedTotp);
+      setMfaFactorId(verifiedTotp?.id || '');
+    } catch { /* ignore */ }
+  };
+
+  useEffect(() => { loadMfaStatus(); }, []);
+
   // Load profile data and preferences
   useEffect(() => {
     const loadProfile = async () => {
