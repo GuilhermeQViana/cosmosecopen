@@ -83,7 +83,7 @@ export function TwoFactorSetupDialog({ open, onOpenChange, onEnabled }: TwoFacto
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
