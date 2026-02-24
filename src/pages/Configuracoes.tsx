@@ -596,6 +596,17 @@ export default function Configuracoes() {
             open={passwordDialogOpen} 
             onOpenChange={setPasswordDialogOpen} 
           />
+          <TwoFactorSetupDialog
+            open={setup2FAOpen}
+            onOpenChange={setSetup2FAOpen}
+            onEnabled={loadMfaStatus}
+          />
+          <TwoFactorDisableDialog
+            open={disable2FAOpen}
+            onOpenChange={setDisable2FAOpen}
+            factorId={mfaFactorId}
+            onDisabled={loadMfaStatus}
+          />
         </TabsContent>
 
         {/* Organization Tab */}
