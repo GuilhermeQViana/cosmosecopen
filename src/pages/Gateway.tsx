@@ -161,6 +161,16 @@ export default function Auth() {
       }
     } else {
       setLoginAttempts(0);
+      // Check if user has MFA enabled
+      try {
+        const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (data && data.currentLevel === 'aal1' && data.nextLevel === 'aal2') {
+          setShowMFA(true);
+          return;
+        }
+      } catch {
+        // If MFA check fails, proceed normally
+      }
       navigate(redirectTo);
     }
   };
