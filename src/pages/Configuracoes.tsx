@@ -570,20 +570,22 @@ export default function Configuracoes() {
                     Adicione uma camada extra de segurança
                   </p>
                 </div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <Button variant="outline" disabled>
-                          Configurar
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Em breve: Autenticação de dois fatores</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <div className="flex items-center gap-2">
+                  {mfaEnabled && (
+                    <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
+                      Ativado
+                    </Badge>
+                  )}
+                  {mfaEnabled ? (
+                    <Button variant="outline" onClick={() => setDisable2FAOpen(true)}>
+                      Desativar
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={() => setSetup2FAOpen(true)}>
+                      Configurar
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

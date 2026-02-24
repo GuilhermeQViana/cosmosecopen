@@ -240,6 +240,21 @@ export default function Auth() {
     'Relatórios executivos',
   ];
 
+  if (showMFA) {
+    return (
+      <MFAVerification
+        onVerified={() => {
+          setShowMFA(false);
+          navigate(redirectTo);
+        }}
+        onCancel={async () => {
+          setShowMFA(false);
+          await supabase.auth.signOut();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2 relative">
       {/* Left Side - Cosmic Visual Hero */}
