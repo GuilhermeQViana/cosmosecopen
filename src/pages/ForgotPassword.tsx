@@ -36,8 +36,9 @@ export default function ForgotPassword() {
 
     setLoading(true);
     
+    const origin = import.meta.env.DEV ? 'http://localhost:8080' : window.location.origin;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/redefinir-senha`,
+      redirectTo: `${origin}/redefinir-senha`,
     });
 
     setLoading(false);
