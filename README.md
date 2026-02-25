@@ -1,4 +1,4 @@
-# 🛡️ CosmoSec — Plataforma GRC Open Source
+# <img width="50" height="50" alt="cosmosec-logo-512x512" src="https://github.com/user-attachments/assets/79be6a5a-2d3f-4e88-ba30-a3e6b62ea966" /> CosmoSec — Plataforma GRC Open Source
 
 <div align="center">
 
