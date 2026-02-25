@@ -264,7 +264,46 @@ Configure estas variáveis como **Supabase Secrets** (Dashboard → Settings →
 ---
 
 ## 🏗️ Arquitetura
+graph TD
+    subgraph Client [💻 Client Side]
+        User([👤 Usuário / CISO])
+        Frontend[⚛️ Frontend SPA<br/>(React + Vite + Tailwind)]
+    end
 
+    subgraph Cloud [☁️ Backend / Supabase]
+        Kong[🛡️ API Gateway]
+        Auth[🔐 Auth & User Management<br/>(GoTrue)]
+        DB[(🗄️ PostgreSQL + RLS)]
+        Storage[📂 Storage Bucket<br/>(Evidências & Docs)]
+        
+        subgraph Logic [⚡ Edge Functions]
+            AI_Func[🤖 AI Analysis<br/>(Risco & Planos de Ação)]
+            Report_Func[📄 Report Generator]
+            Email_Func[📧 Email Notifier]
+        end
+    end
+
+    subgraph External [🌐 Serviços Externos]
+        OpenAI[🧠 OpenAI API<br/>(GPT-4o)]
+        Resend[📨 Resend API<br/>(Emails Transacionais)]
+    end
+
+    User -->|HTTPS| Frontend
+    Frontend -->|Supabase JS Client| Kong
+    Kong --> Auth
+    Kong --> DB
+    Kong --> Storage
+    Kong --> Logic
+    
+    Logic -.->|API Call| OpenAI
+    Logic -.->|API Call| Resend
+
+    style Client fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Cloud fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style External fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style Frontend fill:#61dafb,stroke:#20232a,color:#000
+    style DB fill:#336791,stroke:#fff,color:#fff
+    style Auth fill:#3ecf8e,stroke:#fff,color:#fff
 ### Desenvolvimento / Supabase Cloud
 
 ```
