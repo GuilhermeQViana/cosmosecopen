@@ -106,7 +106,8 @@ npm run dev
 
 Acesse `http://localhost:5173` no navegador.
 
-### 5. Criar seu primeiro super admin
+> **⚠️ Erro de login "Failed to fetch"?** Veja a seção [Troubleshooting de login local](#-troubleshooting-erro-de-login-local) mais abaixo.
+
 
 Após cadastrar-se na aplicação, execute no SQL Editor do Supabase:
 
@@ -413,6 +414,21 @@ Veja [CONTRIBUTING.md](./CONTRIBUTING.md) para detalhes sobre como contribuir.
 ## 📄 Licença
 
 Este projeto está licenciado sob a [MIT License](./LICENSE).
+
+---
+
+## 🔧 Troubleshooting: Erro de login local
+
+Se ao tentar fazer login localmente você vê **"Failed to fetch"** ou **"Não foi possível conectar ao servidor de autenticação"**:
+
+| # | Verificação |
+|---|-------------|
+| 1 | **`.env.local` sobrescrevendo `.env`?** — Em Vite, `.env.local` tem prioridade. Remova ou corrija as variáveis nele. |
+| 2 | **Variáveis corretas?** — Confirme `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` no `.env`. |
+| 3 | **Reiniciou o servidor?** — Execute `npm run dev` novamente após alterar variáveis. |
+| 4 | **Backend acessível?** — Abra `<SUA_URL>/auth/v1/settings` no navegador; deve retornar JSON. |
+| 5 | **Self-hosted (Docker)?** — Verifique se `auth` e `kong` estão rodando: `docker compose ps`. |
+| 6 | **Botão "Testar conexão"** — Na tela de login, use-o para diagnóstico em tempo real. |
 
 ---
 
