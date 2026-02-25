@@ -15,7 +15,7 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordStrengthIndicator, getPasswordStrength } from '@/components/ui/PasswordStrengthIndicator';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
-import { isConnectionError, validateAuthEnv, pingAuthBackend, type PingResult, type EnvValidationResult } from '@/lib/auth-connection-diagnostics';
+import { validateAuthEnv, pingAuthBackend, type PingResult, type EnvValidationResult } from '@/lib/auth-connection-diagnostics';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -50,6 +50,7 @@ export default function Auth() {
   const [activeTab, setActiveTab] = useState('login');
   const [showMFA, setShowMFA] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
+  const [configError, setConfigError] = useState(false);
   const [pingResult, setPingResult] = useState<PingResult | null>(null);
   const [pinging, setPinging] = useState(false);
   const [envInfo] = useState<EnvValidationResult>(() => validateAuthEnv());
@@ -151,40 +152,44 @@ export default function Auth() {
     setLoading(false);
 
     if (error) {
-      // Detect connection errors
-      if (isConnectionError(error) || error.message.includes('Não foi possível conectar')) {
+      const msg = error.message;
+      const isConn = msg.includes('Não foi possível conectar');
+      const isConfig = msg.includes('Credenciais do projeto inválidas');
+      const isUserCred = msg.includes('E-mail ou senha incorretos');
+
+      if (isConn) {
         setConnectionError(true);
-        toast({
-          title: 'Erro de conexão',
-          description: 'Não foi possível conectar ao servidor de autenticação. Veja o diagnóstico abaixo.',
-          variant: 'destructive',
-        });
+        setConfigError(false);
+        toast({ title: 'Erro de conexão', description: msg, variant: 'destructive' });
+        return;
+      }
+
+      if (isConfig) {
+        setConnectionError(false);
+        setConfigError(true);
+        toast({ title: 'Erro de configuração', description: msg, variant: 'destructive' });
         return;
       }
 
       setConnectionError(false);
-      const newAttempts = loginAttempts + 1;
-      setLoginAttempts(newAttempts);
+      setConfigError(false);
 
-      if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
-        setLockoutEndTime(Date.now() + LOCKOUT_DURATION * 1000);
-        setLockoutRemaining(LOCKOUT_DURATION);
-        toast({
-          title: 'Conta bloqueada temporariamente',
-          description: `Muitas tentativas falhas. Aguarde ${LOCKOUT_DURATION} segundos.`,
-          variant: 'destructive',
-        });
+      if (isUserCred) {
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+          setLockoutEndTime(Date.now() + LOCKOUT_DURATION * 1000);
+          setLockoutRemaining(LOCKOUT_DURATION);
+          toast({ title: 'Conta bloqueada temporariamente', description: `Muitas tentativas falhas. Aguarde ${LOCKOUT_DURATION} segundos.`, variant: 'destructive' });
+        } else {
+          toast({ title: 'Credenciais incorretas', description: `E-mail ou senha incorretos. Tentativa ${newAttempts}/${MAX_LOGIN_ATTEMPTS}.`, variant: 'destructive' });
+        }
       } else {
-        toast({
-          title: 'Erro ao entrar',
-          description: error.message === 'Invalid login credentials' 
-            ? `E-mail ou senha incorretos. Tentativa ${newAttempts}/${MAX_LOGIN_ATTEMPTS}.`
-            : error.message,
-          variant: 'destructive',
-        });
+        toast({ title: 'Erro ao entrar', description: msg, variant: 'destructive' });
       }
     } else {
       setConnectionError(false);
+      setConfigError(false);
       setLoginAttempts(0);
       // Check if user has MFA enabled
       try {
@@ -542,24 +547,36 @@ export default function Auth() {
                         </div>
                       )}
 
-                      {connectionError && (
+                      {(connectionError || configError) && (
                         <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-3">
                           <div className="flex items-center gap-2 text-amber-400">
                             <WifiOff className="w-4 h-4" />
-                            <span className="text-sm font-medium">Falha de conexão com o backend</span>
+                            <span className="text-sm font-medium">
+                              {configError ? 'Credenciais do projeto inválidas' : 'Falha de conexão com o backend'}
+                            </span>
                           </div>
                           <ul className="text-xs text-amber-300/70 space-y-1.5 list-disc list-inside">
-                            <li>Verifique se a URL do backend está correta no <code className="bg-white/5 px-1 rounded">.env</code></li>
-                            <li>Confirme que <code className="bg-white/5 px-1 rounded">.env.local</code> não sobrescreve as variáveis</li>
-                            <li>Reinicie o servidor após alterar variáveis de ambiente</li>
-                            <li>Verifique se o backend está online e acessível</li>
+                            {configError ? (
+                              <>
+                                <li>A <strong>URL</strong> e a <strong>chave publishable</strong> devem pertencer ao mesmo projeto</li>
+                                <li>Confirme que <code className="bg-white/5 px-1 rounded">.env.local</code> não sobrescreve as variáveis do <code className="bg-white/5 px-1 rounded">.env</code></li>
+                                <li>Reinicie o servidor (<code className="bg-white/5 px-1 rounded">npm run dev</code>) após alterar variáveis</li>
+                              </>
+                            ) : (
+                              <>
+                                <li>Verifique se a URL do backend está correta no <code className="bg-white/5 px-1 rounded">.env</code></li>
+                                <li>Confirme que <code className="bg-white/5 px-1 rounded">.env.local</code> não sobrescreve as variáveis</li>
+                                <li>Reinicie o servidor após alterar variáveis de ambiente</li>
+                                <li>Verifique se o backend está online e acessível</li>
+                              </>
+                            )}
                           </ul>
 
                           {import.meta.env.DEV && (
                             <div className="text-xs text-blue-300/60 bg-white/5 rounded p-2 space-y-1">
                               <p><strong>URL:</strong> {envInfo.url || '(não definida)'}</p>
                               <p><strong>Key:</strong> {envInfo.maskedKey || '(não definida)'}</p>
-                              {envInfo.status !== 'ok' && envInfo.details.map((d, i) => (
+                              {envInfo.details.map((d, i) => (
                                 <p key={i} className="text-red-400">{d}</p>
                               ))}
                             </div>
@@ -579,7 +596,7 @@ export default function Auth() {
                             </Button>
                             {pingResult && (
                               <span className="flex items-center gap-1 text-xs">
-                                {pingResult.reachable 
+                                {pingResult.reachable && pingResult.cause === 'ok'
                                   ? <><CheckCircle2 className="w-3 h-3 text-green-400" /><span className="text-green-400">Conectado ({pingResult.latencyMs}ms)</span></>
                                   : <><XCircle className="w-3 h-3 text-red-400" /><span className="text-red-400">{pingResult.message}</span></>
                                 }

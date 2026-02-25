@@ -41,21 +41,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
+    const sanitizedEmail = email.trim().toLowerCase();
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: sanitizedEmail, password });
       
-      // Log successful login (deferred to avoid deadlock)
       if (!error) {
         setTimeout(() => {
           logAccessEvent({
             action: 'login',
             entityType: 'session',
-            details: { email, timestamp: new Date().toISOString() },
+            details: { email: sanitizedEmail, timestamp: new Date().toISOString() },
           });
         }, 0);
+        return { error: null };
       }
       
-      return { error };
+      // Normalize errors returned by the lib (not just thrown exceptions)
+      const normalized = normalizeAuthError(error);
+      return { error: new Error(normalized.message) };
     } catch (err: unknown) {
       const normalized = normalizeAuthError(err);
       return { error: new Error(normalized.message) };
