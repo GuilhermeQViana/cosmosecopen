@@ -9,12 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, User, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
+import { Mail, User, Loader2, ArrowLeft, Sparkles, WifiOff, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { CosmoSecLogo } from '@/components/ui/CosmoSecLogo';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordStrengthIndicator, getPasswordStrength } from '@/components/ui/PasswordStrengthIndicator';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
+import { isConnectionError, validateAuthEnv, pingAuthBackend, type PingResult, type EnvValidationResult } from '@/lib/auth-connection-diagnostics';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -48,6 +49,10 @@ export default function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
   const [showMFA, setShowMFA] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
+  const [pingResult, setPingResult] = useState<PingResult | null>(null);
+  const [pinging, setPinging] = useState(false);
+  const [envInfo] = useState<EnvValidationResult>(() => validateAuthEnv());
   const redirectTo = searchParams.get('redirect') || '/selecionar-modulo';
 
   // Login form state
@@ -81,6 +86,13 @@ export default function Auth() {
       return () => clearInterval(interval);
     }
   }, [lockoutEndTime]);
+
+  const handleTestConnection = useCallback(async () => {
+    setPinging(true);
+    const result = await pingAuthBackend();
+    setPingResult(result);
+    setPinging(false);
+  }, []);
 
   const isLockedOut = lockoutEndTime !== null && Date.now() < lockoutEndTime;
 
@@ -139,6 +151,18 @@ export default function Auth() {
     setLoading(false);
 
     if (error) {
+      // Detect connection errors
+      if (isConnectionError(error) || error.message.includes('Não foi possível conectar')) {
+        setConnectionError(true);
+        toast({
+          title: 'Erro de conexão',
+          description: 'Não foi possível conectar ao servidor de autenticação. Veja o diagnóstico abaixo.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setConnectionError(false);
       const newAttempts = loginAttempts + 1;
       setLoginAttempts(newAttempts);
 
@@ -160,6 +184,7 @@ export default function Auth() {
         });
       }
     } else {
+      setConnectionError(false);
       setLoginAttempts(0);
       // Check if user has MFA enabled
       try {
@@ -514,6 +539,53 @@ export default function Auth() {
                           <p className="text-sm text-red-400">
                             Muitas tentativas. Aguarde {lockoutRemaining}s
                           </p>
+                        </div>
+                      )}
+
+                      {connectionError && (
+                        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-3">
+                          <div className="flex items-center gap-2 text-amber-400">
+                            <WifiOff className="w-4 h-4" />
+                            <span className="text-sm font-medium">Falha de conexão com o backend</span>
+                          </div>
+                          <ul className="text-xs text-amber-300/70 space-y-1.5 list-disc list-inside">
+                            <li>Verifique se a URL do backend está correta no <code className="bg-white/5 px-1 rounded">.env</code></li>
+                            <li>Confirme que <code className="bg-white/5 px-1 rounded">.env.local</code> não sobrescreve as variáveis</li>
+                            <li>Reinicie o servidor após alterar variáveis de ambiente</li>
+                            <li>Verifique se o backend está online e acessível</li>
+                          </ul>
+
+                          {import.meta.env.DEV && (
+                            <div className="text-xs text-blue-300/60 bg-white/5 rounded p-2 space-y-1">
+                              <p><strong>URL:</strong> {envInfo.url || '(não definida)'}</p>
+                              <p><strong>Key:</strong> {envInfo.maskedKey || '(não definida)'}</p>
+                              {envInfo.status !== 'ok' && envInfo.details.map((d, i) => (
+                                <p key={i} className="text-red-400">{d}</p>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="text-xs border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+                              onClick={handleTestConnection}
+                              disabled={pinging}
+                            >
+                              {pinging ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+                              Testar conexão
+                            </Button>
+                            {pingResult && (
+                              <span className="flex items-center gap-1 text-xs">
+                                {pingResult.reachable 
+                                  ? <><CheckCircle2 className="w-3 h-3 text-green-400" /><span className="text-green-400">Conectado ({pingResult.latencyMs}ms)</span></>
+                                  : <><XCircle className="w-3 h-3 text-red-400" /><span className="text-red-400">{pingResult.message}</span></>
+                                }
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
 

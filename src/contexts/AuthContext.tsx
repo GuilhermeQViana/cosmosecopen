@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { logAccessEvent } from '@/hooks/useAccessLog';
+import { normalizeAuthError } from '@/lib/auth-connection-diagnostics';
 
 interface AuthContextType {
   user: User | null;
@@ -40,20 +41,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    // Log successful login (deferred to avoid deadlock)
-    if (!error) {
-      setTimeout(() => {
-        logAccessEvent({
-          action: 'login',
-          entityType: 'session',
-          details: { email, timestamp: new Date().toISOString() },
-        });
-      }, 0);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      // Log successful login (deferred to avoid deadlock)
+      if (!error) {
+        setTimeout(() => {
+          logAccessEvent({
+            action: 'login',
+            entityType: 'session',
+            details: { email, timestamp: new Date().toISOString() },
+          });
+        }, 0);
+      }
+      
+      return { error };
+    } catch (err: unknown) {
+      const normalized = normalizeAuthError(err);
+      return { error: new Error(normalized.message) };
     }
-    
-    return { error };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
