@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OrganizationProvider } from "@/contexts/OrganizationContext";
@@ -15,7 +15,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AUTH_ROUTE } from "@/lib/constants";
 
 // Lazy loaded pages
-const Landing = lazy(() => import("@/pages/Landing"));
+
 const ConhecaCosmoSec = lazy(() => import("@/pages/ConhecaCosmoSec"));
 const Gateway = lazy(() => import("@/pages/Gateway"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
@@ -110,7 +110,7 @@ const App = () => (
                 <FrameworkProvider>
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
-                      <Route path="/" element={<Landing />} />
+                      <Route path="/" element={<Navigate to="/entrar" replace />} />
                       <Route path="/tour" element={<ConhecaCosmoSec />} />
                       <Route path={AUTH_ROUTE} element={<Gateway />} />
                       <Route path="/esqueci-senha" element={<ForgotPassword />} />
