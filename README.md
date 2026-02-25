@@ -1,5 +1,21 @@
 # 🛡️ CosmoSec — Plataforma GRC Open Source
 
+<div align="center">
+
+![License](https://img.shields.io/github/license/GuilhermeQViana/cosmosecopen?style=for-the-badge&color=blue)
+![Stars](https://img.shields.io/github/stars/GuilhermeQViana/cosmosecopen?style=for-the-badge&color=yellow)
+![Forks](https://img.shields.io/github/forks/GuilhermeQViana/cosmosecopen?style=for-the-badge&color=orange)
+![Issues](https://img.shields.io/github/issues/GuilhermeQViana/cosmosecopen?style=for-the-badge&color=red)
+
+<br />
+
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=3ECF8E)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
+</div>
 Plataforma completa de **Governança, Riscos e Compliance (GRC)** para organizações que levam cibersegurança a sério. Construída com React, TypeScript, Tailwind CSS e Supabase.
 
 ---
