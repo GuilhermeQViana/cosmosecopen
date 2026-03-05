@@ -27,6 +27,7 @@ const frameworkLabels: Record<string, string> = {
   iso_27001: 'ISO 27001',
   nist_csf: 'NIST CSF',
   bcb_cmn: 'BCB/CMN',
+  bcb_85: 'BCB Res. 85',
 };
 
 export default function PolicyTemplates() {

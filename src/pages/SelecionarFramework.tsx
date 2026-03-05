@@ -32,6 +32,7 @@ const frameworkDescriptions: Record<string, string> = {
   nist_csf: 'Framework de cibersegurança do NIST focado em identificar, proteger, detectar, responder e recuperar.',
   iso_27001: 'Padrão internacional para sistemas de gestão de segurança da informação (SGSI).',
   bcb_cmn: 'Regulamentação do Banco Central do Brasil para instituições financeiras.',
+  bcb_85: 'Segurança cibernética para instituições de pagamento, corretoras e distribuidoras (BACEN).',
 };
 
 export default function SelecionarFramework() {

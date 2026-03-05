@@ -94,6 +94,7 @@ const frameworkColors: Record<string, string> = {
   nist_csf: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   iso_27001: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   bcb_cmn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  bcb_85: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
 };
 
 // Helper to get framework icon - uses custom icon if available, otherwise falls back to defaults
