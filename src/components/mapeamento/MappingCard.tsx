@@ -11,6 +11,7 @@ const frameworkColors: Record<string, string> = {
   nist_csf: 'bg-[hsl(var(--chart-1))]',
   iso_27001: 'bg-[hsl(var(--chart-2))]',
   bcb_cmn: 'bg-[hsl(var(--chart-3))]',
+  bcb_85: 'bg-[hsl(var(--chart-4))]',
 };
 
 const mappingTypeLabels: Record<string, string> = {

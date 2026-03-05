@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export type FrameworkCode = 'nist_csf' | 'iso_27001' | 'bcb_cmn';
+export type FrameworkCode = 'nist_csf' | 'iso_27001' | 'bcb_cmn' | 'bcb_85';
 
 interface FrameworkInfo {
   id: string;

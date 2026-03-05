@@ -31,12 +31,14 @@ const frameworkColors: Record<string, string> = {
   nist_csf: 'bg-[hsl(var(--chart-1))]',
   iso_27001: 'bg-[hsl(var(--chart-2))]',
   bcb_cmn: 'bg-[hsl(var(--chart-3))]',
+  bcb_85: 'bg-[hsl(var(--chart-4))]',
 };
 
 const frameworkNames: Record<string, string> = {
   nist_csf: 'NIST CSF 2.0',
   iso_27001: 'ISO 27001:2022',
   bcb_cmn: 'BCB/CMN 4.893',
+  bcb_85: 'BCB Res. 85/2021',
 };
 
 export default function Mapeamento() {
@@ -157,6 +159,7 @@ export default function Mapeamento() {
                 <SelectItem value="nist_csf">NIST CSF</SelectItem>
                 <SelectItem value="iso_27001">ISO 27001</SelectItem>
                 <SelectItem value="bcb_cmn">BCB/CMN</SelectItem>
+                <SelectItem value="bcb_85">BCB Res. 85</SelectItem>
               </SelectContent>
             </Select>
 
@@ -171,6 +174,7 @@ export default function Mapeamento() {
                 <SelectItem value="nist_csf">NIST CSF</SelectItem>
                 <SelectItem value="iso_27001">ISO 27001</SelectItem>
                 <SelectItem value="bcb_cmn">BCB/CMN</SelectItem>
+                <SelectItem value="bcb_85">BCB Res. 85</SelectItem>
               </SelectContent>
             </Select>
 

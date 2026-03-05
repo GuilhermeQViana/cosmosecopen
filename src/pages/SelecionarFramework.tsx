@@ -23,6 +23,7 @@ const standardFrameworkColors: Record<string, string> = {
   nist_csf: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
   iso_27001: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
   bcb_cmn: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
+  bcb_85: 'from-rose-500/20 to-rose-500/5 border-rose-500/30 text-rose-500',
 };
 
 const customFrameworkColor = 'from-purple-500/20 to-purple-500/5 border-purple-500/30 text-purple-500';
@@ -31,6 +32,7 @@ const frameworkDescriptions: Record<string, string> = {
   nist_csf: 'Framework de cibersegurança do NIST focado em identificar, proteger, detectar, responder e recuperar.',
   iso_27001: 'Padrão internacional para sistemas de gestão de segurança da informação (SGSI).',
   bcb_cmn: 'Regulamentação do Banco Central do Brasil para instituições financeiras.',
+  bcb_85: 'Segurança cibernética para instituições de pagamento, corretoras e distribuidoras (BACEN).',
 };
 
 export default function SelecionarFramework() {
