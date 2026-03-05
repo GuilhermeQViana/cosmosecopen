@@ -23,6 +23,7 @@ const standardFrameworkColors: Record<string, string> = {
   nist_csf: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
   iso_27001: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
   bcb_cmn: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
+  bcb_85: 'from-rose-500/20 to-rose-500/5 border-rose-500/30 text-rose-500',
 };
 
 const customFrameworkColor = 'from-purple-500/20 to-purple-500/5 border-purple-500/30 text-purple-500';
