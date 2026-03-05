@@ -38,6 +38,7 @@ const frameworkNames: Record<string, string> = {
   nist_csf: 'NIST CSF 2.0',
   iso_27001: 'ISO 27001:2022',
   bcb_cmn: 'BCB/CMN 4.893',
+  bcb_85: 'BCB Res. 85/2021',
 };
 
 export default function Mapeamento() {
