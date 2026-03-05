@@ -159,6 +159,7 @@ export default function Mapeamento() {
                 <SelectItem value="nist_csf">NIST CSF</SelectItem>
                 <SelectItem value="iso_27001">ISO 27001</SelectItem>
                 <SelectItem value="bcb_cmn">BCB/CMN</SelectItem>
+                <SelectItem value="bcb_85">BCB Res. 85</SelectItem>
               </SelectContent>
             </Select>
 
