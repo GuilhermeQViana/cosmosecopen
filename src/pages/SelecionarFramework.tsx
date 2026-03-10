@@ -34,6 +34,7 @@ const frameworkDescriptions: Record<string, string> = {
   iso_27001: 'Padrão internacional para sistemas de gestão de segurança da informação (SGSI).',
   bcb_cmn: 'Regulamentação do Banco Central do Brasil para instituições financeiras.',
   bcb_85: 'Segurança cibernética para instituições de pagamento, corretoras e distribuidoras (BACEN).',
+  bcb_265: 'Gerenciamento de riscos, capital e divulgação para instituições Tipo 3 (S2-S4) do BACEN.',
 };
 
 export default function SelecionarFramework() {

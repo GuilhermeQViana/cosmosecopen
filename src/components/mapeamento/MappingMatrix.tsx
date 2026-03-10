@@ -7,12 +7,13 @@ interface MappingMatrixProps {
   mappings: MappingWithControls[];
 }
 
-const frameworkOrder = ['nist_csf', 'iso_27001', 'bcb_cmn', 'bcb_85'];
+const frameworkOrder = ['nist_csf', 'iso_27001', 'bcb_cmn', 'bcb_85', 'bcb_265'];
 const frameworkNames: Record<string, string> = {
   nist_csf: 'NIST CSF 2.0',
   iso_27001: 'ISO 27001:2022',
   bcb_cmn: 'BCB/CMN 4.893',
   bcb_85: 'BCB Res. 85/2021',
+  bcb_265: 'BCB Res. 265/2022',
 };
 
 const frameworkColors: Record<string, string> = {
@@ -20,6 +21,7 @@ const frameworkColors: Record<string, string> = {
   iso_27001: 'bg-[hsl(var(--chart-2))]',
   bcb_cmn: 'bg-[hsl(var(--chart-3))]',
   bcb_85: 'bg-[hsl(var(--chart-4))]',
+  bcb_265: 'bg-[hsl(var(--chart-5))]',
 };
 
 export function MappingMatrix({ mappings }: MappingMatrixProps) {
