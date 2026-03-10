@@ -88,6 +88,7 @@ const defaultFrameworkIcons: Record<string, React.ReactNode> = {
   iso_27001: <Building2 className="w-4 h-4" />,
   bcb_cmn: <Landmark className="w-4 h-4" />,
   bcb_85: <Landmark className="w-4 h-4" />,
+  bcb_265: <Building2 className="w-4 h-4" />,
 };
 
 const frameworkColors: Record<string, string> = {
