@@ -178,9 +178,14 @@ export function createLogger(prefix: string) {
  * Helper para obter URL base da IA (configurável).
  */
 export function getAIConfig(): { baseUrl: string; apiKey: string } | null {
+  // Prefer Lovable AI Gateway (auto-provisioned)
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (lovableKey) {
+    return { baseUrl: "https://ai.gateway.lovable.dev/v1/chat/completions", apiKey: lovableKey };
+  }
+  // Fallback to custom AI config
   const apiKey = Deno.env.get("AI_API_KEY");
   const baseUrl = Deno.env.get("AI_BASE_URL");
-  
   if (!apiKey || !baseUrl) return null;
   return { baseUrl, apiKey };
 }
