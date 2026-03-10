@@ -42,7 +42,9 @@ import {
   Scale,
   History,
   ClipboardList,
+  Edit2,
 } from 'lucide-react';
+import { EditControlDialog } from './EditControlDialog';
 import { cn } from '@/lib/utils';
 import { Database } from '@/integrations/supabase/types';
 
