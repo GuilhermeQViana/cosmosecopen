@@ -348,6 +348,14 @@ export function ControlCardExpanded({
           isSaving={isSaving}
         />
       </CardContent>
+
+      {!isReadOnly && (
+        <EditControlDialog
+          control={control}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+        />
+      )}
     </Card>
   );
 }
