@@ -104,6 +104,7 @@ export function ControlCardExpanded({
 }: ControlCardExpandedProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [maturityLevel, setMaturityLevel] = useState<number>(
     assessment ? parseInt(assessment.maturity_level) : 0
   );
