@@ -88,6 +88,7 @@ const defaultFrameworkIcons: Record<string, React.ReactNode> = {
   iso_27001: <Building2 className="w-4 h-4" />,
   bcb_cmn: <Landmark className="w-4 h-4" />,
   bcb_85: <Landmark className="w-4 h-4" />,
+  bcb_265: <Building2 className="w-4 h-4" />,
 };
 
 const frameworkColors: Record<string, string> = {
@@ -95,6 +96,7 @@ const frameworkColors: Record<string, string> = {
   iso_27001: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   bcb_cmn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
   bcb_85: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+  bcb_265: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
 };
 
 // Helper to get framework icon - uses custom icon if available, otherwise falls back to defaults

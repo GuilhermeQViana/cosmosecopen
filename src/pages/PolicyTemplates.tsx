@@ -28,6 +28,7 @@ const frameworkLabels: Record<string, string> = {
   nist_csf: 'NIST CSF',
   bcb_cmn: 'BCB/CMN',
   bcb_85: 'BCB Res. 85',
+  bcb_265: 'BCB Res. 265',
 };
 
 export default function PolicyTemplates() {
