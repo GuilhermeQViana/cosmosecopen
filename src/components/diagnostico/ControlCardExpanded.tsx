@@ -42,7 +42,9 @@ import {
   Scale,
   History,
   ClipboardList,
+  Edit2,
 } from 'lucide-react';
+import { EditControlDialog } from './EditControlDialog';
 import { cn } from '@/lib/utils';
 import { Database } from '@/integrations/supabase/types';
 
@@ -102,6 +104,7 @@ export function ControlCardExpanded({
 }: ControlCardExpandedProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [maturityLevel, setMaturityLevel] = useState<number>(
     assessment ? parseInt(assessment.maturity_level) : 0
   );
@@ -218,18 +221,30 @@ export function ControlCardExpanded({
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
-            className="flex-shrink-0"
-          >
-            {expanded ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {!isReadOnly && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditOpen(true)}
+                title="Editar requisito"
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
             )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setExpanded(!expanded)}
+              className="flex-shrink-0"
+            >
+              {expanded ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -333,6 +348,14 @@ export function ControlCardExpanded({
           isSaving={isSaving}
         />
       </CardContent>
+
+      {!isReadOnly && (
+        <EditControlDialog
+          control={control}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+        />
+      )}
     </Card>
   );
 }
