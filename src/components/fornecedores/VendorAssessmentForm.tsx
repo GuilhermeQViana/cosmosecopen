@@ -285,6 +285,7 @@ export function VendorAssessmentForm({
                 <TabsList className="h-12 w-full justify-start bg-transparent p-0 gap-2">
                   {requirementsByDomain.map(({ domain, requirements }) => {
                     const { answered, total, percentage } = getDomainProgress(domain, requirements);
+                    const score = domainScores[domain.code];
                     return (
                       <TabsTrigger
                         key={domain.code}
@@ -297,6 +298,18 @@ export function VendorAssessmentForm({
                           <Badge variant="secondary" className="text-xs">
                             {answered}/{total}
                           </Badge>
+                          {score !== undefined && (
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] ${
+                                score >= 80 ? 'text-green-500 border-green-500/30' :
+                                score >= 50 ? 'text-amber-500 border-amber-500/30' :
+                                'text-destructive border-destructive/30'
+                              }`}
+                            >
+                              {Math.round(score)}%
+                            </Badge>
+                          )}
                         </div>
                         {percentage > 0 && (
                           <div
