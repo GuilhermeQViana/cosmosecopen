@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { Vendor } from '@/hooks/useVendors';
 import { useQualificationCampaigns } from '@/hooks/useQualificationCampaigns';
 import { VendorRiskBadge, VendorCriticalityBadge } from './VendorRiskBadge';
@@ -25,8 +26,20 @@ import {
   Phone,
   FileBarChart,
   Award,
+  AlertCircle,
+  Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const QUAL_STATUS_MAP: Record<string, { label: string; className: string }> = {
+  pendente: { label: 'Aguardando', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+  em_preenchimento: { label: 'Em preenchimento', className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  respondido: { label: 'Respondido', className: 'bg-primary/10 text-primary border-primary/20' },
+  em_analise: { label: 'Em análise', className: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+  aprovado: { label: 'Aprovado', className: 'bg-green-500/10 text-green-500 border-green-500/20' },
+  reprovado: { label: 'Reprovado', className: 'bg-destructive/10 text-destructive border-destructive/20' },
+  devolvido: { label: 'Devolvido', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+};
 
 interface VendorCardProps {
   vendor: Vendor;
@@ -49,18 +62,30 @@ export function VendorCard({
   const isContractExpired = contractEndDate && contractEndDate < new Date();
 
   const { data: qualCampaigns } = useQualificationCampaigns({ vendorId: vendor.id });
-  const latestQual = qualCampaigns?.find(c => c.score !== null);
+  const latestQual = qualCampaigns?.[0]; // most recent campaign
+  const latestQualWithScore = qualCampaigns?.find(c => c.score !== null);
+
+  const qualStatus = latestQual ? QUAL_STATUS_MAP[latestQual.status] : null;
 
   return (
     <Card
       className={cn(
         'group relative overflow-hidden border-border/50 transition-all duration-300',
         'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5',
-        'bg-gradient-to-br from-card to-card/80'
+        'bg-gradient-to-br from-card to-card/80',
+        isContractExpired && 'border-destructive/30'
       )}
     >
       {/* Decorative gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      {/* Expired contract banner */}
+      {isContractExpired && (
+        <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-1.5 flex items-center gap-2">
+          <AlertCircle className="h-3 w-3 text-destructive" />
+          <span className="text-xs font-medium text-destructive">Contrato vencido</span>
+        </div>
+      )}
 
       <CardHeader className="pb-2 relative">
         <div className="flex items-start justify-between gap-2">
@@ -127,15 +152,25 @@ export function VendorCard({
           {!vendor.last_assessment && (
             <span className="text-xs text-muted-foreground italic">Sem avaliação</span>
           )}
-          {latestQual && (
+          {latestQualWithScore && (
             <span className={`inline-flex items-center gap-1 text-xs font-medium ${
-              (latestQual.score ?? 0) >= 81 ? 'text-green-500' : (latestQual.score ?? 0) >= 51 ? 'text-yellow-500' : 'text-red-500'
+              (latestQualWithScore.score ?? 0) >= 81 ? 'text-green-500' : (latestQualWithScore.score ?? 0) >= 51 ? 'text-yellow-500' : 'text-red-500'
             }`}>
               <Award className="h-3 w-3" />
-              {latestQual.score}%
+              {latestQualWithScore.score}%
             </span>
           )}
         </div>
+
+        {/* Qualification campaign status */}
+        {qualStatus && (
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={cn('text-[10px]', qualStatus.className)}>
+              <Clock className="h-2.5 w-2.5 mr-1" />
+              Qualificação: {qualStatus.label}
+            </Badge>
+          </div>
+        )}
 
         {/* Category */}
         {vendor.category && (
@@ -143,13 +178,11 @@ export function VendorCard({
         )}
 
         {/* Contract info */}
-        {contractEndDate && (
+        {contractEndDate && !isContractExpired && (
           <div
             className={cn(
               'flex items-center gap-2 text-xs',
-              isContractExpired
-                ? 'text-red-500'
-                : isContractExpiring
+              isContractExpiring
                 ? 'text-amber-500'
                 : 'text-muted-foreground'
             )}
@@ -157,8 +190,18 @@ export function VendorCard({
             <Calendar className="h-3.5 w-3.5" />
             <span>
               Contrato até {format(contractEndDate, "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
-              {isContractExpired && ' (Vencido)'}
-              {isContractExpiring && !isContractExpired && ' (Vence em breve)'}
+              {isContractExpiring && ' (Vence em breve)'}
+            </span>
+          </div>
+        )}
+
+        {/* Last assessment date */}
+        {vendor.last_assessment && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ClipboardCheck className="h-3.5 w-3.5" />
+            <span>
+              Última avaliação: {format(new Date(vendor.last_assessment.assessment_date), "dd/MM/yyyy", { locale: ptBR })}
+              {' · '}Score: {vendor.last_assessment.overall_score}%
             </span>
           </div>
         )}

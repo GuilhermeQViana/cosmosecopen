@@ -14,9 +14,13 @@ import {
   TrendingUp,
   Calendar,
   Settings,
+  ClipboardCheck,
+  Send,
+  RotateCcw,
 } from 'lucide-react';
 import { useVendors, getRiskLevelFromScore } from '@/hooks/useVendors';
 import { useVendorRequirements } from '@/hooks/useVendorRequirements';
+import { useQualificationCampaigns } from '@/hooks/useQualificationCampaigns';
 import { addDays, isBefore, isAfter } from 'date-fns';
 import { VendorComplianceRadar } from '@/components/fornecedores/VendorComplianceRadar';
 import { VendorRiskHeatMap } from '@/components/fornecedores/VendorRiskHeatMap';
@@ -32,6 +36,7 @@ export default function FornecedoresDashboard() {
   const navigate = useNavigate();
   const { data: vendors = [], isLoading: vendorsLoading } = useVendors();
   const { data: requirements = [] } = useVendorRequirements();
+  const { data: allCampaigns = [] } = useQualificationCampaigns({});
 
   // Calculate stats
   const stats = {
@@ -49,6 +54,24 @@ export default function FornecedoresDashboard() {
       const thirtyDaysFromNow = addDays(new Date(), 30);
       return isBefore(endDate, thirtyDaysFromNow) && isAfter(endDate, new Date());
     }).length,
+  };
+
+  // Qualification campaign stats
+  const qualStats = {
+    total: allCampaigns.length,
+    pending: allCampaigns.filter(c => c.status === 'pendente').length,
+    inProgress: allCampaigns.filter(c => c.status === 'em_preenchimento').length,
+    answered: allCampaigns.filter(c => c.status === 'respondido').length,
+    approved: allCampaigns.filter(c => c.status === 'aprovado').length,
+    rejected: allCampaigns.filter(c => c.status === 'reprovado').length,
+    returned: allCampaigns.filter(c => c.status === 'devolvido').length,
+    expired: allCampaigns.filter(c => {
+      if (!c.expires_at) return false;
+      return new Date(c.expires_at) < new Date() && !['aprovado', 'reprovado', 'respondido'].includes(c.status);
+    }).length,
+    responseRate: allCampaigns.length > 0
+      ? Math.round((allCampaigns.filter(c => ['respondido', 'em_analise', 'aprovado', 'reprovado'].includes(c.status)).length / allCampaigns.length) * 100)
+      : 0,
   };
 
   // Calculate average score
@@ -148,6 +171,76 @@ export default function FornecedoresDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Qualification Metrics */}
+      {allCampaigns.length > 0 && (
+        <Card className="border-border/50 bg-gradient-to-br from-card to-card/80">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <ClipboardCheck className="w-5 h-5 text-primary" />
+              Campanhas de Qualificação
+            </CardTitle>
+            <CardDescription>
+              Acompanhamento das campanhas de qualificação de fornecedores
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div className="space-y-1">
+                <p className="text-2xl font-bold font-space">{qualStats.total}</p>
+                <p className="text-xs text-muted-foreground">Total de campanhas</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold font-space text-amber-500">
+                  {qualStats.pending + qualStats.inProgress}
+                </p>
+                <p className="text-xs text-muted-foreground">Aguardando resposta</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold font-space text-blue-500">{qualStats.answered}</p>
+                <p className="text-xs text-muted-foreground">Respondidas (revisar)</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold font-space text-green-500">{qualStats.approved}</p>
+                <p className="text-xs text-muted-foreground">Aprovadas</p>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-2xl font-bold font-space">{qualStats.responseRate}%</p>
+                </div>
+                <p className="text-xs text-muted-foreground">Taxa de resposta</p>
+              </div>
+            </div>
+
+            {/* Alerts row */}
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border/50">
+              {qualStats.expired > 0 && (
+                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {qualStats.expired} expirada{qualStats.expired > 1 ? 's' : ''}
+                </Badge>
+              )}
+              {qualStats.returned > 0 && (
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  {qualStats.returned} devolvida{qualStats.returned > 1 ? 's' : ''}
+                </Badge>
+              )}
+              {qualStats.rejected > 0 && (
+                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+                  {qualStats.rejected} reprovada{qualStats.rejected > 1 ? 's' : ''}
+                </Badge>
+              )}
+              {qualStats.answered > 0 && (
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+                  <Send className="h-3 w-3 mr-1" />
+                  {qualStats.answered} pendente{qualStats.answered > 1 ? 's' : ''} de revisão
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Pipeline Funnel */}
       <VendorPipelineFunnel />

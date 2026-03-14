@@ -285,6 +285,7 @@ export function VendorAssessmentForm({
                 <TabsList className="h-12 w-full justify-start bg-transparent p-0 gap-2">
                   {requirementsByDomain.map(({ domain, requirements }) => {
                     const { answered, total, percentage } = getDomainProgress(domain, requirements);
+                    const score = domainScores[domain.code];
                     return (
                       <TabsTrigger
                         key={domain.code}
@@ -297,6 +298,18 @@ export function VendorAssessmentForm({
                           <Badge variant="secondary" className="text-xs">
                             {answered}/{total}
                           </Badge>
+                          {score !== undefined && (
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] ${
+                                score >= 80 ? 'text-green-500 border-green-500/30' :
+                                score >= 50 ? 'text-amber-500 border-amber-500/30' :
+                                'text-destructive border-destructive/30'
+                              }`}
+                            >
+                              {Math.round(score)}%
+                            </Badge>
+                          )}
                         </div>
                         {percentage > 0 && (
                           <div
@@ -348,7 +361,14 @@ export function VendorAssessmentForm({
                                     }`}
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-sm">{requirement.code}</p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-medium text-sm">{requirement.code}</p>
+                                      {requirement.weight > 1 && (
+                                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                          Peso {requirement.weight}
+                                        </Badge>
+                                      )}
+                                    </div>
                                     <p className="text-sm text-muted-foreground truncate">
                                       {requirement.name}
                                     </p>

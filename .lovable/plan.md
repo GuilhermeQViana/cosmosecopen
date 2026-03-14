@@ -1,99 +1,79 @@
 
+Objetivo
+Resolver de vez o erro de login local quando aparece **“Invalid authentication credentials”** (além de “Invalid login credentials”), com diagnóstico claro na tela e instruções acionáveis para não travar mais no fluxo.
 
-# Melhorias no Módulo de Gestão de Fornecedores (VRM)
+Diagnóstico que fiz
+- O fluxo de login no preview está funcional: encontrei requisição `POST /auth/v1/token?grant_type=password` com status **200** para o mesmo backend.
+- A mensagem do seu print atual é **“Invalid authentication credentials”** (diferente de “Invalid login credentials”).
+- Hoje o código só trata bem:
+  - erro de conexão (rede/backend offline), e
+  - string exata `"Invalid login credentials"`.
+- Resultado: quando vem `"Invalid authentication credentials"`, o app mostra mensagem crua e não orienta como corrigir.
+- Causa mais comum desse erro em ambiente local: **URL e chave publishable não pertencem ao mesmo projeto** (normalmente por `.env.local` sobrescrevendo `.env`).
 
-Após análise completa do módulo, identifiquei as seguintes áreas de melhoria organizadas por prioridade:
+O que vamos implementar
+1) Melhorar o classificador de erros de autenticação
+- Arquivo: `src/lib/auth-connection-diagnostics.ts`
+- Adicionar classificação de erro por tipo:
+  - `connection_error`
+  - `invalid_project_credentials` (URL/chave incompatíveis)
+  - `invalid_user_credentials` (email/senha)
+  - `email_not_confirmed`
+  - `rate_limited`
+  - `unknown_auth_error`
+- Atualizar `normalizeAuthError()` para retornar mensagem amigável por categoria (não só conexão).
 
----
+2) Tornar o teste de conexão realmente útil para credenciais do projeto
+- Arquivo: `src/lib/auth-connection-diagnostics.ts`
+- Refinar `pingAuthBackend()` para:
+  - diferenciar “backend alcançável” de “chave inválida/incompatível”;
+  - não marcar 401/403 genericamente como “ok” sem interpretar o corpo da resposta;
+  - retornar causa explícita quando o par URL+key estiver inconsistente.
 
-## 1. Questionário de Qualificação do Fornecedor (Portal Externo)
+3) Ajustar o fluxo de login para mensagens consistentes e úteis
+- Arquivo: `src/contexts/AuthContext.tsx`
+- Manter `try/catch`, mas garantir normalização também para erros retornados pela lib (não só exceções lançadas).
+- Sanitizar entrada de email (`trim`, `lowercase`) antes do login para evitar falso erro por espaço/capitalização.
 
-**Problemas atuais:**
-- O portal externo (`VendorQualificationPortal`) não suporta upload de arquivos — o campo `answer_file_url` existe mas não há UI de upload
-- Não há validação de campos obrigatórios antes do envio final
-- Falta indicação visual de perguntas KO (eliminatórias) para o fornecedor
-- Não há confirmação antes do envio definitivo (só draft vs submit)
+4) Melhorar UX da tela `/entrar` para este caso específico
+- Arquivo: `src/pages/Gateway.tsx`
+- Tratar também `"Invalid authentication credentials"` com mensagem amigável em português.
+- Exibir bloco de ajuda específico quando for erro de configuração local:
+  - “URL e chave devem ser do mesmo projeto”;
+  - “`.env.local` tem prioridade sobre `.env`”;
+  - “reinicie o `npm run dev` após alterar env”.
+- Incluir CTA direto para recuperação de senha **somente** quando for erro real de credenciais do usuário (não configuração).
+- Manter lockout e MFA sem regressão.
 
-**Melhorias propostas:**
-- Adicionar upload de arquivos no portal (usando storage público ou URL assinada temporária)
-- Validar campos `is_required` antes de permitir envio final
-- Exibir aviso visual em perguntas KO
-- Adicionar dialog de confirmação antes do envio definitivo
+5) Documentação de troubleshooting mais precisa
+- Arquivo: `README.md`
+- Expandir seção atual com um subtópico explícito:
+  - diferença entre “Invalid login credentials” (usuário/senha) e
+  - “Invalid authentication credentials” (configuração local URL/key).
 
----
+Validação (fim a fim)
+1. Caso A — credenciais corretas e env correto
+- Login deve funcionar normalmente.
+- Se usuário tiver 2FA, segue para verificação MFA.
 
-## 2. Avaliação Interna de Fornecedor
+2. Caso B — URL/key incompatíveis (simulado)
+- Login deve mostrar mensagem de configuração local, não mensagem genérica.
+- Painel de diagnóstico deve explicar exatamente o que revisar.
 
-**Problemas atuais:**
-- O formulário de avaliação (`VendorAssessmentForm`) não exibe peso/weight dos requisitos
-- Não há indicação de criticidade do requisito durante a avaliação
-- Falta resumo por domínio com score parcial visível no header
+3. Caso C — senha errada
+- Mensagem deve orientar “email ou senha incorretos”.
+- CTA para “Esqueci minha senha” deve estar claro.
 
-**Melhorias propostas:**
-- Mostrar badge de peso em cada requisito
-- Exibir score parcial por domínio nas tabs
+4. Caso D — backend indisponível
+- Continua mostrando diagnóstico de conexão (já existente), sem regressão.
 
----
+Riscos e mitigação
+- Risco: classificar errado mensagens variáveis do provedor.
+  - Mitigação: usar matching por múltiplos padrões (`includes`, lowercase, códigos quando disponíveis).
+- Risco: poluir UI com muito detalhe.
+  - Mitigação: mostrar detalhes técnicos apenas em `DEV`; produção com mensagem objetiva.
 
-## 3. VendorCard e Listagem
-
-**Problemas atuais:**
-- Não mostra data da última avaliação no card
-- Não mostra status da última campanha de qualificação
-- Falta indicador visual de contratos vencidos vs vencendo
-
-**Melhorias propostas:**
-- Adicionar data da última avaliação e score no card
-- Badge de status da qualificação mais recente
-- Destaque vermelho para contratos já vencidos
-
----
-
-## 4. Dashboard VRM
-
-**Problemas atuais:**
-- Não mostra métricas de qualificação (campanhas pendentes, taxa de resposta)
-- Falta widget de fornecedores com qualificação vencida/expirada
-
-**Melhorias propostas:**
-- Adicionar cards de métricas de qualificação
-- Widget de campanhas pendentes de resposta
-
----
-
-## 5. Workflow de Aprovação
-
-**Problemas atuais:**
-- A aprovação/reprovação na campanha de qualificação e na avaliação interna são workflows separados sem conexão
-- Não há notificação automática ao fornecedor quando a campanha é devolvida
-
-**Melhorias propostas:**
-- Unificar timeline de eventos (avaliação + qualificação) no detalhe do fornecedor
-- Gerar notificação interna quando campanha muda de status
-
----
-
-## Plano de Implementação Sugerido
-
-Recomendo atacar em fases:
-
-| Fase | Escopo | Complexidade |
-|------|--------|-------------|
-| **Fase 1** | Validação de obrigatórios + confirmação no portal externo | Baixa |
-| **Fase 2** | Upload de arquivos no portal + indicação de perguntas KO | Média |
-| **Fase 3** | Melhorias no VendorCard (datas, badges, contratos) | Baixa |
-| **Fase 4** | Métricas de qualificação no Dashboard VRM | Média |
-| **Fase 5** | Score por domínio visível + peso nos requisitos | Baixa |
-
-### Arquivos impactados
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/pages/VendorQualificationPortal.tsx` | Validação, upload, KO badges, confirmação |
-| `src/components/fornecedores/VendorAssessmentForm.tsx` | Peso visível, score por domínio |
-| `src/components/fornecedores/VendorCard.tsx` | Data avaliação, badge qualificação, contratos |
-| `src/pages/FornecedoresDashboard.tsx` | Métricas de qualificação |
-| `supabase/functions/vendor-qualification-portal/index.ts` | Suporte a upload (se necessário) |
-
-Nenhuma migração SQL necessária — todas as estruturas de dados já existem.
-
+Resultado esperado
+- Você deixa de receber erro “solto” sem orientação.
+- O app passa a te dizer claramente **se o problema é senha** ou **configuração local do projeto**.
+- Redução drástica de tentativas cegas e retrabalho no login local.
