@@ -355,19 +355,6 @@ export function VendorAssessmentForm({
                                           Peso {requirement.weight}
                                         </Badge>
                                       )}
-                                      {requirement.criticality && requirement.criticality !== 'media' && (
-                                        <Badge
-                                          variant="outline"
-                                          className={`text-[10px] px-1.5 py-0 ${
-                                            requirement.criticality === 'critica' ? 'text-destructive border-destructive/30' :
-                                            requirement.criticality === 'alta' ? 'text-amber-500 border-amber-500/30' :
-                                            'text-muted-foreground'
-                                          }`}
-                                        >
-                                          {requirement.criticality === 'critica' ? 'Crítico' :
-                                           requirement.criticality === 'alta' ? 'Alto' : requirement.criticality}
-                                        </Badge>
-                                      )}
                                     </div>
                                     <p className="text-sm text-muted-foreground truncate">
                                       {requirement.name}
