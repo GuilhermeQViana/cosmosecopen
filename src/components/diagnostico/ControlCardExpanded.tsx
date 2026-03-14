@@ -117,6 +117,7 @@ export function ControlCardExpanded({
   useEffect(() => {
     if (assessment) {
       setMaturityLevel(parseInt(assessment.maturity_level));
+      setObservations(assessment.observations || '');
     }
   }, [assessment]);
 
