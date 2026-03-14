@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -108,12 +110,14 @@ export function ControlCardExpanded({
   const [maturityLevel, setMaturityLevel] = useState<number>(
     assessment ? parseInt(assessment.maturity_level) : 0
   );
+  const [observations, setObservations] = useState(assessment?.observations || '');
   const [hasChanges, setHasChanges] = useState(false);
 
   // Sync with assessment updates
   useEffect(() => {
     if (assessment) {
       setMaturityLevel(parseInt(assessment.maturity_level));
+      setObservations(assessment.observations || '');
     }
   }, [assessment]);
 
@@ -126,8 +130,14 @@ export function ControlCardExpanded({
     await onSave({
       controlId: control.id,
       maturityLevel: maturityLevel.toString() as MaturityLevel,
+      observations: observations || undefined,
     });
     setHasChanges(false);
+  };
+
+  const handleObservationsChange = (value: string) => {
+    setObservations(value);
+    setHasChanges(true);
   };
 
   const status = assessment?.status || 'nao_conforme';
@@ -334,6 +344,23 @@ export function ControlCardExpanded({
               currentMaturity={maturityLevel}
               targetMaturity={targetMaturity}
               weight={weight}
+            />
+          </div>
+        )}
+
+        {/* Observations / Resumo da Situação */}
+        {expanded && (
+          <div className="space-y-2">
+            <Label htmlFor={`obs-${control.id}`} className="text-sm font-medium">
+              Resumo da Situação
+            </Label>
+            <Textarea
+              id={`obs-${control.id}`}
+              value={observations}
+              onChange={(e) => handleObservationsChange(e.target.value)}
+              placeholder="Descreva brevemente a situação atual deste controle..."
+              className="min-h-[80px] text-sm"
+              disabled={isReadOnly}
             />
           </div>
         )}
