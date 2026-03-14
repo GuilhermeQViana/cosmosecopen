@@ -130,8 +130,14 @@ export function ControlCardExpanded({
     await onSave({
       controlId: control.id,
       maturityLevel: maturityLevel.toString() as MaturityLevel,
+      observations: observations || undefined,
     });
     setHasChanges(false);
+  };
+
+  const handleObservationsChange = (value: string) => {
+    setObservations(value);
+    setHasChanges(true);
   };
 
   const status = assessment?.status || 'nao_conforme';
