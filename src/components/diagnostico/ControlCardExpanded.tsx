@@ -110,6 +110,7 @@ export function ControlCardExpanded({
   const [maturityLevel, setMaturityLevel] = useState<number>(
     assessment ? parseInt(assessment.maturity_level) : 0
   );
+  const [observations, setObservations] = useState(assessment?.observations || '');
   const [hasChanges, setHasChanges] = useState(false);
 
   // Sync with assessment updates
