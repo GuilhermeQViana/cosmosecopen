@@ -25,6 +25,7 @@ const standardFrameworkColors: Record<string, string> = {
   bcb_cmn: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
   bcb_85: 'from-rose-500/20 to-rose-500/5 border-rose-500/30 text-rose-500',
   bcb_265: 'from-teal-500/20 to-teal-500/5 border-teal-500/30 text-teal-500',
+  iso_22301: 'from-indigo-500/20 to-indigo-500/5 border-indigo-500/30 text-indigo-500',
 };
 
 const customFrameworkColor = 'from-purple-500/20 to-purple-500/5 border-purple-500/30 text-purple-500';
@@ -35,6 +36,7 @@ const frameworkDescriptions: Record<string, string> = {
   bcb_cmn: 'Regulamentação do Banco Central do Brasil para instituições financeiras.',
   bcb_85: 'Segurança cibernética para instituições de pagamento, corretoras e distribuidoras (BACEN).',
   bcb_265: 'Gerenciamento de riscos, capital e divulgação para instituições Tipo 3 (S2-S4) do BACEN.',
+  iso_22301: 'Sistema de Gestão de Continuidade de Negócios (SGCN) — requisitos para resiliência organizacional e recuperação de disrupções.',
 };
 
 export default function SelecionarFramework() {

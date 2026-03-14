@@ -1,67 +1,79 @@
 
+Objetivo
+Resolver de vez o erro de login local quando aparece **“Invalid authentication credentials”** (além de “Invalid login credentials”), com diagnóstico claro na tela e instruções acionáveis para não travar mais no fluxo.
 
-# Plano: Criar Framework ISO 22301:2019 com Controles do PDF
+Diagnóstico que fiz
+- O fluxo de login no preview está funcional: encontrei requisição `POST /auth/v1/token?grant_type=password` com status **200** para o mesmo backend.
+- A mensagem do seu print atual é **“Invalid authentication credentials”** (diferente de “Invalid login credentials”).
+- Hoje o código só trata bem:
+  - erro de conexão (rede/backend offline), e
+  - string exata `"Invalid login credentials"`.
+- Resultado: quando vem `"Invalid authentication credentials"`, o app mostra mensagem crua e não orienta como corrigir.
+- Causa mais comum desse erro em ambiente local: **URL e chave publishable não pertencem ao mesmo projeto** (normalmente por `.env.local` sobrescrevendo `.env`).
 
-## Resumo
+O que vamos implementar
+1) Melhorar o classificador de erros de autenticação
+- Arquivo: `src/lib/auth-connection-diagnostics.ts`
+- Adicionar classificação de erro por tipo:
+  - `connection_error`
+  - `invalid_project_credentials` (URL/chave incompatíveis)
+  - `invalid_user_credentials` (email/senha)
+  - `email_not_confirmed`
+  - `rate_limited`
+  - `unknown_auth_error`
+- Atualizar `normalizeAuthError()` para retornar mensagem amigável por categoria (não só conexão).
 
-Inserir o framework ISO 22301:2019 (SGCN) como framework padrão do sistema, com **~55 controles** extraídos diretamente do PDF fornecido, organizados pelas 7 seções da norma. Atualizar o frontend para reconhecer o novo código.
+2) Tornar o teste de conexão realmente útil para credenciais do projeto
+- Arquivo: `src/lib/auth-connection-diagnostics.ts`
+- Refinar `pingAuthBackend()` para:
+  - diferenciar “backend alcançável” de “chave inválida/incompatível”;
+  - não marcar 401/403 genericamente como “ok” sem interpretar o corpo da resposta;
+  - retornar causa explícita quando o par URL+key estiver inconsistente.
 
----
+3) Ajustar o fluxo de login para mensagens consistentes e úteis
+- Arquivo: `src/contexts/AuthContext.tsx`
+- Manter `try/catch`, mas garantir normalização também para erros retornados pela lib (não só exceções lançadas).
+- Sanitizar entrada de email (`trim`, `lowercase`) antes do login para evitar falso erro por espaço/capitalização.
 
-## 1. Migração SQL — Framework + Controles
+4) Melhorar UX da tela `/entrar` para este caso específico
+- Arquivo: `src/pages/Gateway.tsx`
+- Tratar também `"Invalid authentication credentials"` com mensagem amigável em português.
+- Exibir bloco de ajuda específico quando for erro de configuração local:
+  - “URL e chave devem ser do mesmo projeto”;
+  - “`.env.local` tem prioridade sobre `.env`”;
+  - “reinicie o `npm run dev` após alterar env”.
+- Incluir CTA direto para recuperação de senha **somente** quando for erro real de credenciais do usuário (não configuração).
+- Manter lockout e MFA sem regressão.
 
-Inserir na tabela `frameworks` (`is_custom = false`, `organization_id = NULL`):
-- **code:** `iso_22301`
-- **name:** ISO 22301:2019
-- **version:** 2019
-- **icon:** `shield-check`
+5) Documentação de troubleshooting mais precisa
+- Arquivo: `README.md`
+- Expandir seção atual com um subtópico explícito:
+  - diferença entre “Invalid login credentials” (usuário/senha) e
+  - “Invalid authentication credentials” (configuração local URL/key).
 
-Inserir **~55 controles** na tabela `controls`, distribuídos por categoria:
+Validação (fim a fim)
+1. Caso A — credenciais corretas e env correto
+- Login deve funcionar normalmente.
+- Se usuário tiver 2FA, segue para verificação MFA.
 
-| Categoria (seção) | Qtd | Exemplos de controles |
-|---|---|---|
-| **4. Contexto da Organização** | 4 | 4.1 Contexto interno/externo, 4.2 Partes interessadas, 4.3 Escopo do SGCN, 4.4 Estabelecimento do SGCN |
-| **5. Liderança** | 3 | 5.1 Liderança e comprometimento, 5.2 Política de CN, 5.3 Papéis e responsabilidades |
-| **6. Planejamento** | 3 | 6.1 Riscos e oportunidades, 6.2 Objetivos de CN, 6.3 Planejamento de mudanças |
-| **7. Apoio** | 5 | 7.1 Recursos, 7.2 Competência, 7.3 Conscientização, 7.4 Comunicação, 7.5 Informação documentada |
-| **8. Operação** | ~25 | 8.1 Controles operacionais, 8.2 BIA (8 sub-requisitos) + Avaliação de riscos (3), 8.3 Estratégias e soluções (6 sub-requisitos + recursos), 8.4 Planos e procedimentos (equipes, comunicação, conteúdo dos planos, restauração), 8.5 Programa de exercícios (7 critérios), 8.6 Avaliação de capacidade (5) |
-| **9. Avaliação de Desempenho** | ~10 | 9.1 Monitoramento e medição, 9.2 Auditoria interna (7 sub-requisitos), 9.3 Análise crítica pela direção (entradas a-k, saídas a-d) |
-| **10. Melhoria** | 5 | 10.1 Não conformidade e ações corretivas (a-e + evidências), 10.2 Melhoria contínua |
+2. Caso B — URL/key incompatíveis (simulado)
+- Login deve mostrar mensagem de configuração local, não mensagem genérica.
+- Painel de diagnóstico deve explicar exatamente o que revisar.
 
-Cada controle terá: `code`, `name`, `description` (texto extraído do PDF), `category`, `weight` (1-3), `order_index`.
+3. Caso C — senha errada
+- Mensagem deve orientar “email ou senha incorretos”.
+- CTA para “Esqueci minha senha” deve estar claro.
 
-**Critérios de peso:**
-- **Peso 3** (crítico): BIA, Avaliação de riscos, Planos de CN, Programa de exercícios
-- **Peso 2** (importante): Estratégias, Comunicação, Auditoria, Análise crítica
-- **Peso 1** (suporte): Contexto, Recursos, Documentação, Competência
+4. Caso D — backend indisponível
+- Continua mostrando diagnóstico de conexão (já existente), sem regressão.
 
----
+Riscos e mitigação
+- Risco: classificar errado mensagens variáveis do provedor.
+  - Mitigação: usar matching por múltiplos padrões (`includes`, lowercase, códigos quando disponíveis).
+- Risco: poluir UI com muito detalhe.
+  - Mitigação: mostrar detalhes técnicos apenas em `DEV`; produção com mensagem objetiva.
 
-## 2. Atualizar FrameworkCode Type
-
-**Arquivo:** `src/contexts/FrameworkContext.tsx` (linha 5)
-
-Adicionar `'iso_22301'` ao union type:
-```
-export type FrameworkCode = 'nist_csf' | 'iso_27001' | 'bcb_cmn' | 'bcb_85' | 'bcb_265' | 'iso_22301';
-```
-
----
-
-## 3. Atualizar SelecionarFramework
-
-**Arquivo:** `src/pages/SelecionarFramework.tsx`
-
-- Adicionar cor (linha ~25): `iso_22301: 'from-indigo-500/20 to-indigo-500/5 border-indigo-500/30 text-indigo-500'`
-- Adicionar descrição (linha ~35): `iso_22301: 'Sistema de Gestão de Continuidade de Negócios (SGCN) — requisitos para resiliência organizacional e recuperação de disrupções.'`
-
----
-
-## Arquivos Impactados
-
-| Recurso | Ação |
-|---------|------|
-| Migração SQL | Criar — framework + ~55 controles baseados no PDF |
-| `src/contexts/FrameworkContext.tsx` | Editar — adicionar `iso_22301` ao type |
-| `src/pages/SelecionarFramework.tsx` | Editar — cor e descrição |
-
+Resultado esperado
+- Você deixa de receber erro “solto” sem orientação.
+- O app passa a te dizer claramente **se o problema é senha** ou **configuração local do projeto**.
+- Redução drástica de tentativas cegas e retrabalho no login local.
