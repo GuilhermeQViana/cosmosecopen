@@ -23,6 +23,7 @@ export interface VendorRequirement {
   order_index: number;
   is_active: boolean;
   domain?: VendorAssessmentDomain;
+  usage_count?: number;
 }
 
 export function useVendorDomains() {
@@ -46,7 +47,6 @@ export function useVendorRequirements() {
   return useQuery({
     queryKey: ['vendor-requirements', organization?.id],
     queryFn: async () => {
-      // Fetch default requirements (org_id NULL) and custom ones for this org
       let query = supabase
         .from('vendor_requirements')
         .select(`
@@ -66,6 +66,55 @@ export function useVendorRequirements() {
 
       if (error) throw error;
       return data as VendorRequirement[];
+    },
+    enabled: true,
+  });
+}
+
+export function useVendorRequirementsWithUsage() {
+  const { organization } = useOrganization();
+
+  return useQuery({
+    queryKey: ['vendor-requirements-usage', organization?.id],
+    queryFn: async () => {
+      // Fetch all requirements (including inactive for management page)
+      let query = supabase
+        .from('vendor_requirements')
+        .select(`
+          *,
+          domain:vendor_assessment_domains(*)
+        `)
+        .order('order_index', { ascending: true });
+
+      if (organization?.id) {
+        query = query.or(`organization_id.is.null,organization_id.eq.${organization.id}`);
+      } else {
+        query = query.is('organization_id', null);
+      }
+
+      const { data: requirements, error } = await query;
+      if (error) throw error;
+
+      // Get usage counts from vendor_assessment_responses
+      const { data: usageCounts, error: usageError } = await supabase
+        .from('vendor_assessment_responses')
+        .select('requirement_id');
+
+      if (usageError) {
+        console.warn('Could not fetch usage counts:', usageError);
+        return (requirements || []).map(r => ({ ...r, usage_count: 0 })) as VendorRequirement[];
+      }
+
+      // Count occurrences per requirement_id
+      const countMap: Record<string, number> = {};
+      (usageCounts || []).forEach((row: any) => {
+        countMap[row.requirement_id] = (countMap[row.requirement_id] || 0) + 1;
+      });
+
+      return (requirements || []).map(r => ({
+        ...r,
+        usage_count: countMap[r.id] || 0,
+      })) as VendorRequirement[];
     },
     enabled: true,
   });

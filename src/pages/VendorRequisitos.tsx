@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,49 +11,26 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  ArrowLeft,
-  FileText,
-  Shield,
-  Lock,
-  AlertTriangle,
-  RefreshCw,
-  Save,
-  Loader2
+  Plus, Edit2, Trash2, ArrowLeft, FileText, Shield, Lock, AlertTriangle,
+  RefreshCw, Save, Loader2, Copy, Search, GripVertical, BarChart3
 } from 'lucide-react';
-import { useVendorDomains, useVendorRequirements } from '@/hooks/useVendorRequirements';
+import { useVendorDomains, useVendorRequirementsWithUsage } from '@/hooks/useVendorRequirements';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { ImportRequirementsCSV } from '@/components/fornecedores/ImportRequirementsCSV';
 
 interface RequirementFormData {
   code: string;
@@ -66,13 +43,7 @@ interface RequirementFormData {
 }
 
 const defaultFormData: RequirementFormData = {
-  code: '',
-  name: '',
-  description: '',
-  domain_id: '',
-  weight: 1,
-  evidence_example: '',
-  is_active: true,
+  code: '', name: '', description: '', domain_id: '', weight: 1, evidence_example: '', is_active: true,
 };
 
 export default function VendorRequisitos() {
@@ -80,44 +51,68 @@ export default function VendorRequisitos() {
   const queryClient = useQueryClient();
   const { organization } = useOrganization();
   const { data: domains = [] } = useVendorDomains();
-  const { data: requirements = [], isLoading } = useVendorRequirements();
+  const { data: requirements = [], isLoading } = useVendorRequirementsWithUsage();
   
-  const [activeTab, setActiveTab] = useState<string>(domains[0]?.id || '');
+  const [activeTab, setActiveTab] = useState<string>('');
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingRequirement, setEditingRequirement] = useState<any>(null);
   const [formData, setFormData] = useState<RequirementFormData>(defaultFormData);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterWeight, setFilterWeight] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('active');
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  // Set initial tab when domains load
   if (domains.length > 0 && !activeTab) {
     setActiveTab(domains[0].id);
   }
 
   const getDomainIcon = (code: string) => {
     switch (code) {
-      case 'SI':
-        return Shield;
-      case 'CYBER':
-        return Lock;
-      case 'PRIV':
-        return AlertTriangle;
-      case 'BCN':
-        return RefreshCw;
-      default:
-        return FileText;
+      case 'SI': return Shield;
+      case 'CYBER': return Lock;
+      case 'PRIV': return AlertTriangle;
+      case 'BCN': return RefreshCw;
+      default: return FileText;
     }
   };
 
   const getRequirementsForDomain = (domainId: string) => {
-    return requirements.filter(r => r.domain_id === domainId);
+    return requirements
+      .filter(r => r.domain_id === domainId)
+      .filter(r => {
+        if (filterStatus === 'active' && !r.is_active) return false;
+        if (filterStatus === 'inactive' && r.is_active) return false;
+        if (filterWeight !== 'all' && r.weight !== parseInt(filterWeight)) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return r.code.toLowerCase().includes(q) || r.name.toLowerCase().includes(q);
+        }
+        return true;
+      });
+  };
+
+  const getDomainWeightTotal = (domainId: string) => {
+    const domainReqs = requirements.filter(r => r.domain_id === domainId && r.is_active);
+    return domainReqs.reduce((sum, r) => sum + r.weight, 0);
+  };
+
+  const getTotalWeight = () => {
+    return requirements.filter(r => r.is_active).reduce((sum, r) => sum + r.weight, 0);
+  };
+
+  const getWeightPercentage = (domainId: string) => {
+    const total = getTotalWeight();
+    if (!total) return 0;
+    return Math.round((getDomainWeightTotal(domainId) / total) * 100);
   };
 
   const openCreateForm = (domainId: string) => {
-    const domainRequirements = getRequirementsForDomain(domainId);
+    const domainRequirements = requirements.filter(r => r.domain_id === domainId);
     const nextIndex = domainRequirements.length + 1;
     const domain = domains.find(d => d.id === domainId);
-    
     setFormData({
       ...defaultFormData,
       domain_id: domainId,
@@ -129,16 +124,39 @@ export default function VendorRequisitos() {
 
   const openEditForm = (requirement: any) => {
     setFormData({
-      code: requirement.code,
-      name: requirement.name,
-      description: requirement.description || '',
-      domain_id: requirement.domain_id,
-      weight: requirement.weight || 1,
-      evidence_example: requirement.evidence_example || '',
-      is_active: requirement.is_active ?? true,
+      code: requirement.code, name: requirement.name, description: requirement.description || '',
+      domain_id: requirement.domain_id, weight: requirement.weight || 1,
+      evidence_example: requirement.evidence_example || '', is_active: requirement.is_active ?? true,
     });
     setEditingRequirement(requirement);
     setFormOpen(true);
+  };
+
+  const handleDuplicate = async (requirement: any) => {
+    if (!organization?.id) return;
+    setIsSaving(true);
+    try {
+      const domainReqs = requirements.filter(r => r.domain_id === requirement.domain_id);
+      const maxOrder = Math.max(0, ...domainReqs.map(r => r.order_index || 0));
+      const { error } = await supabase.from('vendor_requirements').insert({
+        code: `${requirement.code}-CUSTOM`,
+        name: `${requirement.name} (Customizado)`,
+        description: requirement.description,
+        domain_id: requirement.domain_id,
+        organization_id: organization.id,
+        weight: requirement.weight,
+        evidence_example: requirement.evidence_example,
+        is_active: true,
+        order_index: maxOrder + 1,
+      });
+      if (error) throw error;
+      toast.success('Requisito duplicado como customizado');
+      queryClient.invalidateQueries({ queryKey: ['vendor-requirements'] });
+    } catch (error: any) {
+      toast.error('Erro ao duplicar: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -147,60 +165,37 @@ export default function VendorRequisitos() {
       toast.error('Preencha todos os campos obrigatórios');
       return;
     }
-
     setIsSaving(true);
     try {
       if (editingRequirement) {
-        // Only allow editing custom requirements (with organization_id)
         if (!editingRequirement.organization_id) {
           toast.error('Requisitos padrão não podem ser editados');
           return;
         }
-
-        const { error } = await supabase
-          .from('vendor_requirements')
-          .update({
-            code: formData.code,
-            name: formData.name,
-            description: formData.description || null,
-            domain_id: formData.domain_id,
-            weight: formData.weight,
-            evidence_example: formData.evidence_example || null,
-            is_active: formData.is_active,
-          })
-          .eq('id', editingRequirement.id);
-
+        const { error } = await supabase.from('vendor_requirements').update({
+          code: formData.code, name: formData.name, description: formData.description || null,
+          domain_id: formData.domain_id, weight: formData.weight,
+          evidence_example: formData.evidence_example || null, is_active: formData.is_active,
+        }).eq('id', editingRequirement.id);
         if (error) throw error;
         toast.success('Requisito atualizado com sucesso');
       } else {
-        // Create new custom requirement
-        const domainRequirements = getRequirementsForDomain(formData.domain_id);
+        const domainRequirements = requirements.filter(r => r.domain_id === formData.domain_id);
         const maxOrder = Math.max(0, ...domainRequirements.map(r => r.order_index || 0));
-
-        const { error } = await supabase
-          .from('vendor_requirements')
-          .insert({
-            code: formData.code,
-            name: formData.name,
-            description: formData.description || null,
-            domain_id: formData.domain_id,
-            organization_id: organization.id,
-            weight: formData.weight,
-            evidence_example: formData.evidence_example || null,
-            is_active: formData.is_active,
-            order_index: maxOrder + 1,
-          });
-
+        const { error } = await supabase.from('vendor_requirements').insert({
+          code: formData.code, name: formData.name, description: formData.description || null,
+          domain_id: formData.domain_id, organization_id: organization.id, weight: formData.weight,
+          evidence_example: formData.evidence_example || null, is_active: formData.is_active,
+          order_index: maxOrder + 1,
+        });
         if (error) throw error;
         toast.success('Requisito criado com sucesso');
       }
-
       queryClient.invalidateQueries({ queryKey: ['vendor-requirements'] });
       setFormOpen(false);
       setFormData(defaultFormData);
       setEditingRequirement(null);
     } catch (error: any) {
-      console.error('Error saving requirement:', error);
       toast.error('Erro ao salvar requisito: ' + error.message);
     } finally {
       setIsSaving(false);
@@ -209,30 +204,63 @@ export default function VendorRequisitos() {
 
   const handleDelete = async () => {
     if (!editingRequirement) return;
-
     if (!editingRequirement.organization_id) {
       toast.error('Requisitos padrão não podem ser excluídos');
       setDeleteOpen(false);
       return;
     }
-
     try {
-      const { error } = await supabase
-        .from('vendor_requirements')
-        .delete()
-        .eq('id', editingRequirement.id);
-
+      const { error } = await supabase.from('vendor_requirements').delete().eq('id', editingRequirement.id);
       if (error) throw error;
-      
       toast.success('Requisito excluído com sucesso');
       queryClient.invalidateQueries({ queryKey: ['vendor-requirements'] });
       setDeleteOpen(false);
       setEditingRequirement(null);
     } catch (error: any) {
-      console.error('Error deleting requirement:', error);
       toast.error('Erro ao excluir requisito: ' + error.message);
     }
   };
+
+  // Drag & drop handlers
+  const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
+    setDraggedId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    if (draggedId && draggedId !== id) setDragOverId(id);
+  }, [draggedId]);
+
+  const handleDrop = useCallback(async (e: React.DragEvent, targetId: string, domainId: string) => {
+    e.preventDefault();
+    if (!draggedId || draggedId === targetId) {
+      setDraggedId(null);
+      setDragOverId(null);
+      return;
+    }
+
+    const domainReqs = requirements.filter(r => r.domain_id === domainId);
+    const ids = domainReqs.map(r => r.id);
+    const fromIdx = ids.indexOf(draggedId);
+    const toIdx = ids.indexOf(targetId);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    ids.splice(fromIdx, 1);
+    ids.splice(toIdx, 0, draggedId);
+
+    // Update order_index for reordered items
+    const updates = ids.map((id, i) => supabase
+      .from('vendor_requirements')
+      .update({ order_index: i })
+      .eq('id', id)
+    );
+    await Promise.all(updates);
+    queryClient.invalidateQueries({ queryKey: ['vendor-requirements'] });
+
+    setDraggedId(null);
+    setDragOverId(null);
+  }, [draggedId, requirements, queryClient]);
 
   return (
     <div className="space-y-6">
@@ -243,42 +271,83 @@ export default function VendorRequisitos() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight font-space">
-              Requisitos de Avaliação
-            </h1>
-            <p className="text-muted-foreground">
-              Gerencie os requisitos utilizados nas avaliações de fornecedores
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight font-space">Requisitos de Avaliação</h1>
+            <p className="text-muted-foreground">Gerencie os requisitos utilizados nas avaliações de fornecedores</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="text-sm">
-            {requirements.length} requisitos ativos
+            {requirements.filter(r => r.is_active).length} requisitos ativos
           </Badge>
+          <Badge variant="secondary" className="text-sm">
+            <BarChart3 className="h-3 w-3 mr-1" />
+            Peso total: {getTotalWeight()}
+          </Badge>
+          {organization?.id && (
+            <ImportRequirementsCSV
+              requirements={requirements}
+              domains={domains}
+              organizationId={organization.id}
+            />
+          )}
         </div>
+      </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por código ou nome..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={filterWeight} onValueChange={setFilterWeight}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Peso" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os pesos</SelectItem>
+            <SelectItem value="1">Peso 1</SelectItem>
+            <SelectItem value="2">Peso 2</SelectItem>
+            <SelectItem value="3">Peso 3</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="active">Ativos</SelectItem>
+            <SelectItem value="inactive">Inativos</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Domains Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-          {domains.map((domain) => {
+          {domains.map(domain => {
             const Icon = getDomainIcon(domain.code);
             const count = getRequirementsForDomain(domain.id).length;
             return (
               <TabsTrigger key={domain.id} value={domain.id} className="gap-2">
                 <Icon className="h-4 w-4" />
                 <span className="hidden sm:inline">{domain.name.split(' ')[0]}</span>
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                  {count}
-                </Badge>
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5">{count}</Badge>
               </TabsTrigger>
             );
           })}
         </TabsList>
 
-        {domains.map((domain) => {
+        {domains.map(domain => {
           const domainRequirements = getRequirementsForDomain(domain.id);
           const Icon = getDomainIcon(domain.code);
+          const weightTotal = getDomainWeightTotal(domain.id);
+          const weightPct = getWeightPercentage(domain.id);
 
           return (
             <TabsContent key={domain.id} value={domain.id}>
@@ -291,7 +360,12 @@ export default function VendorRequisitos() {
                       </div>
                       <div>
                         <CardTitle className="text-lg">{domain.name}</CardTitle>
-                        <CardDescription>{domain.description}</CardDescription>
+                        <CardDescription className="flex items-center gap-2">
+                          {domain.description}
+                          <Badge variant="outline" className="text-xs font-mono">
+                            Peso: {weightTotal} ({weightPct}% do total)
+                          </Badge>
+                        </CardDescription>
                       </div>
                     </div>
                     <Button onClick={() => openCreateForm(domain.id)}>
@@ -308,54 +382,71 @@ export default function VendorRequisitos() {
                   ) : domainRequirements.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                       <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p className="font-medium">Nenhum requisito neste domínio</p>
-                      <p className="text-sm">Clique em "Adicionar Requisito" para começar</p>
+                      <p className="font-medium">Nenhum requisito encontrado</p>
+                      <p className="text-sm">Clique em "Adicionar Requisito" ou ajuste os filtros</p>
                     </div>
                   ) : (
                     <ScrollArea className="h-[500px]">
                       <div className="space-y-2">
-                        {domainRequirements.map((requirement) => (
+                        {domainRequirements.map(requirement => (
                           <div
                             key={requirement.id}
+                            draggable={!!requirement.organization_id}
+                            onDragStart={e => handleDragStart(e, requirement.id)}
+                            onDragOver={e => handleDragOver(e, requirement.id)}
+                            onDragLeave={() => setDragOverId(null)}
+                            onDrop={e => handleDrop(e, requirement.id, domain.id)}
                             className={cn(
                               'p-4 rounded-lg border transition-colors',
                               requirement.organization_id 
                                 ? 'bg-primary/5 border-primary/20' 
                                 : 'bg-muted/30 border-border/50',
-                              !requirement.is_active && 'opacity-50'
+                              !requirement.is_active && 'opacity-50',
+                              dragOverId === requirement.id && 'border-primary border-2',
+                              draggedId === requirement.id && 'opacity-30',
                             )}
                           >
                             <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Badge variant="outline" className="font-mono text-xs">
-                                    {requirement.code}
-                                  </Badge>
-                                  {requirement.organization_id && (
-                                    <Badge className="bg-primary/20 text-primary text-xs">
-                                      Customizado
-                                    </Badge>
-                                  )}
-                                  <Badge variant="secondary" className="text-xs">
-                                    Peso: {requirement.weight}
-                                  </Badge>
-                                  {!requirement.is_active && (
-                                    <Badge variant="outline" className="text-xs text-muted-foreground">
-                                      Inativo
-                                    </Badge>
+                              <div className="flex items-start gap-2 flex-1 min-w-0">
+                                {requirement.organization_id && (
+                                  <GripVertical className="h-5 w-5 text-muted-foreground mt-0.5 cursor-grab shrink-0" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                    <Badge variant="outline" className="font-mono text-xs">{requirement.code}</Badge>
+                                    {requirement.organization_id && (
+                                      <Badge className="bg-primary/20 text-primary text-xs">Customizado</Badge>
+                                    )}
+                                    <Badge variant="secondary" className="text-xs">Peso: {requirement.weight}</Badge>
+                                    {!requirement.is_active && (
+                                      <Badge variant="outline" className="text-xs text-muted-foreground">Inativo</Badge>
+                                    )}
+                                    {(requirement.usage_count || 0) > 0 && (
+                                      <Badge variant="outline" className="text-xs text-primary">
+                                        <BarChart3 className="h-3 w-3 mr-1" />
+                                        {requirement.usage_count} avaliação(ões)
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="font-medium">{requirement.name}</p>
+                                  {requirement.description && (
+                                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{requirement.description}</p>
                                   )}
                                 </div>
-                                <p className="font-medium">{requirement.name}</p>
-                                {requirement.description && (
-                                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                    {requirement.description}
-                                  </p>
-                                )}
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
+                                {!requirement.organization_id && (
+                                  <Button
+                                    variant="ghost" size="icon"
+                                    onClick={() => handleDuplicate(requirement)}
+                                    disabled={isSaving}
+                                    title="Duplicar como customizado"
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                )}
                                 <Button
-                                  variant="ghost"
-                                  size="icon"
+                                  variant="ghost" size="icon"
                                   onClick={() => openEditForm(requirement)}
                                   disabled={!requirement.organization_id}
                                   title={requirement.organization_id ? 'Editar' : 'Requisitos padrão não podem ser editados'}
@@ -363,14 +454,14 @@ export default function VendorRequisitos() {
                                   <Edit2 className="h-4 w-4" />
                                 </Button>
                                 <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setEditingRequirement(requirement);
-                                    setDeleteOpen(true);
-                                  }}
-                                  disabled={!requirement.organization_id}
-                                  title={requirement.organization_id ? 'Excluir' : 'Requisitos padrão não podem ser excluídos'}
+                                  variant="ghost" size="icon"
+                                  onClick={() => { setEditingRequirement(requirement); setDeleteOpen(true); }}
+                                  disabled={!requirement.organization_id || (requirement.usage_count || 0) > 0}
+                                  title={
+                                    !requirement.organization_id ? 'Requisitos padrão não podem ser excluídos'
+                                      : (requirement.usage_count || 0) > 0 ? 'Requisito em uso em avaliações'
+                                      : 'Excluir'
+                                  }
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
@@ -392,118 +483,60 @@ export default function VendorRequisitos() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {editingRequirement ? 'Editar Requisito' : 'Novo Requisito'}
-            </DialogTitle>
+            <DialogTitle>{editingRequirement ? 'Editar Requisito' : 'Novo Requisito'}</DialogTitle>
             <DialogDescription>
               {editingRequirement 
                 ? 'Atualize as informações do requisito customizado'
                 : 'Adicione um novo requisito de avaliação para este domínio'}
             </DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="code">Código *</Label>
-                <Input
-                  id="code"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  placeholder="REQ-01"
-                />
+                <Input id="code" value={formData.code} onChange={e => setFormData({ ...formData, code: e.target.value })} placeholder="REQ-01" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="domain">Domínio *</Label>
-                <Select
-                  value={formData.domain_id}
-                  onValueChange={(value) => setFormData({ ...formData, domain_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o domínio" />
-                  </SelectTrigger>
+                <Select value={formData.domain_id} onValueChange={value => setFormData({ ...formData, domain_id: value })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o domínio" /></SelectTrigger>
                   <SelectContent>
-                    {domains.map((domain) => (
-                      <SelectItem key={domain.id} value={domain.id}>
-                        {domain.name}
-                      </SelectItem>
+                    {domains.map(domain => (
+                      <SelectItem key={domain.id} value={domain.id}>{domain.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="name">Nome do Requisito *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nome descritivo do requisito"
-              />
+              <Input id="name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Nome descritivo do requisito" />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Detalhes sobre o requisito..."
-                rows={3}
-              />
+              <Textarea id="description" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Detalhes sobre o requisito..." rows={3} />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="evidence">Exemplo de Evidência</Label>
-              <Textarea
-                id="evidence"
-                value={formData.evidence_example}
-                onChange={(e) => setFormData({ ...formData, evidence_example: e.target.value })}
-                placeholder="Que tipo de evidência pode ser apresentada..."
-                rows={2}
-              />
+              <Textarea id="evidence" value={formData.evidence_example} onChange={e => setFormData({ ...formData, evidence_example: e.target.value })} placeholder="Que tipo de evidência pode ser apresentada..." rows={2} />
             </div>
-
             <div className="space-y-3">
               <Label>Peso do Requisito: {formData.weight}</Label>
-              <Slider
-                value={[formData.weight]}
-                onValueChange={([value]) => setFormData({ ...formData, weight: value })}
-                min={1}
-                max={3}
-                step={1}
-                className="w-full"
-              />
-              <p className="text-xs text-muted-foreground">
-                Peso maior significa maior impacto no score final
-              </p>
+              <Slider value={[formData.weight]} onValueChange={([value]) => setFormData({ ...formData, weight: value })} min={1} max={3} step={1} className="w-full" />
+              <p className="text-xs text-muted-foreground">Peso maior significa maior impacto no score final</p>
             </div>
-
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Requisito Ativo</Label>
-                <p className="text-xs text-muted-foreground">
-                  Requisitos inativos não aparecem nas avaliações
-                </p>
+                <p className="text-xs text-muted-foreground">Requisitos inativos não aparecem nas avaliações</p>
               </div>
-              <Switch
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-              />
+              <Switch checked={formData.is_active} onCheckedChange={checked => setFormData({ ...formData, is_active: checked })} />
             </div>
           </div>
-
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>
-              Cancelar
-            </Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>Cancelar</Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
               {editingRequirement ? 'Atualizar' : 'Criar'}
             </Button>
           </DialogFooter>
@@ -516,8 +549,7 @@ export default function VendorRequisitos() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Requisito</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o requisito "{editingRequirement?.name}"?
-              Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o requisito "{editingRequirement?.name}"? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
