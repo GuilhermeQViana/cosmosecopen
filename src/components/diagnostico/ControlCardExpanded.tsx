@@ -348,6 +348,23 @@ export function ControlCardExpanded({
           </div>
         )}
 
+        {/* Observations / Resumo da Situação */}
+        {expanded && (
+          <div className="space-y-2">
+            <Label htmlFor={`obs-${control.id}`} className="text-sm font-medium">
+              Resumo da Situação
+            </Label>
+            <Textarea
+              id={`obs-${control.id}`}
+              value={observations}
+              onChange={(e) => handleObservationsChange(e.target.value)}
+              placeholder="Descreva brevemente a situação atual deste controle..."
+              className="min-h-[80px] text-sm"
+              disabled={isReadOnly}
+            />
+          </div>
+        )}
+
         {/* Expanded Content */}
         <ExpandedContent
           expanded={expanded}
