@@ -348,7 +348,27 @@ export function VendorAssessmentForm({
                                     }`}
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-sm">{requirement.code}</p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-medium text-sm">{requirement.code}</p>
+                                      {requirement.weight > 1 && (
+                                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                          Peso {requirement.weight}
+                                        </Badge>
+                                      )}
+                                      {requirement.criticality && requirement.criticality !== 'media' && (
+                                        <Badge
+                                          variant="outline"
+                                          className={`text-[10px] px-1.5 py-0 ${
+                                            requirement.criticality === 'critica' ? 'text-destructive border-destructive/30' :
+                                            requirement.criticality === 'alta' ? 'text-amber-500 border-amber-500/30' :
+                                            'text-muted-foreground'
+                                          }`}
+                                        >
+                                          {requirement.criticality === 'critica' ? 'Crítico' :
+                                           requirement.criticality === 'alta' ? 'Alto' : requirement.criticality}
+                                        </Badge>
+                                      )}
+                                    </div>
                                     <p className="text-sm text-muted-foreground truncate">
                                       {requirement.name}
                                     </p>
