@@ -1,79 +1,50 @@
 
-Objetivo
-Resolver de vez o erro de login local quando aparece **“Invalid authentication credentials”** (além de “Invalid login credentials”), com diagnóstico claro na tela e instruções acionáveis para não travar mais no fluxo.
 
-Diagnóstico que fiz
-- O fluxo de login no preview está funcional: encontrei requisição `POST /auth/v1/token?grant_type=password` com status **200** para o mesmo backend.
-- A mensagem do seu print atual é **“Invalid authentication credentials”** (diferente de “Invalid login credentials”).
-- Hoje o código só trata bem:
-  - erro de conexão (rede/backend offline), e
-  - string exata `"Invalid login credentials"`.
-- Resultado: quando vem `"Invalid authentication credentials"`, o app mostra mensagem crua e não orienta como corrigir.
-- Causa mais comum desse erro em ambiente local: **URL e chave publishable não pertencem ao mesmo projeto** (normalmente por `.env.local` sobrescrevendo `.env`).
+# Plano: Requisitos Focados na Avaliação de Fornecedores
 
-O que vamos implementar
-1) Melhorar o classificador de erros de autenticação
-- Arquivo: `src/lib/auth-connection-diagnostics.ts`
-- Adicionar classificação de erro por tipo:
-  - `connection_error`
-  - `invalid_project_credentials` (URL/chave incompatíveis)
-  - `invalid_user_credentials` (email/senha)
-  - `email_not_confirmed`
-  - `rate_limited`
-  - `unknown_auth_error`
-- Atualizar `normalizeAuthError()` para retornar mensagem amigável por categoria (não só conexão).
+## Contexto
 
-2) Tornar o teste de conexão realmente útil para credenciais do projeto
-- Arquivo: `src/lib/auth-connection-diagnostics.ts`
-- Refinar `pingAuthBackend()` para:
-  - diferenciar “backend alcançável” de “chave inválida/incompatível”;
-  - não marcar 401/403 genericamente como “ok” sem interpretar o corpo da resposta;
-  - retornar causa explícita quando o par URL+key estiver inconsistente.
+A página `VendorRequisitos` já permite criar/editar/excluir requisitos customizados por domínio (SI, CYBER, PRIV, BCN). Porém faltam funcionalidades que tornem os requisitos mais úteis e conectados ao fluxo de avaliação.
 
-3) Ajustar o fluxo de login para mensagens consistentes e úteis
-- Arquivo: `src/contexts/AuthContext.tsx`
-- Manter `try/catch`, mas garantir normalização também para erros retornados pela lib (não só exceções lançadas).
-- Sanitizar entrada de email (`trim`, `lowercase`) antes do login para evitar falso erro por espaço/capitalização.
+## Melhorias Propostas
 
-4) Melhorar UX da tela `/entrar` para este caso específico
-- Arquivo: `src/pages/Gateway.tsx`
-- Tratar também `"Invalid authentication credentials"` com mensagem amigável em português.
-- Exibir bloco de ajuda específico quando for erro de configuração local:
-  - “URL e chave devem ser do mesmo projeto”;
-  - “`.env.local` tem prioridade sobre `.env`”;
-  - “reinicie o `npm run dev` após alterar env”.
-- Incluir CTA direto para recuperação de senha **somente** quando for erro real de credenciais do usuário (não configuração).
-- Manter lockout e MFA sem regressão.
+### 1. Pré-visualização do Impacto no Score
+Adicionar na listagem de requisitos uma coluna/indicador mostrando **como cada peso afeta o score final**. Exibir um mini-resumo no header de cada domínio: "Peso total do domínio: X" para que o gestor entenda a distribuição.
 
-5) Documentação de troubleshooting mais precisa
-- Arquivo: `README.md`
-- Expandir seção atual com um subtópico explícito:
-  - diferença entre “Invalid login credentials” (usuário/senha) e
-  - “Invalid authentication credentials” (configuração local URL/key).
+**Arquivo:** `src/pages/VendorRequisitos.tsx`
 
-Validação (fim a fim)
-1. Caso A — credenciais corretas e env correto
-- Login deve funcionar normalmente.
-- Se usuário tiver 2FA, segue para verificação MFA.
+### 2. Reordenação por Drag & Drop
+Permitir reordenar requisitos dentro de cada domínio via drag-and-drop, persistindo o `order_index` no banco. Atualmente a ordem é fixa.
 
-2. Caso B — URL/key incompatíveis (simulado)
-- Login deve mostrar mensagem de configuração local, não mensagem genérica.
-- Painel de diagnóstico deve explicar exatamente o que revisar.
+**Arquivo:** `src/pages/VendorRequisitos.tsx` — usar a mesma abordagem de `DraggableControlList` já existente no projeto.
 
-3. Caso C — senha errada
-- Mensagem deve orientar “email ou senha incorretos”.
-- CTA para “Esqueci minha senha” deve estar claro.
+### 3. Duplicar Requisito Padrão como Customizado
+Os requisitos padrão (sem `organization_id`) não podem ser editados. Adicionar botão "Duplicar como customizado" que cria uma cópia editável vinculada à organização, permitindo ajustar nome, peso e descrição.
 
-4. Caso D — backend indisponível
-- Continua mostrando diagnóstico de conexão (já existente), sem regressão.
+**Arquivo:** `src/pages/VendorRequisitos.tsx`
 
-Riscos e mitigação
-- Risco: classificar errado mensagens variáveis do provedor.
-  - Mitigação: usar matching por múltiplos padrões (`includes`, lowercase, códigos quando disponíveis).
-- Risco: poluir UI com muito detalhe.
-  - Mitigação: mostrar detalhes técnicos apenas em `DEV`; produção com mensagem objetiva.
+### 4. Indicador de Uso em Avaliações
+Mostrar em cada requisito quantas avaliações já o utilizaram (contagem de `vendor_assessment_responses` com aquele `requirement_id`). Requisitos muito usados ficam protegidos contra exclusão acidental.
 
-Resultado esperado
-- Você deixa de receber erro “solto” sem orientação.
-- O app passa a te dizer claramente **se o problema é senha** ou **configuração local do projeto**.
-- Redução drástica de tentativas cegas e retrabalho no login local.
+**Arquivo:** `src/pages/VendorRequisitos.tsx` + `src/hooks/useVendorRequirements.ts` (nova query)
+
+### 5. Exportar/Importar Requisitos (CSV)
+Permitir exportar a lista de requisitos como CSV e importar requisitos customizados em lote, seguindo o padrão já existente em `ImportControlsCSV`.
+
+**Arquivos:** novo componente `src/components/fornecedores/ImportRequirementsCSV.tsx` + `src/pages/VendorRequisitos.tsx`
+
+### 6. Filtros e Busca
+Adicionar campo de busca por nome/código e filtros por peso e status (ativo/inativo) no topo da listagem.
+
+**Arquivo:** `src/pages/VendorRequisitos.tsx`
+
+## Resumo de Arquivos
+
+| Arquivo | Ação |
+|---------|------|
+| `src/pages/VendorRequisitos.tsx` | Editar — adicionar peso total, duplicação, reordenação, filtros, indicador de uso |
+| `src/hooks/useVendorRequirements.ts` | Editar — query de contagem de uso por requisito |
+| `src/components/fornecedores/ImportRequirementsCSV.tsx` | Criar — import/export CSV |
+
+Nenhuma migração SQL necessária — todas as tabelas e campos já existem.
+
