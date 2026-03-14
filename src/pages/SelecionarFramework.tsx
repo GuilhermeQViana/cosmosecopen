@@ -36,6 +36,7 @@ const frameworkDescriptions: Record<string, string> = {
   bcb_cmn: 'Regulamentação do Banco Central do Brasil para instituições financeiras.',
   bcb_85: 'Segurança cibernética para instituições de pagamento, corretoras e distribuidoras (BACEN).',
   bcb_265: 'Gerenciamento de riscos, capital e divulgação para instituições Tipo 3 (S2-S4) do BACEN.',
+  iso_22301: 'Sistema de Gestão de Continuidade de Negócios (SGCN) — requisitos para resiliência organizacional e recuperação de disrupções.',
 };
 
 export default function SelecionarFramework() {
